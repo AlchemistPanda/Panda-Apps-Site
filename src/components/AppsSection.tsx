@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces,
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson,
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
@@ -124,6 +124,17 @@ const apps = [
     href: "/apps/regex-tester",
     icon: Braces,
     gradient: "from-violet-500 to-purple-600",
+    category: "Developer",
+    isNew: true,
+    isFeatured: false,
+  },
+  {
+    title: "JSON Tools",
+    description:
+      "Click through an interactive JSON tree to auto-build JSONPath expressions. Plus: JSONPath tester with filter support, formatter/minifier, and string escaper. Fully in-browser.",
+    href: "/apps/json-tools",
+    icon: FileJson,
+    gradient: "from-amber-500 to-orange-500",
     category: "Developer",
     isNew: true,
     isFeatured: false,
