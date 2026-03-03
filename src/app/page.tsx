@@ -63,12 +63,12 @@ const apps = [
   {
     title: "Password Generator",
     description:
-      "Create strong, secure passwords with customizable length, character types, and strength analysis.",
+      "Create strong, secure passwords with customisable length, character types, and strength analysis. Passwords are generated in your browser and never saved anywhere.",
     href: "/apps/password-generator",
     icon: Lock,
     gradient: "from-amber-500 to-orange-600",
     category: "Security",
-    isNew: false,
+    isNew: true,
     isFeatured: false,
   },
   {
