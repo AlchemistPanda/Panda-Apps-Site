@@ -93,6 +93,86 @@ export default function SettingsPanel({ settings, onChange }: Props) {
         </Section>
       )}
 
+      {/* ── Target File Size ── */}
+      <Section title="Target File Size">
+        <div className="space-y-3">
+          {/* Toggle */}
+          <label className="flex items-center justify-between cursor-pointer">
+            <div>
+              <span className="text-sm text-foreground font-medium">Enable target size</span>
+              <p className="text-[11px] text-muted">Algorithm finds the highest quality that fits</p>
+            </div>
+            <div
+              onClick={() =>
+                onChange({
+                  targetSizeKB: settings.targetSizeKB != null ? null : 500,
+                })
+              }
+              className={`relative h-5 w-9 rounded-full border transition-colors cursor-pointer flex-shrink-0 ${
+                settings.targetSizeKB != null
+                  ? "bg-blue-500 border-blue-500"
+                  : "bg-card border-border/50"
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                  settings.targetSizeKB != null ? "translate-x-4" : "translate-x-0.5"
+                }`}
+              />
+            </div>
+          </label>
+
+          {/* Presets + input */}
+          {settings.targetSizeKB != null && (
+            <div className="space-y-2">
+              {/* Quick presets */}
+              <div className="flex flex-wrap gap-1.5">
+                {[100, 200, 500, 1024, 2048].map((kb) => (
+                  <button
+                    key={kb}
+                    onClick={() => onChange({ targetSizeKB: kb })}
+                    className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-all ${
+                      settings.targetSizeKB === kb
+                        ? "border-blue-500/40 bg-blue-500/10 text-blue-300"
+                        : "border-border/40 bg-card/20 text-muted hover:bg-card/40"
+                    }`}
+                  >
+                    {kb >= 1024 ? `${kb / 1024} MB` : `${kb} KB`}
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom input */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={10}
+                  max={51200}
+                  step={10}
+                  value={settings.targetSizeKB}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value);
+                    if (!isNaN(v) && v > 0) onChange({ targetSizeKB: v });
+                  }}
+                  className="w-full rounded-xl border border-border/40 bg-card/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-500/50 focus:bg-card/50"
+                  placeholder="Custom KB"
+                />
+                <span className="text-xs text-muted flex-shrink-0">KB</span>
+              </div>
+
+              {/* Hints */}
+              {settings.outputFormat === "png" ? (
+                <Tip>PNG is lossless — exact size targeting isn't possible. Switch to JPEG, WebP, or AVIF for best results.</Tip>
+              ) : settings.mode === "lossless" ? (
+                <Tip>Target size overrides the quality slider. It does not affect lossless mode — switch to Balanced or Aggressive for size targeting.</Tip>
+              ) : (
+                <Tip>Quality slider is overridden when target size is active. The engine finds the highest quality that fits your target.</Tip>
+              )}
+            </div>
+          )}
+        </div>
+      </Section>
+
       {/* ── Max Dimension ── */}
       <Section title="Max Dimension (px)">
         <div className="flex gap-2 flex-wrap">

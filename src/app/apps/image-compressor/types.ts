@@ -7,6 +7,7 @@ export interface CompressionSettings {
   maxWidthOrHeight: number; // 0 = no limit
   outputFormat: OutputFormat;
   preserveExif: boolean;
+  targetSizeKB: number | null; // null = no target
 }
 
 export type FileStatus = "pending" | "compressing" | "done" | "error";
@@ -44,6 +45,7 @@ export const DEFAULT_SETTINGS: CompressionSettings = {
   maxWidthOrHeight: 0,
   outputFormat: "webp",
   preserveExif: false,
+  targetSizeKB: null,
 };
 
 export function formatBytes(bytes: number): string {

@@ -33,6 +33,69 @@ export function mimeToExtension(mime: string): string {
 }
 
 /**
+ * Binary-search the highest canvas quality level (0–1) that produces
+ * a blob ≤ targetBytes. Runs up to 10 iterations (~1ms each).
+ * Returns the best blob found; if even quality=0.05 exceeds target,
+ * returns the smallest possible result (we tried our best).
+ */
+async function binarySearchQuality(
+  canvas: HTMLCanvasElement,
+  mime: string,
+  targetBytes: number,
+  onProgress?: (p: number) => void
+): Promise<Blob> {
+  const toBlob = (q: number): Promise<Blob> =>
+    new Promise((resolve, reject) =>
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+        mime,
+        q
+      )
+    );
+
+  // Quick bounds check
+  const maxBlob = await toBlob(0.95);
+  onProgress?.(80);
+  if (maxBlob.size <= targetBytes) {
+    // Already under target at high quality — nothing to sacrifice
+    return maxBlob;
+  }
+
+  const minBlob = await toBlob(0.05);
+  onProgress?.(85);
+  if (minBlob.size > targetBytes) {
+    // Even minimum quality exceeds target — return smallest we can get
+    return minBlob;
+  }
+
+  // Binary search between 0.05 and 0.95
+  let lo = 0.05;
+  let hi = 0.95;
+  let bestBlob = minBlob;
+
+  for (let i = 0; i < 8; i++) {
+    const mid = (lo + hi) / 2;
+    const blob = await toBlob(mid);
+    const progressVal = 85 + Math.round((i / 8) * 14);
+    onProgress?.(progressVal);
+
+    if (blob.size <= targetBytes) {
+      // This quality fits — save it and try higher quality
+      bestBlob = blob;
+      lo = mid;
+    } else {
+      // Too large — try lower quality
+      hi = mid;
+    }
+
+    // Converged
+    if (hi - lo < 0.015) break;
+  }
+
+  return bestBlob;
+}
+
+/**
  * Core compression function.
  * Uses browser-image-compression with smart per-mode options,
  * then re-encodes through Canvas for format conversion and fine quality control.
@@ -117,6 +180,24 @@ export async function compressImage(
 
     ctx.drawImage(bitmap, 0, 0);
     bitmap.close();
+
+    // ── Target size mode: binary search quality to hit targetSizeKB ───
+    if (settings.targetSizeKB && settings.targetSizeKB > 0) {
+      const targetBytes = settings.targetSizeKB * 1024;
+
+      // PNG quality param is ignored by canvas — skip binary search for PNG
+      const canBinarySearch =
+        targetMime !== "image/png" && targetMime !== "image/gif";
+
+      if (canBinarySearch) {
+        const bestBlob = await binarySearchQuality(canvas, targetMime, targetBytes, onProgress);
+        onProgress?.(100);
+        // Still pick the smaller of binary-searched result vs first-pass
+        const fallback = new Blob([compressed], { type: targetMime });
+        return { blob: bestBlob.size <= fallback.size ? bestBlob : fallback, mime: targetMime };
+      }
+      // PNG/GIF: fall through to normal quality encode (can't meaningfully binary-search PNG)
+    }
 
     const quality =
       settings.mode === "lossless"
