@@ -15,6 +15,9 @@ import {
   Globe,
   Trophy,
   BookOpen,
+  Zap,
+  RefreshCw,
+  Pin,
 } from "lucide-react";
 import {
   MODELS,
@@ -174,14 +177,87 @@ export default function AIBenchmarksClient() {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/10 border border-violet-500/20 px-4 py-1.5 text-xs font-medium text-violet-500 mb-2">
-            <Trophy className="h-3 w-3" />
-            Live Leaderboard
+            <Pin className="h-3 w-3" />
+            Scores pinned to {DATA_DATE}
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">AI Model Benchmarks</h1>
           <p className="text-muted max-w-2xl mx-auto">
-            Scores from official model technical reports and peer-reviewed leaderboards.
-            {" "}{MODELS.length} models · {Object.keys(BENCHMARKS).length} benchmarks · Updated {DATA_DATE}.
+            Verified scores from official model technical reports &amp; peer-reviewed leaderboards.
+            {" "}{MODELS.length} models · {Object.keys(BENCHMARKS).length} benchmarks.
           </p>
+          <p className="text-xs text-amber-600 dark:text-amber-400 max-w-xl mx-auto">
+            AI moves fast — scores here are verified snapshots. For the latest model releases, use the live leaderboards below.
+          </p>
+        </div>
+
+        {/* ── Live Leaderboards ───────────────────────────────────── */}
+        <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-violet-500" />
+            <span className="font-semibold text-sm">Always-Up-To-Date Live Sources</span>
+            <span className="text-xs text-muted ml-1">— bookmark these for the latest models &amp; rankings</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              {
+                name: "LMSYS Chatbot Arena",
+                desc: "Human-preference ELO ranking. The most comprehensive live leaderboard — covers every major closed & open model including latest GPT, Claude, Gemini, Grok releases.",
+                url: "https://lmarena.ai/?leaderboard",
+                badge: "Best overall",
+                badgeCls: "bg-violet-500/20 text-violet-500",
+              },
+              {
+                name: "Artificial Analysis",
+                desc: "Independent quality + speed + price benchmarking across all frontier APIs. Updated within days of new releases. Best for comparing real-world output quality.",
+                url: "https://artificialanalysis.ai/leaderboards/models",
+                badge: "Quality + Speed",
+                badgeCls: "bg-blue-500/20 text-blue-500",
+              },
+              {
+                name: "HF Open LLM Leaderboard",
+                desc: "Hugging Face community leaderboard for open-weight models. Runs standardised evals on MMLU, IFEval, BBH, GPQA, and more automatically on new model submissions.",
+                url: "https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard",
+                badge: "Open source",
+                badgeCls: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
+              },
+              {
+                name: "SWE-bench Leaderboard",
+                desc: "Live rankings for real GitHub issue resolution. The gold standard for agentic coding ability — updated as labs submit new agent runs.",
+                url: "https://www.swebench.com",
+                badge: "Coding / Agents",
+                badgeCls: "bg-orange-500/20 text-orange-500",
+              },
+              {
+                name: "LiveCodeBench",
+                desc: "Contamination-free competitive programming. New problems added monthly from Codeforces, LeetCode & AtCoder to prevent data leakage.",
+                url: "https://livecodebench.github.io/leaderboard.html",
+                badge: "Coding",
+                badgeCls: "bg-amber-500/20 text-amber-600 dark:text-amber-400",
+              },
+              {
+                name: "Aider LLM Leaderboard",
+                desc: "Measures how well models edit real codebases (not just write new code). Covers latest GPT-4.1, Claude 3.7, Gemini 2.5 and more.",
+                url: "https://aider.chat/docs/leaderboards/",
+                badge: "Code editing",
+                badgeCls: "bg-teal-500/20 text-teal-600 dark:text-teal-400",
+              },
+            ].map((src) => (
+              <a
+                key={src.name}
+                href={src.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col gap-2 rounded-xl border border-border/40 bg-background/60 p-4 hover:border-violet-500/40 hover:bg-violet-500/5 transition-all"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-semibold text-sm group-hover:text-violet-500 transition-colors">{src.name}</span>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted shrink-0 mt-0.5 group-hover:text-violet-500 transition-colors" />
+                </div>
+                <span className={`self-start text-[10px] font-semibold rounded-full px-2 py-0.5 ${src.badgeCls}`}>{src.badge}</span>
+                <p className="text-xs text-muted leading-relaxed">{src.desc}</p>
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* Category tabs */}
@@ -445,30 +521,20 @@ export default function AIBenchmarksClient() {
         <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-5 py-4 space-y-2">
           <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
             <Info className="h-4 w-4" />
-            Data sources &amp; methodology
+            Why scores are pinned — not live
           </p>
           <p className="text-xs text-muted leading-relaxed">
-            All scores are sourced from <strong className="text-foreground">official model technical reports</strong>,
-            system cards, and peer-reviewed leaderboards (Hugging Face Open LLM Leaderboard v2, SWE-bench official
-            leaderboard, LiveCodeBench). Scores represent pass@1 or prompt-averaged accuracy unless noted.
-            MT-Bench scores are on a 1–10 scale; all others are percentages. &ldquo;Avg Score&rdquo; normalises
-            all benchmarks to 0–100 and averages only the benchmarks officially reported for that model.
-            Scores may differ slightly across evaluation harnesses due to prompt formatting, sampling temperature,
-            and system prompt variations. Always verify against the latest model card for mission-critical decisions.
+            Benchmark scores change when labs re-run evals with different prompts, few-shot settings, or sampling temperatures.
+            Publishing unverified numbers risks spreading misinformation. Every score in this table is taken directly from
+            an <strong className="text-foreground">official model technical report or system card</strong> — not scraped or estimated.
+            This snapshot was last verified on <strong className="text-foreground">{DATA_DATE}</strong>.
+            For models released after that date (Claude 4, GPT-4.1, Gemini 2.5, etc.), use the live leaderboards above
+            which are maintained by the respective organisations and the research community.
           </p>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {[
-              { label: "HF Open LLM Leaderboard", url: "https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard" },
-              { label: "SWE-bench", url: "https://www.swebench.com" },
-              { label: "LiveCodeBench", url: "https://livecodebench.github.io" },
-              { label: "LMSYS Chatbot Arena", url: "https://chat.lmsys.org/?leaderboard" },
-            ].map((src) => (
-              <a key={src.label} href={src.url} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-accent hover:underline">
-                {src.label} <ExternalLink className="h-3 w-3" />
-              </a>
-            ))}
-          </div>
+          <p className="text-xs text-muted leading-relaxed">
+            MT-Bench scores are on a 1–10 scale; all others are percentages. &ldquo;Avg Score&rdquo; normalises all
+            benchmarks to 0–100 and averages only the ones officially reported for that model.
+          </p>
         </div>
       </main>
     </div>
