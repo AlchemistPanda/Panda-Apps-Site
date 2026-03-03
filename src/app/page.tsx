@@ -204,16 +204,17 @@ export default function HomePage() {
 
             <div className="relative">
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-                Ready to try our apps?
+                Tools built to help, not to sell.
               </h2>
               <p className="text-muted text-lg max-w-xl mx-auto mb-8">
-                Start with our QR Code Generator — create beautiful, customizable QR codes in seconds.
+                7 free apps. No accounts. No tracking. Just useful tools that
+                respect your time and your privacy.
               </p>
               <a
-                href="/apps/qr-generator"
+                href="#apps"
                 className="inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 text-sm font-semibold text-black hover:bg-accent-light transition-colors shadow-lg shadow-accent/20"
               >
-                Launch QR Generator
+                Explore All Apps
                 <ArrowRight className="h-4 w-4" />
               </a>
             </div>

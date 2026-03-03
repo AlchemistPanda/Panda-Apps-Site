@@ -15,7 +15,7 @@ export default function HeroSection() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
           </span>
-          Now Live — QR Code Generator
+          Technology that works for people
         </div>
 
         {/* Heading */}
@@ -26,17 +26,18 @@ export default function HeroSection() {
 
         {/* Subheading */}
         <p className="mx-auto max-w-2xl text-lg sm:text-xl text-muted leading-relaxed mb-10 animate-fade-in-up animation-delay-400" style={{ opacity: 0, animationFillMode: "forwards" }}>
-          A growing collection of modern, high-performance web apps you can use 
-          for free. No sign-up required. Your data stays in your browser.
+          My philosophy is simple — use technology to genuinely help people.
+          Every app here is built with that belief: fast, free, private, and
+          designed to make your day a little easier.
         </p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-600" style={{ opacity: 0, animationFillMode: "forwards" }}>
           <a
-            href="/apps/qr-generator"
+            href="#apps"
             className="group flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 text-sm font-semibold text-black hover:bg-accent-light transition-all shadow-lg shadow-accent/20 hover:shadow-accent/30 hover:scale-[1.02] active:scale-[0.98]"
           >
-            Try QR Code Generator
+            Explore All Apps
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </a>
           <a
@@ -50,7 +51,7 @@ export default function HeroSection() {
         {/* Stats */}
         <div className="mt-20 grid grid-cols-3 gap-8 max-w-md mx-auto animate-fade-in-up animation-delay-800" style={{ opacity: 0, animationFillMode: "forwards" }}>
           {[
-            { value: "6+", label: "Apps" },
+            { value: "7", label: "Apps" },
             { value: "100%", label: "Free" },
             { value: "0", label: "Tracking" },
           ].map((stat) => (
