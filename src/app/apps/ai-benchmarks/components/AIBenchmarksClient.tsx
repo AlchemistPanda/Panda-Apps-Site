@@ -6,6 +6,7 @@ import {
   Bot, ChevronLeft, ChevronDown, ChevronUp, ChevronsUpDown,
   Info, ExternalLink, Search, Lock, Cpu, Gift,
   BarChart3, Target, Table2, ArrowUpRight, RefreshCw,
+  Code2, Brain, Eye, MessageSquare, HardDrive, Filter,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -17,6 +18,7 @@ import {
   MODELS as STATIC_MODELS,
   BENCHMARK_COLS,
   type BenchmarkModel,
+  type ModelTag,
   DATA_DATE,
 } from "../data/frontierData";
 
@@ -42,8 +44,15 @@ const pc = (p: string) => PCOLOR[p] || "#8b5cf6";
 type BenchKey = "gpqa" | "swe" | "arcagi2" | "arenaElo" | "aaIndex";
 type SortKey = "name" | "provider" | BenchKey;
 type SortDir = "asc" | "desc";
-type TabFilter = "all" | "free" | "opensource";
+type TabFilter = "all" | "free" | "opensource" | "local";
 type ViewTab = "charts" | "radar" | "table";
+
+const TAG_CONFIG: { id: ModelTag; label: string; icon: React.ReactNode; color: string }[] = [
+  { id: "coding", label: "Coding", icon: <Code2 className="h-3 w-3" />, color: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/40" },
+  { id: "reasoning", label: "Reasoning", icon: <Brain className="h-3 w-3" />, color: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/40" },
+  { id: "multimodal", label: "Multimodal", icon: <Eye className="h-3 w-3" />, color: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40" },
+  { id: "chat", label: "Chat", icon: <MessageSquare className="h-3 w-3" />, color: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40" },
+];
 
 /* ═══════════════ Utilities ═══════════════ */
 
@@ -385,6 +394,14 @@ export default function AIBenchmarksClient({ models }: Props) {
     "gemini-3-1-pro",
     "gpt-5-2",
   ]);
+  const [activeTags, setActiveTags] = useState<ModelTag[]>([]);
+
+  /* ── tag toggle ── */
+  function toggleTag(tag: ModelTag) {
+    setActiveTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag],
+    );
+  }
 
   /* ── sort handler ── */
   function handleSort(key: SortKey) {
@@ -400,10 +417,12 @@ export default function AIBenchmarksClient({ models }: Props) {
     let rows: BenchmarkModel[] = MODELS;
     if (tab === "free") rows = rows.filter(m => m.isFree);
     if (tab === "opensource") rows = rows.filter(m => m.isOpenSource);
+    if (tab === "local") rows = rows.filter(m => m.canRunLocally);
+    if (activeTags.length > 0) rows = rows.filter(m => activeTags.every(t => m.tags.includes(t)));
     const q = search.trim().toLowerCase();
     if (q) rows = rows.filter(m => m.name.toLowerCase().includes(q) || m.provider.toLowerCase().includes(q));
     return rows;
-  }, [MODELS, tab, search]);
+  }, [MODELS, tab, search, activeTags]);
 
   const sorted = useMemo(
     () =>
@@ -422,10 +441,10 @@ export default function AIBenchmarksClient({ models }: Props) {
 
   /* ── tab counts ── */
   const FILTER_TABS = [
-    { id: "all" as const, label: "All Models", icon: <Bot className="h-3.5 w-3.5" />, count: MODELS.length },
+    { id: "all" as const, label: "All", icon: <Bot className="h-3.5 w-3.5" />, count: MODELS.length },
     {
       id: "free" as const,
-      label: "Free Tier",
+      label: "Free",
       icon: <Gift className="h-3.5 w-3.5" />,
       count: MODELS.filter(m => m.isFree).length,
     },
@@ -434,6 +453,12 @@ export default function AIBenchmarksClient({ models }: Props) {
       label: "Open Source",
       icon: <Cpu className="h-3.5 w-3.5" />,
       count: MODELS.filter(m => m.isOpenSource).length,
+    },
+    {
+      id: "local" as const,
+      label: "Run Locally",
+      icon: <HardDrive className="h-3.5 w-3.5" />,
+      count: MODELS.filter(m => m.canRunLocally).length,
     },
   ];
 
@@ -480,7 +505,7 @@ export default function AIBenchmarksClient({ models }: Props) {
         </div>
 
         {/* ── Stats Cards ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {[
             { label: "Models Tracked", value: String(MODELS.length), accent: "text-violet-500" },
             {
@@ -501,6 +526,12 @@ export default function AIBenchmarksClient({ models }: Props) {
               sub: `of ${MODELS.length} models`,
               accent: "text-amber-500",
             },
+            {
+              label: "Run Locally",
+              value: String(MODELS.filter(m => m.canRunLocally).length),
+              sub: "via Ollama / llama.cpp",
+              accent: "text-purple-500",
+            },
           ].map(s => (
             <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3">
               <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
@@ -510,23 +541,86 @@ export default function AIBenchmarksClient({ models }: Props) {
           ))}
         </div>
 
-        {/* ── Benchmark Legend Cards ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-          {BENCHMARK_COLS.map(col => (
-            <a
-              key={col.key}
-              href={col.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group rounded-xl border border-border/30 bg-card/50 px-3 py-2.5 hover:border-violet-500/40 hover:bg-violet-500/5 transition-all"
-            >
-              <div className="flex items-center justify-between mb-0.5">
-                <p className="text-xs font-bold text-violet-500 group-hover:underline">{col.fullName}</p>
-                <ExternalLink className="h-3 w-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <p className="text-[10px] text-muted leading-tight">{col.desc}</p>
-            </a>
-          ))}
+        {/* ── Global Filters ── */}
+        <div className="space-y-3">
+          {/* Access + Source filter tabs */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            <div className="flex rounded-xl border border-border/40 overflow-hidden shrink-0">
+              {FILTER_TABS.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                    tab === t.id
+                      ? "bg-violet-500 text-white"
+                      : "text-muted hover:text-foreground hover:bg-muted/10"
+                  }`}
+                >
+                  {t.icon}
+                  <span className="hidden sm:inline">{t.label}</span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${
+                      tab === t.id ? "bg-white/20" : "bg-muted/20"
+                    }`}
+                  >
+                    {t.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search models\u2026"
+                className="w-full rounded-xl border border-border/40 bg-card/50 pl-9 pr-3 py-2 text-sm placeholder:text-muted focus:border-violet-500/60 focus:outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Category tag filters */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="flex items-center gap-1 text-xs text-muted">
+              <Filter className="h-3 w-3" /> Categories:
+            </span>
+            {TAG_CONFIG.map(t => {
+              const active = activeTags.includes(t.id);
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => toggleTag(t.id)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border transition-all ${
+                    active
+                      ? t.color
+                      : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                  }`}
+                >
+                  {t.icon}
+                  {t.label}
+                  <span className="text-[10px] tabular-nums opacity-70">
+                    {MODELS.filter(m => m.tags.includes(t.id)).length}
+                  </span>
+                </button>
+              );
+            })}
+            {activeTags.length > 0 && (
+              <button
+                onClick={() => setActiveTags([])}
+                className="text-[10px] text-violet-500 hover:underline ml-1"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Active filter summary */}
+          {(tab !== "all" || activeTags.length > 0 || search) && (
+            <p className="text-xs text-muted">
+              Showing <strong className="text-foreground">{filtered.length}</strong> of {MODELS.length} models
+            </p>
+          )}
         </div>
 
         {/* ── View Tabs ── */}
@@ -573,12 +667,12 @@ export default function AIBenchmarksClient({ models }: Props) {
 
             {/* Bar chart */}
             <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-6">
-              <BenchmarkBarChart benchKey={selectedBench} models={MODELS} />
+              <BenchmarkBarChart benchKey={selectedBench} models={filtered} />
             </div>
 
             {/* Scatter plot */}
             <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-6">
-              <EloVsIndexScatter models={MODELS} />
+              <EloVsIndexScatter models={filtered} />
             </div>
           </div>
         )}
@@ -593,7 +687,7 @@ export default function AIBenchmarksClient({ models }: Props) {
                 dataset.
               </p>
 
-              <RadarCompareChart selectedIds={radarModels} models={MODELS} />
+              <RadarCompareChart selectedIds={radarModels} models={filtered} />
 
               {/* Model selector checkboxes */}
               <div className="mt-6 pt-4 border-t border-border/30">
@@ -630,43 +724,6 @@ export default function AIBenchmarksClient({ models }: Props) {
         {/* ════════════════ TABLE VIEW ════════════════ */}
         {view === "table" && (
           <div className="space-y-4">
-            {/* Filter tabs + search */}
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-              <div className="flex rounded-xl border border-border/40 overflow-hidden shrink-0 text-sm">
-                {FILTER_TABS.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setTab(t.id)}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
-                      tab === t.id
-                        ? "bg-violet-500 text-white"
-                        : "text-muted hover:text-foreground hover:bg-muted/10"
-                    }`}
-                  >
-                    {t.icon}
-                    {t.label}
-                    <span
-                      className={`rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${
-                        tab === t.id ? "bg-white/20" : "bg-muted/20"
-                      }`}
-                    >
-                      {t.count}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <div className="relative flex-1 max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search models\u2026"
-                  className="w-full rounded-xl border border-border/40 bg-card/50 pl-9 pr-3 py-2 text-sm placeholder:text-muted focus:border-violet-500/60 focus:outline-none transition-colors"
-                />
-              </div>
-            </div>
-
             {/* Data table */}
             <div className="rounded-2xl border border-border/40 overflow-hidden">
               <div className="overflow-x-auto">
@@ -727,6 +784,16 @@ export default function AIBenchmarksClient({ models }: Props) {
                               {m.params && (
                                 <span className="text-[10px] text-muted ml-1.5 font-mono">{m.params}</span>
                               )}
+                              <div className="flex gap-1 mt-0.5 flex-wrap">
+                                {m.tags.map(t => {
+                                  const cfg = TAG_CONFIG.find(tc => tc.id === t);
+                                  return cfg ? (
+                                    <span key={t} className={`inline-flex items-center gap-0.5 text-[8px] font-medium rounded-full px-1.5 py-0.5 ${cfg.color}`}>
+                                      {cfg.label}
+                                    </span>
+                                  ) : null;
+                                })}
+                              </div>
                             </td>
                             {BENCHMARK_COLS.map(col => {
                               const v = m[col.key as BenchKey];
@@ -746,6 +813,12 @@ export default function AIBenchmarksClient({ models }: Props) {
                                   <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold rounded-full px-1.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 w-fit">
                                     <Cpu className="h-2.5 w-2.5" />
                                     Open
+                                  </span>
+                                )}
+                                {m.canRunLocally && (
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold rounded-full px-1.5 py-0.5 bg-purple-500/15 text-purple-600 dark:text-purple-400 w-fit">
+                                    <HardDrive className="h-2.5 w-2.5" />
+                                    Local
                                   </span>
                                 )}
                                 {m.isFree && (
@@ -816,6 +889,22 @@ export default function AIBenchmarksClient({ models }: Props) {
                                         <span className="text-foreground font-medium">Access:</span>{" "}
                                         {m.isFree ? "Free tier available" : "Paid API only"}
                                       </span>
+                                      {m.canRunLocally && (
+                                        <span className="inline-flex items-center gap-0.5">
+                                          <HardDrive className="h-3 w-3 text-purple-500" />
+                                          <span className="text-foreground font-medium">Can run locally</span> via Ollama / llama.cpp
+                                        </span>
+                                      )}
+                                      <div className="flex gap-1 mt-1">
+                                        {m.tags.map(t => {
+                                          const cfg = TAG_CONFIG.find(tc => tc.id === t);
+                                          return cfg ? (
+                                            <span key={t} className={`inline-flex items-center gap-0.5 text-[9px] font-medium rounded-full px-1.5 py-0.5 ${cfg.color}`}>
+                                              {cfg.icon} {cfg.label}
+                                            </span>
+                                          ) : null;
+                                        })}
+                                      </div>
                                     </div>
                                   </td>
                                 </tr>,
@@ -849,6 +938,28 @@ export default function AIBenchmarksClient({ models }: Props) {
           <span className="text-muted ml-1">
             &mdash; Arena ELO normalised to 1250&ndash;1550 &middot; AA Index to 0&ndash;60 for colour
           </span>
+        </div>
+
+        {/* ── Benchmark Details ── */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-bold text-foreground">Benchmark Details</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+            {BENCHMARK_COLS.map(col => (
+              <a
+                key={col.key}
+                href={col.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group rounded-xl border border-border/30 bg-card/50 px-3 py-2.5 hover:border-violet-500/40 hover:bg-violet-500/5 transition-all"
+              >
+                <div className="flex items-center justify-between mb-0.5">
+                  <p className="text-xs font-bold text-violet-500 group-hover:underline">{col.fullName}</p>
+                  <ExternalLink className="h-3 w-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <p className="text-[10px] text-muted leading-tight">{col.desc}</p>
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* ── Sources ── */}
