@@ -6,71 +6,11 @@ import DOMPurify from "dompurify";
 import Toolbar, { type ViewMode, type ToolbarAction } from "./Toolbar";
 import {
   Copy, Download, FileDown, Printer, Plus, Check,
-  FileText, Clock, AlignLeft,
+  FileText, Clock, AlignLeft, HelpCircle, X,
 } from "lucide-react";
 
-/* ── Default content ─────────────────────────────────────────────── */
-const DEFAULT_MD = `# Welcome to Panda Markdown Editor 🐼
-
-Write, format, and export documents — entirely in your browser.
-
-## Text Formatting
-
-You can write **bold**, *italic*, or ~~strikethrough~~ text.  
-Combine them: ***bold and italic***, or use \`inline code\`.
-
-## Headings
-
-# Heading 1
-## Heading 2
-### Heading 3
-
-## Lists
-
-**Unordered:**
-- Item one
-- Item two
-  - Nested item
-  - Another nested
-
-**Ordered:**
-1. First step
-2. Second step
-3. Third step
-
-## Code
-
-Inline: \`const x = 42;\`
-
-Block:
-\`\`\`javascript
-function greet(name) {
-  return \`Hello, \${name}!\`;
-}
-console.log(greet("World"));
-\`\`\`
-
-## Blockquote
-
-> "The best writing tool is the one you actually use."
-
-## Table
-
-| Feature       | Status |
-|---------------|--------|
-| Live Preview  | ✅     |
-| Auto Save     | ✅     |
-| Export HTML   | ✅     |
-| Export PDF    | ✅     |
-
-## Links & Images
-
-[Visit PandaApps](https://pandaapps.vercel.app)
-
----
-
-Start editing to replace this content. Your work auto-saves to the browser.
-`;
+/* ── Default content ───────────────────────────────────────────────────── */
+const DEFAULT_MD = ``;
 
 const STORAGE_KEY = "panda-markdown-content";
 const TITLE_KEY = "panda-markdown-title";
@@ -126,6 +66,7 @@ export default function MarkdownEditorClient() {
   const [renderedHtml, setRenderedHtml] = useState("");
   const [savedAt, setSavedAt]   = useState<string | null>(null);
   const [copied, setCopied]     = useState<"md" | "html" | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const textareaRef  = useRef<HTMLTextAreaElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -267,7 +208,7 @@ export default function MarkdownEditorClient() {
     : "w-full";
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
+    <div className="flex flex-col mt-16" style={{ height: "calc(100vh - 64px)" }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 border-b border-border/30 bg-card/40 px-4 py-2.5 backdrop-blur-sm">
@@ -324,6 +265,13 @@ export default function MarkdownEditorClient() {
             <Printer className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">PDF</span>
           </HeaderBtn>
+
+          <div className="w-px h-4 bg-border/40 mx-0.5" />
+
+          <HeaderBtn onClick={() => setHelpOpen(true)} title="How to use">
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Help</span>
+          </HeaderBtn>
         </div>
       </div>
 
@@ -372,6 +320,69 @@ export default function MarkdownEditorClient() {
         </span>
       </div>
 
+      {/* ── Help Modal ──────────────────────────────────────────────── */}
+      {helpOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setHelpOpen(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="relative z-10 w-full max-w-lg rounded-2xl border border-border/40 bg-[#0f0f12] shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between border-b border-border/30 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
+                  <HelpCircle className="h-3.5 w-3.5 text-white" />
+                </div>
+                <h2 className="text-sm font-semibold">How to use Markdown Editor</h2>
+              </div>
+              <button onClick={() => setHelpOpen(false)} className="rounded-lg p-1.5 text-muted hover:bg-white/5 hover:text-foreground transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="overflow-y-auto max-h-[70vh] px-5 py-4 space-y-4 text-sm text-muted">
+              <Section title="Writing">
+                <Row label="Bold" value="**text** or __text__" />
+                <Row label="Italic" value="*text* or _text_" />
+                <Row label="Strikethrough" value="~~text~~" />
+                <Row label="Inline code" value="`code`" />
+                <Row label="Heading" value="# H1 &nbsp; ## H2 &nbsp; ### H3" />
+                <Row label="Blockquote" value="> your quote" />
+                <Row label="Horizontal rule" value="---" />
+              </Section>
+              <Section title="Lists">
+                <Row label="Unordered" value="- item (or * item)" />
+                <Row label="Ordered" value="1. item" />
+                <Row label="Nested" value="indent with 2 spaces" />
+              </Section>
+              <Section title="Links & Images">
+                <Row label="Link" value="[label](url)" />
+                <Row label="Image" value="![alt](url)" />
+              </Section>
+              <Section title="Code blocks">
+                <Row label="Fenced block" value="``` lang ... ```" />
+              </Section>
+              <Section title="Tables">
+                <Row label="Syntax" value="| Col | Col |" />
+                <Row label="Divider" value="|-----|-----|" />
+              </Section>
+              <Section title="Keyboard shortcuts">
+                <Row label="Tab" value="Inserts 2 spaces" />
+                <Row label="Auto-save" value="Every 1.2 s after typing" />
+              </Section>
+              <Section title="Export">
+                <Row label="Download" value="Saves .md file" />
+                <Row label="Copy HTML" value="Rendered HTML to clipboard" />
+                <Row label="HTML file" value="Full standalone HTML page" />
+                <Row label="PDF" value="Print dialog → Save as PDF" />
+              </Section>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
@@ -392,6 +403,24 @@ function HeaderBtn({
     >
       {children}
     </button>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-2">{title}</p>
+      <div className="rounded-xl border border-border/30 bg-card/20 divide-y divide-border/20">{children}</div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-3 py-2">
+      <span className="text-xs text-muted">{label}</span>
+      <code className="text-xs font-mono text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded">{value}</code>
+    </div>
   );
 }
 

@@ -218,7 +218,7 @@ export default function PasswordGeneratorClient() {
 
   /* ── Render ────────────────────────────────────────────────── */
   return (
-    <div className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen px-4 pt-24 pb-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl space-y-6">
 
         {/* ── Header ──────────────────────────────────────────── */}
