@@ -26,8 +26,8 @@ export default function HeroSection() {
 
         {/* Subheading */}
         <p className="mx-auto max-w-2xl text-lg sm:text-xl text-muted leading-relaxed mb-10 animate-fade-in-up animation-delay-400" style={{ opacity: 0, animationFillMode: "forwards" }}>
-          My philosophy is simple — use technology to genuinely help people.
-          Every app here is built with that belief: fast, free, private, and
+          Panda philosophy is simple — use technology to genuinely help people.
+          Every app here is built with that belief: fast, free, secure, and
           designed to make your day a little easier.
         </p>
 
@@ -40,12 +40,7 @@ export default function HeroSection() {
             Explore All Apps
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </a>
-          <a
-            href="#apps"
-            className="flex items-center gap-2 rounded-full border border-border px-8 py-3.5 text-sm font-medium text-foreground hover:bg-card hover:border-accent/20 transition-all"
-          >
-            Browse All Apps
-          </a>
+
         </div>
 
         {/* Stats */}
