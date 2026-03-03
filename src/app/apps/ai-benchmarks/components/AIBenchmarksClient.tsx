@@ -8,15 +8,16 @@ import {
 } from "lucide-react";
 import { MODELS, BENCHMARK_COLS, type BenchmarkModel } from "../data/frontierData";
 
-type BenchKey = "gpqa" | "swe" | "arcagi2" | "arenaElo" | "gaiaVal";
+type BenchKey = "gpqa" | "swe" | "arcagi2" | "arenaElo" | "aaIndex";
 type SortKey = "name" | "provider" | BenchKey;
 type SortDir = "asc" | "desc";
 type TabFilter = "all" | "free" | "opensource";
 
-// Arena ELO is on a ~900-1400 scale; normalise to 0-100 for colour coding
+// Normalise scores to 0-100 for colour coding
 function normVal(v: number | null, key: BenchKey): number | null {
   if (v === null) return null;
-  if (key === "arenaElo") return Math.min(100, Math.max(0, ((v - 900) / 500) * 100));
+  if (key === "arenaElo") return Math.min(100, Math.max(0, ((v - 1250) / 300) * 100));
+  if (key === "aaIndex") return Math.min(100, Math.max(0, (v / 60) * 100));
   return v;
 }
 
@@ -42,6 +43,7 @@ function scoreBg(v: number | null, key: BenchKey): string {
 function fmt(v: number | null, key: BenchKey): string {
   if (v === null) return "\u2014";
   if (key === "arenaElo") return v.toFixed(0);
+  if (key === "aaIndex") return v.toFixed(0);
   return v.toFixed(1) + "%";
 }
 
@@ -260,7 +262,7 @@ export default function AIBenchmarksClient() {
             { label: "Weak",     cls: "text-amber-600 dark:text-amber-400" },
             { label: "Poor",     cls: "text-red-500 dark:text-red-400" },
           ].map(s => <span key={s.label} className={s.cls}>{s.label}</span>)}
-          <span className="text-muted ml-1">&#8212; Arena ELO normalised to 900&#8211;1400 range for colour</span>
+          <span className="text-muted ml-1">&#8212; Arena ELO normalised to 1250&#8211;1550 range for colour</span>
         </div>
 
         {/* sources note */}
