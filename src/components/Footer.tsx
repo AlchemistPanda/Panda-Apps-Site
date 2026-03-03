@@ -77,7 +77,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Panda Apps. All rights reserved.
           </p>
           <p className="flex items-center gap-1.5 text-xs text-muted">
-            Made with <Heart className="h-3 w-3 text-red-500 fill-red-500" /> using Next.js & Tailwind CSS
+            Made by a Panda with <Heart className="h-3 w-3 text-red-500 fill-red-500" /> using Next.js & Tailwind CSS
           </p>
         </div>
       </div>
