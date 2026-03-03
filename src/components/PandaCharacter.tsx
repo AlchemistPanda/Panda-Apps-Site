@@ -14,6 +14,11 @@ export default function PandaCharacter() {
           35%       { transform: rotate(28deg); }
           65%       { transform: rotate(-8deg); }
         }
+        @keyframes panda-wave-r {
+          0%, 100% { transform: rotate(15deg); }
+          35%       { transform: rotate(-28deg); }
+          65%       { transform: rotate(8deg); }
+        }
         @keyframes panda-blink {
           0%, 88%, 100%   { transform: scaleY(1); }
           92%, 96%         { transform: scaleY(0.06); }
@@ -49,8 +54,10 @@ export default function PandaCharacter() {
         .p-orbit    { animation: panda-orbit 12s linear infinite; }
 
         /* Arm wave — arm group translated so local origin = shoulder */
-        .p-wave { animation: panda-wave 1.3s ease-in-out infinite;
-                  transform-box: fill-box; transform-origin: 50% 0%; }
+        .p-wave  { animation: panda-wave   1.3s ease-in-out infinite;
+                   transform-box: fill-box; transform-origin: 50% 0%; }
+        .p-wave-r { animation: panda-wave-r 1.3s ease-in-out infinite 0.15s;
+                    transform-box: fill-box; transform-origin: 50% 0%; }
       `}</style>
 
       {/* Outer glow rings */}
@@ -104,11 +111,13 @@ export default function PandaCharacter() {
           {/* Ground shadow */}
           <ellipse cx="110" cy="246" rx="58" ry="8" fill="black" opacity="0.14" />
 
-          {/* ── Right arm (resting) ── */}
+          {/* ── Right arm (waving) — shoulder at (158, 152) ── */}
           <g transform="translate(158, 152)">
-            <ellipse cx="0" cy="26" rx="16" ry="28" fill="white" transform="rotate(18)" />
-            <ellipse cx="0" cy="26" rx="16" ry="28" fill="url(#bodySheen)" transform="rotate(18)" />
-            <circle cx="18" cy="46" r="10" fill="#1c1c1c" />
+            <g className="p-wave-r">
+              <ellipse cx="0" cy="30" rx="16" ry="28" fill="white" />
+              <ellipse cx="0" cy="30" rx="16" ry="28" fill="url(#bodySheen)" />
+              <circle cx="8" cy="54" r="10" fill="#1c1c1c" />
+            </g>
           </g>
 
           {/* ── Body ── */}
