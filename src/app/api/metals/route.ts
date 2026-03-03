@@ -37,9 +37,13 @@ export async function GET() {
 
     const usdInr: number = fx.rates?.INR ?? 87.0;
 
-    // GoldAPI returns price_gram_24k — use it directly for INR calc to avoid rounding
-    const goldUsdPerOz:    number = gold.price;
-    const silverUsdPerOz:  number = silver.price;
+    const goldUsdPerOz: number = gold.price;
+
+    // Sanity-check silver: gold/silver ratio should be 40–120.
+    // GoldAPI free tier sometimes returns stale/incorrect XAG data.
+    const rawSilver: number = silver.price;
+    const ratio = goldUsdPerOz / rawSilver;
+    const silverUsdPerOz = ratio >= 30 && ratio <= 150 ? rawSilver : goldUsdPerOz / 90; // fallback to ~ratio 90
 
     // INR per gram = usd_per_oz / troy_oz_per_gram * usd_inr
     const TROY_OZ_TO_G = 31.1035;

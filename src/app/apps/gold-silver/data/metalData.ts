@@ -4,7 +4,7 @@
 // USD/INR rate used: 84.50
 
 export const DATA_DATE = "4 March 2026";
-export const USD_INR   = 87.0;
+export const USD_INR   = 92.15;
 
 // Troy oz → gram conversion
 export const TROY_OZ_TO_G  = 31.1035;
@@ -22,10 +22,10 @@ export type MetalSpot = {
   inrPerGram: number;
 };
 
-// Calculated: 5098.13 / 31.1035 * 87.0 = ₹14,260/g
-export const GOLD_SPOT: MetalSpot  = { usdPerOz: 5098.13, inrPerGram: 14260  };
-// Calculated: 33.85 / 31.1035 * 87.0 = ₹94.7/g
-export const SILVER_SPOT: MetalSpot = { usdPerOz: 33.85,  inrPerGram: 94.7  };
+// Calculated: 5098.13 / 31.1035 * 92.15 = ₹15,105/g
+export const GOLD_SPOT: MetalSpot  = { usdPerOz: 5098.13, inrPerGram: 15105  };
+// Calculated: 82.48 / 31.1035 * 92.15 = ₹244.4/g (silver rose with gold bull market)
+export const SILVER_SPOT: MetalSpot = { usdPerOz: 82.48,  inrPerGram: 244.4  };
 
 // Derived helpers
 export function goldInr22k(inrPerGram24k: number) {
