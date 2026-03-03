@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   ChevronLeft, Copy, Check, AlertCircle, X, RotateCcw,
   ChevronDown, ChevronUp, BookOpen, Shield, Replace,
 } from "lucide-react";
+import HelpTip from "@/components/HelpTip";
 
-/* ── Quick pattern library ── */
+/* ── Constants ── */
 const QUICK_PATTERNS = [
   { label: "Email",           pattern: "[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}", flags: "gi", description: "Valid email addresses" },
   { label: "URL",             pattern: "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)", flags: "gi", description: "HTTP/HTTPS URLs" },
@@ -25,14 +26,7 @@ const QUICK_PATTERNS = [
   { label: "Semantic Version","pattern": "\\b(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?\\b", flags: "g", description: "Semver e.g. 1.2.3-beta.1" },
 ];
 
-const DEFAULT_TEST = `Hello World! Contact us at alice@example.com or bob@test.org.
-Visit https://panda-apps.com or http://www.github.com/ThePandaApps
 
-Colors: #FF5733, #abc, and #1a2b3c
-Dates: 2026-03-04, 2025-12-31, and 1999-01-15
-Phone: +1 (555) 123-4567 or 555.987.6543
-Numbers: 42, 100, 3.14
-<div class="container" id="main"><p>Hello</p></div>`;
 
 type Mode = "match" | "replace";
 
@@ -63,21 +57,92 @@ const CHEAT_SHEET: [string, string][] = [
   ["(?<name>...)", "Named group"], ["\\1", "Backreference #1"], ["$1", "Replace: group #1"], ["$&", "Replace: whole match"],
 ];
 
-const FLAG_INFO: { f: string; label: string; title: string }[] = [
-  { f: "g", label: "g",  title: "Global — find all matches (not just the first)" },
-  { f: "i", label: "i",  title: "Case insensitive" },
-  { f: "m", label: "m",  title: "Multiline — ^ and $ match per-line boundaries" },
-  { f: "s", label: "s",  title: "Dot-all — . also matches newlines" },
-  { f: "u", label: "u",  title: "Unicode — full Unicode support" },
+const FLAG_INFO: { f: string; label: string; tip: string; example?: string }[] = [
+  { f: "g", label: "g — Global",      tip: "Find every match in the string, not just the first one.",   example: '/a/g on "abca" matches both a\'s' },
+  { f: "i", label: "i — Ignore Case", tip: "Match uppercase and lowercase letters interchangeably.",      example: '/hello/i matches "Hello" and "HELLO"' },
+  { f: "m", label: "m — Multiline",   tip: "^ and $ match the start/end of each line, not just the whole string.", example: '/^hi/m matches "hi" at start of any line' },
+  { f: "s", label: "s — Dot-All",     tip: "Makes . also match newline characters. Without this flag, . skips newlines.", example: '/a.b/s matches "a\\nb"' },
+  { f: "u", label: "u — Unicode",     tip: "Full Unicode support. Required for emoji and non-BMP character matching.", example: '/\\u{1F600}/u matches 😀' },
 ];
 
+const MODE_INFO = {
+  match:   { tip: "Highlight every match in the test string. Each match is listed with its position and capture groups." },
+  replace: { tip: "Replace all matches with a substitution string. Use $1, $2 for numbered groups, $<name> for named groups, $& for the whole match." },
+};
+
+/* ── Inline-Highlight Textarea ── */
+
+type HLProps = {
+  value: string;
+  onChange: (v: string) => void;
+  segments: { text: string; isMatch: boolean; idx: number }[] | null;
+  placeholder?: string;
+  rows?: number;
+};
+
+function HighlightTextarea({ value, onChange, segments, placeholder, rows = 14 }: HLProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+
+  function onScroll() {
+    if (backdropRef.current && textareaRef.current) {
+      backdropRef.current.scrollTop  = textareaRef.current.scrollTop;
+      backdropRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  }
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [value]);
+
+  return (
+    <div className="relative font-mono text-sm leading-relaxed">
+      <div
+        ref={backdropRef}
+        aria-hidden="true"
+        className="absolute inset-0 px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-wrap overflow-hidden pointer-events-none select-none"
+        style={{ wordBreak: "break-all" }}
+      >
+        {segments
+          ? segments.map((seg, i) => {
+              const col = MATCH_COLORS[seg.idx % MATCH_COLORS.length];
+              return seg.isMatch ? (
+                <mark key={i} className={`rounded-sm not-italic ${col.bg} ${col.text}`} style={{ padding: "0 1px" }}>
+                  {seg.text}
+                </mark>
+              ) : (
+                <span key={i} className="text-foreground/80">{seg.text}</span>
+              );
+            })
+          : <span className="text-transparent" aria-hidden="true">{value}</span>
+        }
+        {"\n"}
+      </div>
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onScroll={onScroll}
+        spellCheck={false}
+        rows={rows}
+        placeholder={placeholder}
+        className="relative w-full bg-transparent px-4 py-3 font-mono text-sm leading-relaxed focus:outline-none resize-none placeholder:text-muted"
+        style={{ color: "transparent", caretColor: "#c4b5fd", minHeight: `${rows * 1.625}rem` }}
+      />
+    </div>
+  );
+}
+
 export default function RegexTesterClient() {
-  const [pattern, setPattern]       = useState("[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}");
-  const [flags, setFlags]           = useState<Set<string>>(new Set(["g", "i"]));
-  const [testStr, setTestStr]       = useState(DEFAULT_TEST);
-  const [replaceStr, setReplaceStr] = useState("[REDACTED]");
+  const [pattern, setPattern]       = useState("");
+  const [flags, setFlags]           = useState<Set<string>>(new Set(["g"]));
+  const [testStr, setTestStr]       = useState("");
+  const [replaceStr, setReplaceStr] = useState("$&");
   const [mode, setMode]             = useState<Mode>("match");
-  const [showRef, setShowRef]       = useState(false);
+  const [showLib, setShowLib]       = useState(false);
   const [copied, setCopied]         = useState<string | null>(null);
   const patternRef = useRef<HTMLInputElement>(null);
 
@@ -185,7 +250,7 @@ export default function RegexTesterClient() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Regex Tester</h1>
           <p className="text-sm text-muted mt-1">
-            Test regular expressions with live match highlighting, capture groups, replace mode, and a built-in pattern library.
+            Write a pattern, paste your text — matches highlight instantly inline.
           </p>
         </div>
 
@@ -235,35 +300,54 @@ export default function RegexTesterClient() {
           {/* Flags + mode row */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted font-medium shrink-0">Flags:</span>
-            {FLAG_INFO.map(({ f, label, title }) => (
-              <button
-                key={f}
-                title={title}
-                onClick={() => toggleFlag(f)}
-                className={`px-2 py-1 rounded-lg text-xs font-mono font-bold border transition-all ${
-                  flags.has(f)
-                    ? "bg-violet-500 border-violet-500 text-white shadow-sm"
-                    : "border-border/40 text-muted hover:text-foreground hover:border-border"
-                }`}
-              >
-                {label}
-              </button>
+            {FLAG_INFO.map(({ f, label, tip, example }) => (
+              <div key={f} className="flex items-center gap-0.5">
+                <button
+                  onClick={() => toggleFlag(f)}
+                  className={`px-2 py-1 rounded-lg text-xs font-mono font-bold border transition-all ${
+                    flags.has(f)
+                      ? "bg-violet-500 border-violet-500 text-white shadow-sm"
+                      : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                  }`}
+                >
+                  {f}
+                </button>
+                <HelpTip label={label} tip={tip} extra={example ? (
+                  <code className="text-[10px] font-mono text-violet-300 bg-violet-500/10 rounded px-1.5 py-0.5 block">{example}</code>
+                ) : undefined} />
+              </div>
             ))}
             <div className="ml-auto flex rounded-lg border border-border/40 overflow-hidden shrink-0">
               {(["match", "replace"] as Mode[]).map(m => (
-                <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
-                    mode === m ? "bg-violet-500 text-white" : "text-muted hover:text-foreground hover:bg-muted/10"
-                  }`}
-                >
-                  {m === "replace" ? <Replace className="h-3 w-3" /> : <span className="font-mono font-bold text-[11px]">/ab/</span>}
-                  {m}
-                </button>
+                <div key={m} className="flex items-center">
+                  <button
+                    onClick={() => setMode(m)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                      mode === m ? "bg-violet-500 text-white" : "text-muted hover:text-foreground hover:bg-muted/10"
+                    }`}
+                  >
+                    {m === "replace" ? <Replace className="h-3 w-3" /> : <span className="font-mono font-bold text-[11px]">/ab/</span>}
+                    {m}
+                  </button>
+                  {m === mode && (
+                    <div className="pr-2">
+                      <HelpTip label={m === "match" ? "Match mode" : "Replace mode"} tip={MODE_INFO[m].tip} />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
+
+          {/* Match count */}
+          {pattern && !error && testStr && (
+            <div className={`text-[10px] flex items-center gap-1.5 ${matches.length > 0 ? "text-violet-400" : "text-muted"}`}>
+              {matches.length > 0
+                ? <><Check className="h-3 w-3 text-emerald-400" /><span className="font-bold">{matches.length}</span> match{matches.length !== 1 ? "es" : ""}</>
+                : <><AlertCircle className="h-3 w-3" /> No matches</>
+              }
+            </div>
+          )}
         </div>
 
         {/* ── Main panels ── */}
@@ -283,22 +367,34 @@ export default function RegexTesterClient() {
                   </button>
                 </div>
               </div>
-              <textarea
+              <HighlightTextarea
                 value={testStr}
-                onChange={e => setTestStr(e.target.value)}
-                spellCheck={false}
-                rows={12}
-                placeholder="Enter text to test against…"
-                className="w-full bg-transparent px-4 py-3 font-mono text-sm text-foreground placeholder:text-muted focus:outline-none resize-y leading-relaxed"
+                onChange={setTestStr}
+                segments={segments}
+                placeholder={"Paste or type your test string…\nmatches highlight instantly inline"}
+                rows={14}
               />
             </div>
 
             {/* Replace input */}
             {mode === "replace" && (
               <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/30">
+                <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border/30">
                   <span className="text-xs font-semibold text-muted uppercase tracking-wider">Replace With</span>
-                  <span className="text-[10px] text-muted">$1 $2 … for groups · $& for whole match</span>
+                  <HelpTip
+                    label="Substitution syntax"
+                    tip="Special tokens in the replacement string:"
+                    extra={
+                      <div className="space-y-1">
+                        {[["$&", "Entire match"], ["$1 $2", "Numbered capture groups"], ["$<name>", "Named capture group"]].map(([t, d]) => (
+                          <div key={t} className="flex gap-2">
+                            <code className="text-violet-300 text-[10px] font-mono shrink-0">{t}</code>
+                            <span className="text-[10px] text-muted/80">{d}</span>
+                          </div>
+                        ))}
+                      </div>
+                    }
+                  />
                 </div>
                 <input
                   type="text"
@@ -312,146 +408,122 @@ export default function RegexTesterClient() {
             )}
           </div>
 
-          {/* Right: output */}
+          {/* Right: match details OR replace result + cheat sheet */}
           <div className="space-y-3">
             {mode === "match" ? (
-              <>
-                {/* Highlighted output */}
+              matches.length > 0 ? (
                 <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/30">
-                    <span className="text-xs font-semibold text-muted uppercase tracking-wider">Live Matches</span>
-                    {pattern && !error && (
-                      <span className={`text-xs font-bold tabular-nums ${matches.length > 0 ? "text-violet-400" : "text-muted"}`}>
-                        {matches.length} match{matches.length !== 1 ? "es" : ""}
-                      </span>
-                    )}
+                  <div className="px-4 py-2.5 border-b border-border/30 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-muted uppercase tracking-wider">Match Details</span>
+                      <HelpTip
+                        label="Match details"
+                        tip="Each match shows its text, position (start–end index), and any capture groups."
+                        extra={<p className="text-[10px] text-muted">Capture group: <code className="font-mono text-violet-300">(...)</code> &nbsp; Named: <code className="font-mono text-violet-300">(?&lt;name&gt;...)</code></p>}
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-violet-400">{matches.length} match{matches.length !== 1 ? "es" : ""}</span>
                   </div>
-                  <div className="px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-wrap break-all min-h-[14rem] max-h-80 overflow-y-auto">
-                    {!testStr ? (
-                      <span className="text-muted italic">Enter a test string on the left…</span>
-                    ) : !pattern || error ? (
-                      <span className="text-foreground/70">{testStr}</span>
-                    ) : segments ? (
-                      segments.map((seg, i) => {
-                        const col = MATCH_COLORS[seg.idx % MATCH_COLORS.length];
-                        return seg.isMatch ? (
-                          <mark
-                            key={i}
-                            title={`Match #${seg.idx + 1} [${matches[seg.idx]?.index}–${matches[seg.idx]?.end}]`}
-                            className={`rounded-sm px-0.5 mx-px ${col.bg} ${col.text} not-italic`}
-                          >
-                            {seg.text}
-                          </mark>
-                        ) : (
-                          <span key={i} className="text-foreground/80">{seg.text}</span>
-                        );
-                      })
-                    ) : (
-                      <span className="text-foreground/70">{testStr}</span>
-                    )}
+                  <div className="max-h-72 overflow-y-auto divide-y divide-border/20">
+                    {matches.map((m, i) => {
+                      const col = MATCH_COLORS[i % MATCH_COLORS.length];
+                      return (
+                        <div key={i} className="px-4 py-2.5 hover:bg-muted/5 transition-colors">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`text-[9px] font-bold rounded-full px-1.5 py-0.5 shrink-0 ${col.badge}`}>#{i + 1}</span>
+                              <code className="font-mono text-[11px] text-foreground break-all">{m.text || "(empty match)"}</code>
+                            </div>
+                            <span className="text-[10px] text-muted tabular-nums shrink-0 pt-0.5">[{m.index}–{m.end}]</span>
+                          </div>
+                          {m.groups.filter(g => g !== undefined).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {m.groups.map((g, gi) => (
+                                <span key={gi} className="text-[10px] bg-muted/15 rounded px-1.5 py-0.5 font-mono">
+                                  <span className="text-muted">${gi + 1}:</span>{" "}
+                                  <span className="text-foreground">{g ?? "—"}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {m.namedGroups && Object.keys(m.namedGroups).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {Object.entries(m.namedGroups).map(([k, v]) => (
+                                <span key={k} className="text-[10px] bg-violet-500/10 rounded px-1.5 py-0.5 font-mono">
+                                  <span className="text-violet-400">{k}:</span>{" "}
+                                  <span className="text-foreground">{v}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-
-                {/* Match details */}
-                {matches.length > 0 && (
-                  <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
-                    <div className="px-4 py-2.5 border-b border-border/30 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-muted uppercase tracking-wider">Match Details</span>
-                      <span className="text-[10px] text-muted">{matches.length} result{matches.length !== 1 ? "s" : ""}</span>
-                    </div>
-                    <div className="max-h-72 overflow-y-auto divide-y divide-border/20">
-                      {matches.map((m, i) => {
-                        const col = MATCH_COLORS[i % MATCH_COLORS.length];
-                        return (
-                          <div key={i} className="px-4 py-2.5 hover:bg-muted/5 transition-colors">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span className={`text-[9px] font-bold rounded-full px-1.5 py-0.5 shrink-0 ${col.badge}`}>
-                                  #{i + 1}
-                                </span>
-                                <code className="font-mono text-[11px] text-foreground break-all">{m.text || "(empty match)"}</code>
-                              </div>
-                              <span className="text-[10px] text-muted tabular-nums shrink-0 pt-0.5">
-                                [{m.index}–{m.end}]
-                              </span>
-                            </div>
-                            {/* Numbered groups */}
-                            {m.groups.filter(g => g !== undefined).length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1.5">
-                                {m.groups.map((g, gi) => (
-                                  <span key={gi} className="text-[10px] bg-muted/15 rounded px-1.5 py-0.5 font-mono">
-                                    <span className="text-muted">${gi + 1}:</span>{" "}
-                                    <span className="text-foreground">{g ?? "—"}</span>
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                            {/* Named groups */}
-                            {m.namedGroups && Object.keys(m.namedGroups).length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {Object.entries(m.namedGroups).map(([k, v]) => (
-                                  <span key={k} className="text-[10px] bg-violet-500/10 rounded px-1.5 py-0.5 font-mono">
-                                    <span className="text-violet-400">{k}:</span>{" "}
-                                    <span className="text-foreground">{v}</span>
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* No matches */}
-                {pattern && !error && testStr && matches.length === 0 && (
-                  <div className="rounded-2xl border border-border/40 bg-card/30 px-4 py-10 text-center">
-                    <p className="text-3xl mb-2">🐼</p>
-                    <p className="text-sm font-medium">No matches found</p>
-                    <p className="text-xs text-muted mt-1">Try adjusting your pattern or flags</p>
-                  </div>
-                )}
-              </>
+              ) : (
+                <div className="rounded-2xl border border-border/40 bg-card/30 px-4 py-12 text-center">
+                  <p className="text-3xl mb-2">🐼</p>
+                  <p className="text-sm font-medium text-muted">
+                    {pattern && !error && testStr ? "No matches found" : "Match details appear here"}
+                  </p>
+                  <p className="text-xs text-muted/60 mt-1">
+                    {pattern && !error && testStr ? "Try adjusting your pattern or flags" : "Write a pattern and paste your test string"}
+                  </p>
+                </div>
+              )
             ) : (
-              /* Replace result */
               <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/30">
                   <span className="text-xs font-semibold text-muted uppercase tracking-wider">Replace Result</span>
                   {replaceResult !== null && (
-                    <button
-                      onClick={() => copy(replaceResult, "replace")}
-                      className="flex items-center gap-1 text-[10px] text-muted hover:text-foreground transition-colors"
-                    >
+                    <button onClick={() => copy(replaceResult, "replace")} className="flex items-center gap-1 text-[10px] text-muted hover:text-foreground">
                       {copied === "replace" ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
                       Copy
                     </button>
                   )}
                 </div>
-                <div className="px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-wrap break-all min-h-[16rem] max-h-96 overflow-y-auto text-emerald-400">
-                  {replaceResult !== null
-                    ? replaceResult
-                    : <span className="text-muted italic">Result will appear here…</span>}
+                <div className="px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-wrap break-all min-h-48 max-h-96 overflow-y-auto text-emerald-400">
+                  {replaceResult !== null ? replaceResult : <span className="text-muted italic">Result will appear here…</span>}
                 </div>
               </div>
             )}
+
+            {/* Cheat Sheet */}
+            <div className="rounded-2xl border border-border/40 bg-card/30 p-4">
+              <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-3">Cheat Sheet — click a token to append</h3>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {CHEAT_SHEET.map(([tok, desc]) => (
+                  <div key={tok} className="flex items-baseline gap-2 min-w-0">
+                    <code
+                      onClick={() => { setPattern(p => p + tok); patternRef.current?.focus(); }}
+                      title="Click to append to pattern"
+                      className="shrink-0 font-mono text-[11px] font-bold text-violet-400 bg-violet-500/10 rounded px-1 py-0.5 cursor-pointer hover:bg-violet-500/25 transition-colors select-none"
+                    >
+                      {tok}
+                    </code>
+                    <span className="text-muted text-[10px] leading-tight truncate">{desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* ── Quick Pattern Library ── */}
+        {/* Pattern Library */}
         <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
           <button
-            onClick={() => setShowRef(r => !r)}
+            onClick={() => setShowLib(r => !r)}
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/5 transition-colors"
           >
             <span className="flex items-center gap-2 text-sm font-semibold">
               <BookOpen className="h-4 w-4 text-violet-500" />
               Pattern Library
-              <span className="text-[10px] font-normal text-muted">{QUICK_PATTERNS.length} common patterns</span>
+              <span className="text-[10px] font-normal text-muted">{QUICK_PATTERNS.length} patterns — click any to load</span>
             </span>
-            {showRef ? <ChevronUp className="h-4 w-4 text-muted" /> : <ChevronDown className="h-4 w-4 text-muted" />}
+            {showLib ? <ChevronUp className="h-4 w-4 text-muted" /> : <ChevronDown className="h-4 w-4 text-muted" />}
           </button>
-          {showRef && (
+          {showLib && (
             <div className="border-t border-border/30 p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {QUICK_PATTERNS.map(p => (
@@ -475,24 +547,6 @@ export default function RegexTesterClient() {
           )}
         </div>
 
-        {/* ── Cheat Sheet ── */}
-        <div className="rounded-2xl border border-border/40 bg-card/30 p-4">
-          <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-3">Cheat Sheet — click a token to append it</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-1.5">
-            {CHEAT_SHEET.map(([tok, desc]) => (
-              <div key={tok} className="flex items-baseline gap-2">
-                <code
-                  onClick={() => { setPattern(p => p + tok); patternRef.current?.focus(); }}
-                  title="Click to append to pattern"
-                  className="shrink-0 font-mono text-[11px] font-bold text-violet-400 bg-violet-500/10 rounded px-1 py-0.5 cursor-pointer hover:bg-violet-500/25 transition-colors select-none"
-                >
-                  {tok}
-                </code>
-                <span className="text-muted text-[10px] leading-tight">{desc}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </main>
     </div>
   );
