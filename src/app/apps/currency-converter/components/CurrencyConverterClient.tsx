@@ -85,7 +85,7 @@ export default function CurrencyConverterClient() {
   const [refreshing, setRefreshing] = useState(false);
 
   const [fromCurrency, setFromCurrency] = useState("USD");
-  const [toCurrency,   setToCurrency]   = useState("EUR");
+  const [toCurrency,   setToCurrency]   = useState("INR");
   const [fromAmount,   setFromAmount]   = useState("1");
 
   /* ── Fetch live rates ──────────────────────────────────────────── */

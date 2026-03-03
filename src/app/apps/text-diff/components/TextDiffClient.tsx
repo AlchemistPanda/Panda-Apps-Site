@@ -75,7 +75,7 @@ export default function TextDiffClient() {
   const [leftText,   setLeftText]   = useState("");
   const [rightText,  setRightText]  = useState("");
   const [options,    setOptions]    = useState<DiffOptions>(DEFAULT_OPTIONS);
-  const [viewMode,   setViewMode]   = useState<ViewMode>("split");
+  const [viewMode,   setViewMode]   = useState<ViewMode>("changes");
   const [diffResult, setDiffResult] = useState(() => computeDiff("", "", DEFAULT_OPTIONS));
   const [copied,     setCopied]     = useState<"patch" | "left" | "right" | null>(null);
   const [showHelp,   setShowHelp]   = useState(false);
