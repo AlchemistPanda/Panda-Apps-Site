@@ -74,12 +74,12 @@ const apps = [
   {
     title: "Unit Converter",
     description:
-      "Convert between hundreds of units across length, weight, temperature, currency, and more. Fast and accurate.",
+      "Convert between 130+ units across 14 categories — length, weight, temperature, speed, data storage, energy, pressure, and more.",
     href: "/apps/unit-converter",
     icon: Calculator,
     gradient: "from-teal-500 to-cyan-600",
     category: "Utility",
-    isNew: false,
+    isNew: true,
     isFeatured: false,
   },
 ];
