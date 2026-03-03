@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson,
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem,
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
@@ -136,6 +136,17 @@ const apps = [
     icon: FileJson,
     gradient: "from-amber-500 to-orange-500",
     category: "Developer",
+    isNew: true,
+    isFeatured: false,
+  },
+  {
+    title: "Gold & Silver Prices",
+    description:
+      "Current gold and silver prices for India (₹ INR) and international markets (USD). Per gram, 10g, tola, troy oz — plus an 18-month trend chart. Updated daily.",
+    href: "/apps/gold-silver",
+    icon: Gem,
+    gradient: "from-yellow-400 to-amber-500",
+    category: "Finance",
     isNew: true,
     isFeatured: false,
   },
