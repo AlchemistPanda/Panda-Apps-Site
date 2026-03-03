@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { ArrowLeftRight, RefreshCw, TrendingUp, Coins, AlertCircle, Clock } from "lucide-react";
+import { ArrowLeftRight, RefreshCw, TrendingUp, Coins, AlertCircle, Clock, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 /* ── Currency metadata ─────────────────────────────────────────── */
 const CURRENCIES: Record<string, { name: string; flag: string }> = {
@@ -159,8 +160,22 @@ export default function CurrencyConverterClient() {
   const currencyCodes = Object.keys(CURRENCIES);
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-2xl space-y-6">
+    <div className="min-h-screen bg-background">
+      <nav className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-3">
+          <Link href="/#apps" className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors">
+            <ChevronLeft className="h-4 w-4" />Back
+          </Link>
+          <span className="text-border/60">|</span>
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-md bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+              <Coins className="h-3.5 w-3.5 text-white" />
+            </div>
+            <span className="font-semibold text-sm">Currency Converter</span>
+          </div>
+        </div>
+      </nav>
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
         {/* ── Header ──────────────────────────────────────────── */}
         <div className="text-center space-y-3">

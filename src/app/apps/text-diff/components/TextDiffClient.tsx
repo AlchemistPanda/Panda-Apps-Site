@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   Copy, Check, Download, GitCompare,
   Trash2, Eye, Columns2, List,
-  HelpCircle, Shuffle, X,
+  HelpCircle, Shuffle, X, ChevronLeft,
 } from "lucide-react";
 import {
   computeDiff, DEFAULT_OPTIONS,
@@ -114,14 +115,18 @@ export default function TextDiffClient() {
   const isEmpty = !leftText && !rightText;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#09090b] pt-16">
+    <div className="flex flex-col min-h-screen bg-[#09090b]">
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
 
       {/* ── TOOLBAR ─────────────────────────────────────── */}
-      <div className="sticky top-16 z-20 border-b border-white/[0.06] bg-[#09090b]/95 backdrop-blur-sm px-4 py-2.5">
+      <div className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#09090b]/95 backdrop-blur-sm px-4 py-2.5">
         <div className="mx-auto max-w-[1440px] flex items-center gap-2 flex-wrap">
 
+          <Link href="/#apps" className="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors mr-2 shrink-0 text-sm">
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back</span>
+          </Link>
           <div className="flex items-center gap-2 mr-1">
             <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
               <GitCompare className="h-3.5 w-3.5 text-white" />

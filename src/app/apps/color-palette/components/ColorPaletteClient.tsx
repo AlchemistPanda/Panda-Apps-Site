@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Palette, ImageIcon, Sliders, Sparkles } from "lucide-react";
+import { Palette, ImageIcon, Sliders, Sparkles, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 import type { PaletteColor, HarmonyType, TabId } from "../types";
 import { PRESET_PALETTES, HARMONY_OPTIONS, hexToColor } from "../types";
 import { extractColorsFromImageData, generateHarmony } from "../palette";
@@ -93,8 +94,22 @@ export default function ColorPaletteClient() {
   ];
 
   return (
-    <div className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-8">
+    <div className="min-h-screen bg-background">
+      <nav className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-3">
+          <Link href="/#apps" className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors">
+            <ChevronLeft className="h-4 w-4" />Back
+          </Link>
+          <span className="text-border/60">|</span>
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-md bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
+              <Palette className="h-3.5 w-3.5 text-white" />
+            </div>
+            <span className="font-semibold text-sm">Color Palette</span>
+          </div>
+        </div>
+      </nav>
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         {/* ── Header ────────────────────────────────────────────── */}
         <div className="text-center space-y-3">

@@ -76,7 +76,7 @@ export default function QrGeneratorClient() {
   }, [qrInstance]);
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen pt-8 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         {/* ── Header ── */}
         <div className="mb-8">

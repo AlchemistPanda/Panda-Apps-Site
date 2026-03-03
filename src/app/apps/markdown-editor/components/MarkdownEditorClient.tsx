@@ -4,9 +4,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import Toolbar, { type ViewMode, type ToolbarAction } from "./Toolbar";
+import Link from "next/link";
 import {
   Copy, Download, FileDown, Printer, Plus, Check,
-  FileText, Clock, AlignLeft, HelpCircle, X,
+  FileText, Clock, AlignLeft, HelpCircle, X, ChevronLeft,
 } from "lucide-react";
 
 /* ── Default content ───────────────────────────────────────────────────── */
@@ -208,10 +209,16 @@ export default function MarkdownEditorClient() {
     : "w-full";
 
   return (
-    <div className="flex flex-col mt-16" style={{ height: "calc(100vh - 64px)" }}>
+    <div className="flex flex-col" style={{ height: "100vh" }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 border-b border-border/30 bg-card/40 px-4 py-2.5 backdrop-blur-sm">
+        {/* Back */}
+        <Link href="/#apps" className="flex items-center gap-1 text-sm text-muted hover:text-foreground transition-colors shrink-0">
+          <ChevronLeft className="h-4 w-4" />
+          <span className="hidden sm:inline text-xs">Back</span>
+        </Link>
+        <span className="text-border/40 text-xs">|</span>
         {/* Icon + title */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center flex-shrink-0">
