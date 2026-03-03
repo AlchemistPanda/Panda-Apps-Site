@@ -60,7 +60,7 @@ export default function HeroSection() {
               style={{ opacity: 0, animationFillMode: "forwards" }}
             >
               {[
-                { value: "8", label: "Apps" },
+                { value: "9", label: "Apps" },
                 { value: "100%", label: "Free" },
                 { value: "0", label: "Tracking" },
               ].map((stat) => (

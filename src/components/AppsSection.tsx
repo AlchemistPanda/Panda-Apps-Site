@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp,
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel,
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
@@ -92,6 +92,17 @@ const apps = [
     icon: Coins,
     gradient: "from-emerald-500 to-teal-600",
     category: "Finance",
+    isNew: true,
+    isFeatured: false,
+  },
+  {
+    title: "Fuel Prices India",
+    description:
+      "Today's petrol and diesel prices for all Indian states and cities. Optional IP-based location detection — no GPS, no personal data stored.",
+    href: "/apps/fuel-prices",
+    icon: Fuel,
+    gradient: "from-orange-500 to-red-600",
+    category: "Utility",
     isNew: true,
     isFeatured: false,
   },

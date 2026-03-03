@@ -12,6 +12,7 @@ const APP_SLUGS = [
   "unit-converter",
   "text-diff",
   "currency-converter",
+  "fuel-prices",
 ];
 
 async function upstash(path: string) {
