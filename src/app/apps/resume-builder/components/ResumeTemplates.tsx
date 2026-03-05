@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import type { ResumeData } from "../data/types";
 import { Mail, Phone, MapPin, Globe, Linkedin, Github, ExternalLink } from "lucide-react";
 
@@ -203,6 +204,14 @@ export function ModernTemplate({ data }: TemplateProps) {
             ))}
           </>
         )}
+        {data.customSections.map((cs) => cs.items.some((i) => i.text) && (
+          <React.Fragment key={cs.id}>
+            <SectionTitle>{cs.title || "Custom Section"}</SectionTitle>
+            {cs.items.filter((i) => i.text).map((item) => (
+              <p key={item.id} className="text-gray-600 mb-1">{item.text}</p>
+            ))}
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );
@@ -340,6 +349,14 @@ export function ClassicTemplate({ data }: TemplateProps) {
           ))}
         </>
       )}
+      {data.customSections.map((cs) => cs.items.some((i) => i.text) && (
+        <React.Fragment key={cs.id}>
+          <SectionTitle>{cs.title || "Custom Section"}</SectionTitle>
+          {cs.items.filter((i) => i.text).map((item) => (
+            <p key={item.id} className="text-gray-700 mb-1">{item.text}</p>
+          ))}
+        </React.Fragment>
+      ))}
     </div>
   );
 }
@@ -471,6 +488,14 @@ export function MinimalTemplate({ data }: TemplateProps) {
           ))}
         </div>
       )}
+      {data.customSections.map((cs) => cs.items.some((i) => i.text) && (
+        <div key={cs.id} className="mb-5">
+          <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] mb-3" style={{ color: accent }}>{cs.title || "Custom Section"}</h3>
+          {cs.items.filter((i) => i.text).map((item) => (
+            <p key={item.id} className="text-gray-600 mb-1">{item.text}</p>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -634,6 +659,14 @@ export function CreativeTemplate({ data }: TemplateProps) {
             ))}
           </>
         )}
+        {data.customSections.map((cs) => cs.items.some((i) => i.text) && (
+          <React.Fragment key={cs.id}>
+            <SectionTitle>{cs.title || "Custom Section"}</SectionTitle>
+            {cs.items.filter((i) => i.text).map((item) => (
+              <p key={item.id} className="text-gray-600 mb-1">{item.text}</p>
+            ))}
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );

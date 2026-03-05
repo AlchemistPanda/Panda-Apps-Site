@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   User, Briefcase, GraduationCap, Wrench, FolderOpen, Award, Globe,
-  Trophy, Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Eye, EyeOff,
+  Trophy, Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Eye, EyeOff, LayoutList,
 } from "lucide-react";
 import type {
   ResumeData, Experience, Education, Skill, Project,
@@ -77,10 +77,10 @@ interface Props {
   onChange: (d: ResumeData) => void;
 }
 
-type Section = "personal" | "experience" | "education" | "skills" | "projects" | "certifications" | "languages" | "awards" | "custom";
+type Section = string;
 
 export default function ResumeEditor({ data, onChange }: Props) {
-  const [openSections, setOpenSections] = useState<Set<Section>>(new Set(["personal"]));
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["personal"]));
 
   function toggle(s: Section) {
     setOpenSections((prev) => {
@@ -184,6 +184,27 @@ export default function ResumeEditor({ data, onChange }: Props) {
 
   function toggleSection(key: keyof typeof data.sections) {
     onChange({ ...data, sections: { ...data.sections, [key]: !data.sections[key] } });
+  }
+
+  function addCustomSection() {
+    const newSection: CustomSection = { id: uid(), title: "Custom Section", items: [{ id: uid(), text: "" }] };
+    onChange({ ...data, customSections: [...data.customSections, newSection] });
+    setOpenSections((p) => new Set(p).add(`custom-${newSection.id}`));
+  }
+  function removeCustomSection(idx: number) {
+    onChange({ ...data, customSections: data.customSections.filter((_, i) => i !== idx) });
+  }
+  function setCustomSection(idx: number, s: CustomSection) {
+    const arr = [...data.customSections]; arr[idx] = s;
+    onChange({ ...data, customSections: arr });
+  }
+  function addCustomItem(sectionIdx: number) {
+    const s = data.customSections[sectionIdx];
+    setCustomSection(sectionIdx, { ...s, items: [...s.items, { id: uid(), text: "" }] });
+  }
+  function removeCustomItem(sectionIdx: number, itemIdx: number) {
+    const s = data.customSections[sectionIdx];
+    setCustomSection(sectionIdx, { ...s, items: s.items.filter((_, i) => i !== itemIdx) });
   }
 
   const p = data.personal;
