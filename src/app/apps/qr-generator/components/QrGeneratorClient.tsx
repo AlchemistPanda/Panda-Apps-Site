@@ -16,6 +16,7 @@ import { encodeQrData } from "../encode";
 import DataInputPanel from "./DataInputPanel";
 import StylePanel from "./StylePanel";
 import ExportPanel from "./ExportPanel";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type Tab = "data" | "style" | "export";
 
@@ -80,13 +81,16 @@ export default function QrGeneratorClient() {
       <div className="mx-auto max-w-7xl">
         {/* ── Header ── */}
         <div className="mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Apps
-          </Link>
+          <div className="flex items-center justify-between mb-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Apps
+            </Link>
+            <ThemeToggle />
+          </div>
 
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/20">

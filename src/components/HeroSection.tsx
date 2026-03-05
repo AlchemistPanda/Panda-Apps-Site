@@ -3,8 +3,10 @@
 import { ArrowRight, ChevronDown } from "lucide-react";
 import HeroParticles from "./HeroParticles";
 import PandaCharacter from "./PandaCharacter";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function HeroSection() {
+  const { isDark, setTheme } = useTheme();
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       <HeroParticles />
@@ -52,6 +54,37 @@ export default function HeroSection() {
                 Explore All Apps
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </a>
+
+              {/* Panda theme selector */}
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="text-[10px] uppercase tracking-widest text-muted font-semibold">🐼 Panda palette</span>
+                <div className="flex items-center gap-1 rounded-full border border-border/40 bg-card/30 backdrop-blur-sm p-1">
+                  <button
+                    onClick={() => setTheme("dark")}
+                    title="Dark mode — like a panda's patches"
+                    className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
+                      isDark
+                        ? "bg-zinc-800 text-white shadow-md ring-1 ring-white/10"
+                        : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full bg-zinc-950 border border-zinc-600 inline-block" />
+                    Black
+                  </button>
+                  <button
+                    onClick={() => setTheme("light")}
+                    title="Light mode — like a panda's belly"
+                    className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
+                      !isDark
+                        ? "bg-white text-zinc-900 shadow-md ring-1 ring-zinc-200"
+                        : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full bg-white border border-zinc-300 inline-block" />
+                    White
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Stats */}

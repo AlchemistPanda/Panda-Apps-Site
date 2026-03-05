@@ -13,6 +13,7 @@ import FileCard from "./FileCard";
 import SettingsPanel from "./SettingsPanel";
 import { DEFAULT_SETTINGS, formatBytes, savingsPercent } from "../types";
 import type { CompressionSettings, CompressedFile } from "../types";
+import ThemeToggle from "@/components/ThemeToggle";
 import { compressImage, mimeToExtension } from "../compress";
 
 function uid() {
@@ -256,13 +257,16 @@ export default function ImageCompressorClient() {
 
         {/* ── Header ── */}
         <div className="mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Apps
-          </Link>
+          <div className="flex items-center justify-between mb-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Apps
+            </Link>
+            <ThemeToggle />
+          </div>
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/20">
@@ -284,7 +288,7 @@ export default function ImageCompressorClient() {
             {/* Settings toggle */}
             <button
               onClick={() => setShowSettings((v) => !v)}
-              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all ${
                 showSettings
                   ? "border-blue-500/40 bg-blue-500/10 text-blue-300"
                   : "border-border/50 bg-card/30 text-muted hover:text-foreground hover:bg-card/50"

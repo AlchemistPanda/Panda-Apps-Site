@@ -8,12 +8,14 @@ interface ThemeContextValue {
   theme: Theme;
   isDark: boolean;
   toggleTheme: () => void;
+  setTheme: (t: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
   theme: "dark",
   isDark: true,
   toggleTheme: () => {},
+  setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -47,8 +49,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
+  function pickTheme(t: Theme) {
+    localStorage.setItem("panda-theme", t);
+    applyTheme(t);
+    setTheme(t);
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, isDark: theme === "dark", toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, isDark: theme === "dark", toggleTheme, setTheme: pickTheme }}>
       {children}
     </ThemeContext.Provider>
   );
