@@ -99,38 +99,6 @@ export default function ResumeBuilderClient() {
     input.click();
   }, []);
 
-  const downloadPDF = useCallback(async () => {
-    const el = previewRef.current;
-    if (!el) return;
-    // Dynamic import html2canvas-pro
-    const html2canvas = (await import("html2canvas-pro")).default;
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-    });
-    // Create PDF with proper A4 size
-    const imgData = canvas.toDataURL("image/png");
-    const pdfW  = 595.28;  // A4 in points
-    const pdfH  = 841.89;
-    const imgW  = canvas.width;
-    const imgH  = canvas.height;
-    const ratio = Math.min(pdfW / imgW, pdfH / imgH);
-    const w     = imgW * ratio;
-    const h     = imgH * ratio;
-
-    // Build a minimal PDF (no library needed for single-page image PDF)
-    const pdf = buildPDF(imgData, pdfW, pdfH, w, h);
-    const blob = new Blob([pdf.buffer as ArrayBuffer], { type: "application/pdf" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = `${data.personal.fullName || "resume"}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [data.personal.fullName]);
-
   // Use window.print for a cleaner PDF (browser handles pagination)
   const printPDF = useCallback(() => {
     const el = previewRef.current;
@@ -319,17 +287,12 @@ export default function ResumeBuilderClient() {
       {showDownload && (
         <>
           <div className="fixed inset-0 z-[60]" onClick={() => setShowDownload(false)} />
-          <div className="fixed top-16 right-4 sm:right-auto sm:absolute z-[70] w-56 bg-white rounded-xl border border-gray-200 shadow-xl p-2"
+          <div className="fixed top-16 right-4 sm:right-auto sm:absolute z-[70] w-64 bg-white rounded-xl border border-gray-200 shadow-xl p-2"
             style={{ right: "1rem" }}>
             <button onClick={() => { printPDF(); setShowDownload(false); }}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition">
               <FileText className="h-4 w-4 text-red-500" />
-              <div className="text-left"><div className="font-medium">PDF (Print)</div><div className="text-[10px] text-gray-400">Best quality, uses browser print</div></div>
-            </button>
-            <button onClick={() => { downloadPDF(); setShowDownload(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition">
-              <FileText className="h-4 w-4 text-blue-500" />
-              <div className="text-left"><div className="font-medium">PDF (Image)</div><div className="text-[10px] text-gray-400">Direct download as image PDF</div></div>
+              <div className="text-left"><div className="font-medium">PDF</div><div className="text-[10px] text-gray-400">Download as PDF (via browser print)</div></div>
             </button>
             <button onClick={() => { downloadDocx(); setShowDownload(false); }}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 rounded-lg transition">
@@ -340,8 +303,13 @@ export default function ResumeBuilderClient() {
             <button onClick={() => { exportJSON(); setShowDownload(false); }}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-green-50 rounded-lg transition">
               <FileJson className="h-4 w-4 text-green-500" />
-              <div className="text-left"><div className="font-medium">JSON (Editable)</div><div className="text-[10px] text-gray-400">Import later to continue editing</div></div>
+              <div className="text-left"><div className="font-medium">JSON (Backup)</div><div className="text-[10px] text-gray-400">Save &amp; import later to edit again</div></div>
             </button>
+            <div className="px-3 py-2 mt-1 rounded-lg bg-amber-50 border border-amber-100">
+              <p className="text-[10px] text-amber-700 leading-relaxed">
+                <span className="font-semibold">Tip:</span> To edit this resume later, download the JSON file and keep it safe. You can import it anytime using the upload button to continue editing.
+              </p>
+            </div>
           </div>
         </>
       )}
@@ -352,80 +320,4 @@ export default function ResumeBuilderClient() {
       )}
     </div>
   );
-}
-
-
-/* ── Minimal PDF builder (single-page image PDF, no external dep) ── */
-function buildPDF(imgDataURL: string, pageW: number, pageH: number, imgW: number, imgH: number): Uint8Array {
-  const imgBytes = atob(imgDataURL.split(",")[1]);
-  const imgLen   = imgBytes.length;
-  const imgArr   = new Uint8Array(imgLen);
-  for (let i = 0; i < imgLen; i++) imgArr[i] = imgBytes.charCodeAt(i);
-
-  // Detect image type
-  const isPNG = imgDataURL.startsWith("data:image/png");
-  const filter = isPNG ? "/FlateDecode" : "/DCTDecode";
-
-  // We need the w/h of the raw image
-  // For PNG, read from IHDR; for JPEG read from SOF
-  let rawW = Math.round(imgW / (pageW / 595.28) * 2); // approximate from canvas
-  let rawH = Math.round(imgH / (pageH / 841.89) * 2);
-
-  // Build objects
-  const objects: string[] = [];
-  const offsets: number[] = [];
-  let body = "";
-
-  function addObj(content: string) {
-    const n = objects.length + 1;
-    objects.push(content);
-    return n;
-  }
-
-  // 1 Catalog
-  addObj("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
-  // 2 Pages
-  addObj("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
-  // 3 Page
-  addObj(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Contents 4 0 R /Resources << /XObject << /Img0 5 0 R >> >> >>\nendobj\n`);
-  // 4 Contents stream
-  const stream = `q ${imgW} 0 0 ${imgH} ${(pageW - imgW) / 2} ${pageH - imgH - (pageH - imgH) / 2} cm /Img0 Do Q`;
-  addObj(`4 0 obj\n<< /Length ${stream.length} >>\nstream\n${stream}\nendstream\nendobj\n`);
-  // 5 Image XObject — use raw bytes
-  // We'll embed this specially because it's binary, handled below
-
-  // Build prefix
-  let pdf = "%PDF-1.4\n";
-  for (let i = 0; i < 4; i++) {
-    offsets.push(pdf.length);
-    pdf += objects[i];
-  }
-
-  // Image object header
-  const imgHeader = `5 0 obj\n<< /Type /XObject /Subtype /Image /Width ${rawW} /Height ${rawH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter ${filter} /Length ${imgLen} >>\nstream\n`;
-
-  offsets.push(pdf.length);
-
-  // We need to create binary output
-  const encoder = new TextEncoder();
-  const prefix  = encoder.encode(pdf + imgHeader);
-  const suffix  = encoder.encode("\nendstream\nendobj\n");
-
-  // xref
-  const xrefOffset = prefix.length + imgArr.length + suffix.length;
-  const xrefLines  = [`xref\n0 ${offsets.length + 1}\n0000000000 65535 f \n`];
-  for (const off of offsets) {
-    xrefLines.push(String(off).padStart(10, "0") + " 00000 n \n");
-  }
-  const trailer = `trailer\n<< /Size ${offsets.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
-  const xrefBuf = encoder.encode(xrefLines.join("") + trailer);
-
-  // Combine
-  const result = new Uint8Array(prefix.length + imgArr.length + suffix.length + xrefBuf.length);
-  result.set(prefix, 0);
-  result.set(imgArr, prefix.length);
-  result.set(suffix, prefix.length + imgArr.length);
-  result.set(xrefBuf, prefix.length + imgArr.length + suffix.length);
-
-  return result;
 }
