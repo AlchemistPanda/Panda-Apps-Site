@@ -323,8 +323,8 @@ export default function ResumeBuilderClient() {
         </div>
 
         {/* Right: Preview */}
-        <div className={`flex-1 ${view === "edit" ? "hidden lg:block" : ""}`}>
-          <div className="sticky top-20">
+        <div className={`flex-1 overflow-y-auto h-full pb-6 ${view === "edit" ? "hidden lg:block" : ""}`}>
+          <div className="lg:sticky lg:top-4">
             <div className="rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
               {/* A4 aspect ratio container */}
               <div ref={previewRef}
