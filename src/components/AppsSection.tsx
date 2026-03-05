@@ -19,6 +19,17 @@ const apps = [
     isFeatured: true,
   },
   {
+    title: "Resume Builder",
+    description:
+      "Build a professional resume in minutes. 4 modern templates, real-time preview, PDF & JSON export. 100% free, no sign-up, fully in-browser.",
+    href: "/apps/resume-builder",
+    icon: FileUser,
+    gradient: "from-blue-500 to-indigo-600",
+    category: "Productivity",
+    isNew: true,
+    isFeatured: true,
+  },
+  {
     title: "Image Compressor",
     description:
       "Compress JPEG, PNG, WebP & AVIF images with smart iterative algorithms. Batch processing, format conversion, zero server uploads.",
@@ -149,17 +160,6 @@ const apps = [
     category: "Finance",
     isNew: true,
     isFeatured: false,
-  },
-  {
-    title: "Resume Builder",
-    description:
-      "Build a professional resume in minutes. 4 modern templates, real-time preview, PDF & JSON export. 100% free, no sign-up, fully in-browser.",
-    href: "/apps/resume-builder",
-    icon: FileUser,
-    gradient: "from-blue-500 to-indigo-600",
-    category: "Productivity",
-    isNew: true,
-    isFeatured: true,
   },
 ];
 

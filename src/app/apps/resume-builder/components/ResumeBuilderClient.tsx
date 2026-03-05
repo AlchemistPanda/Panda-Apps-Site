@@ -160,9 +160,9 @@ export default function ResumeBuilderClient() {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="h-screen flex flex-col bg-gray-50 text-gray-900 overflow-hidden">
       {/* ─ Top Nav ─ */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+      <nav className="flex-shrink-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-[1600px] mx-auto px-4 h-14 flex items-center gap-3">
           <Link href="/" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition mr-2">
             <ChevronLeft className="h-4 w-4" /> Home
@@ -280,10 +280,9 @@ export default function ResumeBuilderClient() {
       </nav>
 
       {/* ─ Main content ─ */}
-      <div className="max-w-[1600px] mx-auto flex gap-6 px-4 py-6">
+      <div className="flex-1 overflow-hidden max-w-[1600px] w-full mx-auto flex gap-6 px-4 py-6">
         {/* Left: Editor */}
-        <div className={`w-full lg:w-[420px] xl:w-[460px] shrink-0 overflow-y-auto ${view === "preview" ? "hidden lg:block" : ""}`}
-          style={{ maxHeight: "calc(100vh - 4rem)" }}>
+        <div className={`w-full lg:w-[420px] xl:w-[460px] shrink-0 overflow-y-auto h-full pb-6 ${view === "preview" ? "hidden lg:block" : ""}`}>
           {/* Quick start */}
           {!data.personal.fullName && (
             <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-4 mb-4">
