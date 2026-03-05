@@ -163,43 +163,43 @@ export default function ResumeBuilderClient() {
     <div className="h-screen flex flex-col bg-gray-50 text-gray-900 overflow-hidden">
       {/* ─ Top Nav ─ */}
       <nav className="flex-shrink-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-[1600px] mx-auto px-4 h-14 flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition mr-2">
-            <ChevronLeft className="h-4 w-4" /> Home
+        <div className="max-w-[1600px] mx-auto px-4 h-14 flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
+          <Link href="/" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition shrink-0">
+            <ChevronLeft className="h-4 w-4" /> <span className="hidden sm:inline">Home</span>
           </Link>
-          <div className="h-5 w-px bg-gray-200" />
-          <h1 className="text-sm font-semibold text-gray-900">Resume Builder</h1>
+          <div className="h-5 w-px bg-gray-200 shrink-0" />
+          <h1 className="text-sm font-semibold text-gray-900 shrink-0 hidden sm:block">Resume Builder</h1>
 
           {/* Auto-save indicator */}
-          <span className={`ml-1 flex items-center gap-1 text-[10px] ${saving ? "text-green-500" : "text-gray-400"} transition`}>
+          <span className={`shrink-0 flex items-center gap-1 text-[10px] ${saving ? "text-green-500" : "text-gray-400"} transition`}>
             {saving && <><Check className="h-3 w-3" /> Saved</>}
           </span>
 
-          <div className="flex-1" />
+          <div className="flex-1 min-w-2" />
 
           {/* Mobile view toggle */}
-          <div className="flex lg:hidden items-center border border-gray-200 rounded-lg overflow-hidden">
+          <div className="flex lg:hidden items-center border border-gray-200 rounded-lg overflow-hidden shrink-0">
             <button onClick={() => setView("edit")}
-              className={`px-3 py-1.5 text-xs font-medium transition ${view === "edit" ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50"}`}>
-              <Edit3 className="h-3.5 w-3.5 inline mr-1" />Edit
+              className={`px-2.5 py-1.5 text-xs font-medium transition ${view === "edit" ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50"}`}>
+              <Edit3 className="h-3.5 w-3.5 inline mr-0.5" />Edit
             </button>
             <button onClick={() => setView("preview")}
-              className={`px-3 py-1.5 text-xs font-medium transition ${view === "preview" ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50"}`}>
-              <Eye className="h-3.5 w-3.5 inline mr-1" />Preview
+              className={`px-2.5 py-1.5 text-xs font-medium transition ${view === "preview" ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50"}`}>
+              <Eye className="h-3.5 w-3.5 inline mr-0.5" />Preview
             </button>
           </div>
 
           {/* Template picker toggle */}
           <button onClick={() => setShowTemplates(!showTemplates)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition">
-            <LayoutTemplate className="h-3.5 w-3.5" /> Template
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition shrink-0">
+            <LayoutTemplate className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Template</span>
           </button>
 
           {/* Download button */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button onClick={() => setShowDownload(!showDownload)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm">
-              <Download className="h-3.5 w-3.5" /> Download
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm">
+              <Download className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Download</span>
             </button>
             {showDownload && (
               <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-gray-200 shadow-xl p-2 z-50">
@@ -280,9 +280,9 @@ export default function ResumeBuilderClient() {
       </nav>
 
       {/* ─ Main content ─ */}
-      <div className="flex-1 overflow-hidden max-w-[1600px] w-full mx-auto flex gap-6 px-4 py-6">
+      <div className="flex-1 min-h-0 max-w-[1600px] w-full mx-auto flex gap-6 px-4 py-4">
         {/* Left: Editor */}
-        <div className={`w-full lg:w-[420px] xl:w-[460px] shrink-0 overflow-y-auto h-full pb-6 ${view === "preview" ? "hidden lg:block" : ""}`}>
+        <div className={`w-full lg:w-[420px] xl:w-[460px] shrink-0 overflow-y-auto pb-6 ${view === "preview" ? "hidden lg:block" : ""}`}>
           {/* Quick start */}
           {!data.personal.fullName && (
             <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-4 mb-4">
@@ -323,7 +323,7 @@ export default function ResumeBuilderClient() {
         </div>
 
         {/* Right: Preview */}
-        <div className={`flex-1 overflow-y-auto h-full pb-6 ${view === "edit" ? "hidden lg:block" : ""}`}>
+        <div className={`flex-1 min-w-0 overflow-y-auto pb-6 ${view === "edit" ? "hidden lg:block" : ""}`}>
           <div className="lg:sticky lg:top-4">
             <div className="rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
               {/* A4 aspect ratio container */}
