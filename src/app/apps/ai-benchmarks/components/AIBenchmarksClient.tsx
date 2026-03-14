@@ -969,27 +969,7 @@ export default function AIBenchmarksClient({ models }: Props) {
           </span>
         </div>
 
-        {/* ── Benchmark Details ── */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-bold text-foreground">Benchmark Details</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {BENCHMARK_COLS.map(col => (
-              <a
-                key={col.key}
-                href={col.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group rounded-xl border border-border/30 bg-card/50 px-3 py-2.5 hover:border-violet-500/40 hover:bg-violet-500/5 transition-all"
-              >
-                <div className="flex items-center justify-between mb-0.5">
-                  <p className="text-xs font-bold text-violet-500 group-hover:underline">{col.fullName}</p>
-                  <ExternalLink className="h-3 w-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <p className="text-[10px] text-muted leading-tight">{col.desc}</p>
-              </a>
-            ))}
-          </div>
-        </div>
+
 
         {/* ── Sources ── */}
         <div className="rounded-2xl border border-border/30 bg-card/30 px-5 py-4 flex gap-3">
