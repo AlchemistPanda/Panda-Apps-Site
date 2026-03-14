@@ -42,3 +42,4 @@ setup-deploy.sh
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*.local

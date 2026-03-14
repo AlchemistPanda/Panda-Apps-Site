@@ -11,7 +11,8 @@
 // Designed for ISR / Next.js server-component usage.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { MODELS, type BenchmarkModel, type ModelTag } from "./frontierData";
+import { MODELS, type ModelScore as BenchmarkModel, type BenchmarkId } from "./benchmarkData";
+type ModelTag = string;
 
 /* ── Arena API endpoints (best-effort — may change without notice) ── */
 const ARENA_ENDPOINTS = [
@@ -184,7 +185,10 @@ export async function fetchFreshModels(): Promise<BenchmarkModel[]> {
     // Step 1: update ELO for known static models
     const updatedModels = MODELS.map(m => ({
       ...m,
-      arenaElo: arenaData.byId[m.id] ?? m.arenaElo,
+      scores: {
+        ...m.scores,
+        arena_elo: arenaData.byId[m.id] ?? m.scores.arena_elo,
+      },
     }));
 
     // Step 2: build set of all IDs we already cover
@@ -215,19 +219,17 @@ export async function fetchFreshModels(): Promise<BenchmarkModel[]> {
       const newModel: BenchmarkModel = {
         id,
         name: prettifyName(rawKey),
-        provider: provider.name,
-        providerColor: provider.color,
+        provider: provider.name.toLowerCase() as any,
         releasedAt: new Date().toISOString().slice(0, 7),
         isOpenSource: provider.isOpenSource,
         isFree: provider.isOpenSource,
         canRunLocally: provider.canRunLocally,
+        isNew: true,
+        contextWindow: "Unknown",
         tags,
-        isAutoDiscovered: true,
-        gpqa:     null,
-        swe:      null,
-        arcagi2:  null,
-        arenaElo: Math.round(elo),
-        aaIndex:  null,
+        scores: {
+          arena_elo: Math.round(elo),
+        },
       };
 
       newModels.push(newModel);
@@ -238,7 +240,7 @@ export async function fetchFreshModels(): Promise<BenchmarkModel[]> {
       console.log(`[live-fetch] Auto-discovered ${newModels.length} new models from Arena`);
     }
 
-    newModels.sort((a, b) => (b.arenaElo ?? 0) - (a.arenaElo ?? 0));
+    newModels.sort((a, b) => (b.scores.arena_elo ?? 0) - (a.scores.arena_elo ?? 0));
     return [...updatedModels, ...newModels];
   } catch (err) {
     console.warn("[live-fetch] Failed, using static data:", err);

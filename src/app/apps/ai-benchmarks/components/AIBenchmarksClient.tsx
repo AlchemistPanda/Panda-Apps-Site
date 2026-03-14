@@ -16,11 +16,12 @@ import {
 } from "recharts";
 import {
   MODELS as STATIC_MODELS,
-  BENCHMARK_COLS,
-  type BenchmarkModel,
-  type ModelTag,
+  BENCHMARKS as BENCHMARK_SOURCES,
+  CATEGORIES,
+  type BenchmarkId,
+  type ModelScore as BenchmarkModel,
   DATA_DATE,
-} from "../data/frontierData";
+} from "../data/benchmarkData";
 import ThemeToggle from "@/components/ThemeToggle";
 
 /* ═══════════════ Constants ═══════════════ */
@@ -42,29 +43,32 @@ const pc = (p: string) => PCOLOR[p] || "#8b5cf6";
 
 /* ═══════════════ Types ═══════════════ */
 
-type BenchKey = "gpqa" | "swe" | "arcagi2" | "arenaElo" | "aaIndex";
+type BenchKey = BenchmarkId;
 type SortKey = "name" | "provider" | BenchKey;
 type SortDir = "asc" | "desc";
-type TabFilter = "all" | "free" | "opensource" | "local";
+type TabFilter = "all" | "opensource";
 type ViewTab = "charts" | "radar" | "table";
 
-const TAG_CONFIG: { id: ModelTag; label: string; icon: React.ReactNode; color: string }[] = [
+const BENCHMARK_COLS = Object.entries(BENCHMARK_SOURCES).map(([key, val]) => ({
+  ...val,
+  key: key as BenchKey,
+}));
+
+const TAG_CONFIG: { id: string; label: string; icon: React.ReactNode; color: string }[] = [
   { id: "coding", label: "Coding", icon: <Code2 className="h-3 w-3" />, color: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/40" },
   { id: "reasoning", label: "Reasoning", icon: <Brain className="h-3 w-3" />, color: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/40" },
   { id: "multimodal", label: "Multimodal", icon: <Eye className="h-3 w-3" />, color: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40" },
-  { id: "chat", label: "Chat", icon: <MessageSquare className="h-3 w-3" />, color: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40" },
 ];
 
 /* ═══════════════ Utilities ═══════════════ */
 
-function normVal(v: number | null, key: BenchKey): number | null {
-  if (v === null) return null;
-  if (key === "arenaElo") return Math.min(100, Math.max(0, ((v - 1250) / 300) * 100));
-  if (key === "aaIndex") return Math.min(100, Math.max(0, (v / 60) * 100));
-  return v;
+function normVal(v: number | null | undefined, key: BenchKey): number | null {
+  if (v === null || v === undefined) return null;
+  const max = BENCHMARK_SOURCES[key].max;
+  return (v / max) * 100;
 }
 
-function scoreColor(v: number | null, key: BenchKey): string {
+function scoreColor(v: number | null | undefined, key: BenchKey): string {
   const p = normVal(v, key);
   if (p === null) return "text-muted/40";
   if (p >= 88) return "text-emerald-600 dark:text-emerald-400 font-bold";
@@ -76,17 +80,18 @@ function scoreColor(v: number | null, key: BenchKey): string {
   return "text-red-500 dark:text-red-400";
 }
 
-function scoreBg(v: number | null, key: BenchKey): string {
+function scoreBg(v: number | null | undefined, key: BenchKey): string {
   const p = normVal(v, key);
   if (!p || p < 72) return "";
   if (p >= 88) return "bg-emerald-500/15";
   return "bg-green-500/10";
 }
 
-function fmt(v: number | null, key: BenchKey): string {
-  if (v === null) return "\u2014";
-  if (key === "arenaElo" || key === "aaIndex") return v.toFixed(0);
-  return v.toFixed(1) + "%";
+function fmt(v: number | null | undefined, key: BenchKey): string {
+  if (v === null || v === undefined) return "\u2014";
+  const unit = BENCHMARK_SOURCES[key].unit;
+  if (unit === "/10") return v.toFixed(2) + unit;
+  return v.toFixed(1) + (unit === "%" ? "%" : " " + unit);
 }
 
 function SortIcon({ col, sortKey, sortDir }: { col: string; sortKey: SortKey; sortDir: SortDir }) {
@@ -144,11 +149,11 @@ function BenchmarkBarChart({ benchKey, models }: { benchKey: BenchKey; models: B
   const data = useMemo(
     () =>
       models
-        .filter(m => m[benchKey] !== null)
-        .sort((a, b) => ((b[benchKey] as number) ?? 0) - ((a[benchKey] as number) ?? 0))
+        .filter(m => m.scores[benchKey] !== null)
+        .sort((a, b) => ((b.scores[benchKey] as number) ?? 0) - ((a.scores[benchKey] as number) ?? 0))
         .map(m => ({
           name: m.name,
-          value: m[benchKey] as number,
+          value: m.scores[benchKey] as number,
           provider: m.provider,
           fill: pc(m.provider),
         })),
@@ -158,22 +163,15 @@ function BenchmarkBarChart({ benchKey, models }: { benchKey: BenchKey; models: B
   if (data.length === 0)
     return <p className="text-muted text-sm py-8 text-center">No data available for this benchmark</p>;
 
-  const xDomain: [number, number] =
-    benchKey === "arenaElo"
-      ? [
-          Math.floor((data[data.length - 1]?.value ?? 1300) / 10) * 10 - 10,
-          Math.ceil((data[0]?.value ?? 1500) / 10) * 10 + 10,
-        ]
-      : benchKey === "aaIndex"
-        ? [0, Math.ceil((data[0]?.value ?? 60) / 5) * 5 + 5]
-        : [0, 100];
+  const max = col.max;
+  const xDomain: [number, number] = [0, max];
 
   return (
     <div>
       <div className="flex items-center gap-2 mb-1">
-        <h3 className="text-lg font-bold">{col.fullName}</h3>
+        <h3 className="text-lg font-bold">{col.name}</h3>
         <a
-          href={col.sourceUrl}
+          href={col.url}
           target="_blank"
           rel="noopener noreferrer"
           className="text-violet-500 hover:underline text-xs flex items-center gap-0.5"
@@ -181,7 +179,7 @@ function BenchmarkBarChart({ benchKey, models }: { benchKey: BenchKey; models: B
           Source <ArrowUpRight className="h-2.5 w-2.5" />
         </a>
       </div>
-      <p className="text-xs text-muted mb-4">{col.desc}</p>
+      <p className="text-xs text-muted mb-4">{col.description}</p>
 
       <div className="overflow-x-auto -mx-2 px-2">
         <div style={{ minWidth: 600 }}>
@@ -203,7 +201,7 @@ function BenchmarkBarChart({ benchKey, models }: { benchKey: BenchKey; models: B
                 tickLine={false}
               />
               <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(139,92,246,0.06)" }} />
-              <Bar dataKey="value" name={col.label} radius={[0, 6, 6, 0]} barSize={22}>
+              <Bar dataKey="value" name={col.shortName} radius={[0, 6, 6, 0]} barSize={22}>
                 {data.map((e, i) => (
                   <Cell key={i} fill={e.fill} fillOpacity={0.85} />
                 ))}
@@ -215,7 +213,9 @@ function BenchmarkBarChart({ benchKey, models }: { benchKey: BenchKey; models: B
                   formatter={(v: unknown) => {
                     const n = Number(v);
                     if (!isFinite(n)) return "";
-                    return benchKey === "arenaElo" || benchKey === "aaIndex" ? n.toFixed(0) : n.toFixed(1) + "%";
+                    const unit = BENCHMARK_SOURCES[benchKey].unit;
+                    if (unit === "/10") return n.toFixed(2) + unit;
+                    return n.toFixed(1) + (unit === "%" ? "%" : "");
                   }}
                 />
               </Bar>
@@ -245,16 +245,16 @@ function RadarCompareChart({ selectedIds, models }: { selectedIds: string[]; mod
   const radarData = useMemo(() => {
     const benchmarks: { key: BenchKey; label: string }[] = [
       { key: "gpqa", label: "GPQA Diamond" },
-      { key: "swe", label: "SWE-bench" },
-      { key: "arcagi2", label: "ARC-AGI 2" },
-      { key: "arenaElo", label: "Arena ELO" },
-      { key: "aaIndex", label: "AA Index" },
+      { key: "mmlu", label: "MMLU" },
+      { key: "math500", label: "MATH" },
+      { key: "humaneval", label: "HumanEval" },
+      { key: "swe_bench", label: "SWE-bench" },
     ];
 
     // Min-max normalization per benchmark (relative to all models in the dataset)
     const ranges = Object.fromEntries(
       benchmarks.map(b => {
-        const vals = models.map(m => m[b.key]).filter((v): v is number => v !== null);
+        const vals = models.map(m => m.scores[b.key]).filter((v): v is number => v !== undefined && v !== null);
         if (vals.length === 0) return [b.key, { min: 0, max: 1 }];
         return [b.key, { min: Math.min(...vals), max: Math.max(...vals) }];
       }),
@@ -265,8 +265,8 @@ function RadarCompareChart({ selectedIds, models }: { selectedIds: string[]; mod
       const { min, max } = ranges[b.key];
       const range = max - min || 1;
       selectedModels.forEach(m => {
-        const val = m[b.key];
-        row[m.id] = val !== null ? Math.round(((val - min) / range) * 100) : 0;
+        const val = m.scores[b.key];
+        row[m.id] = (val !== undefined && val !== null) ? Math.round(((val - min) / range) * 100) : 0;
       });
       return row;
     });
@@ -301,17 +301,17 @@ function RadarCompareChart({ selectedIds, models }: { selectedIds: string[]; mod
   );
 }
 
-/* ═══════════════ Chart: Scatter — Arena ELO vs AA Index ═══════════════ */
+/* ═══════════════ Chart: Scatter — MMLU vs GPQA ═══════════════ */
 
-function EloVsIndexScatter({ models }: { models: BenchmarkModel[] }) {
+function MMLUVsGPQAScatter({ models }: { models: BenchmarkModel[] }) {
   const data = useMemo(
     () =>
       models
-        .filter(m => m.arenaElo !== null && m.aaIndex !== null)
+        .filter(m => m.scores.mmlu !== null && m.scores.gpqa !== null)
         .map(m => ({
           name: m.name,
-          arenaElo: m.arenaElo!,
-          aaIndex: m.aaIndex!,
+          mmlu: m.scores.mmlu!,
+          gpqa: m.scores.gpqa!,
           provider: m.provider,
           fill: pc(m.provider),
         })),
@@ -320,9 +320,9 @@ function EloVsIndexScatter({ models }: { models: BenchmarkModel[] }) {
 
   return (
     <div>
-      <h3 className="text-lg font-bold mb-1">Arena ELO vs Intelligence Index</h3>
+      <h3 className="text-lg font-bold mb-1">General Knowledge vs Expert Reasoning</h3>
       <p className="text-xs text-muted mb-4">
-        Human preference (Arena) vs composite intelligence (AA Index). Models in the top-right corner excel at both.
+        MMLU (General Multi-task) vs GPQA Diamond (PhD-level Science).
       </p>
       <div className="overflow-x-auto -mx-2 px-2">
         <div style={{ minWidth: 500 }}>
@@ -331,20 +331,20 @@ function EloVsIndexScatter({ models }: { models: BenchmarkModel[] }) {
               <CartesianGrid strokeDasharray="3 3" stroke="#6b728022" />
               <XAxis
                 type="number"
-                dataKey="arenaElo"
-                name="Arena ELO"
-                domain={["dataMin - 20", "dataMax + 20"]}
+                dataKey="mmlu"
+                name="MMLU"
+                domain={[0, 100]}
                 tick={{ fontSize: 11, fill: "#9ca3af" }}
-                label={{ value: "Arena ELO \u2192", position: "bottom", offset: 15, fontSize: 11, fill: "#6b7280" }}
+                label={{ value: "MMLU % \u2192", position: "bottom", offset: 15, fontSize: 11, fill: "#6b7280" }}
               />
               <YAxis
                 type="number"
-                dataKey="aaIndex"
-                name="AA Index"
-                domain={["dataMin - 3", "dataMax + 3"]}
+                dataKey="gpqa"
+                name="GPQA"
+                domain={[0, 100]}
                 tick={{ fontSize: 11, fill: "#9ca3af" }}
                 label={{
-                  value: "AA Index \u2192",
+                  value: "GPQA Diamond % \u2192",
                   angle: -90,
                   position: "insideLeft",
                   offset: 0,
@@ -362,15 +362,6 @@ function EloVsIndexScatter({ models }: { models: BenchmarkModel[] }) {
           </ResponsiveContainer>
         </div>
       </div>
-      {/* Provider legend */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-[10px]">
-        {[...new Set(data.map(d => d.provider))].map(p => (
-          <span key={p} className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: pc(p) }} />
-            <span className="text-muted">{p}</span>
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
@@ -384,21 +375,24 @@ export default function AIBenchmarksClient({ models }: Props) {
 
   /* ── state ── */
   const [view, setView] = useState<ViewTab>("charts");
-  const [selectedBench, setSelectedBench] = useState<BenchKey>("aaIndex");
-  const [sortKey, setSortKey] = useState<SortKey>("arenaElo");
+  const [selectedBench, setSelectedBench] = useState<BenchKey>("gpqa");
+  const [benchCategory, setBenchCategory] = useState<string>("coding");
+  const [sortKey, setSortKey] = useState<SortKey>("gpqa");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<TabFilter>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [radarModels, setRadarModels] = useState<string[]>([
-    "claude-opus-4-6",
+    "gpt-5-4-pro",
+    "claude-4-6-opus",
     "gemini-3-1-pro",
-    "gpt-5-2",
   ]);
-  const [activeTags, setActiveTags] = useState<ModelTag[]>([]);
 
   /* ── tag toggle ── */
-  function toggleTag(tag: ModelTag) {
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+
+  /* ── tag toggle ── */
+  function toggleTag(tag: string) {
     setActiveTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag],
     );
@@ -416,10 +410,8 @@ export default function AIBenchmarksClient({ models }: Props) {
   /* ── filtered + sorted data ── */
   const filtered = useMemo(() => {
     let rows: BenchmarkModel[] = MODELS;
-    if (tab === "free") rows = rows.filter(m => m.isFree);
     if (tab === "opensource") rows = rows.filter(m => m.isOpenSource);
-    if (tab === "local") rows = rows.filter(m => m.canRunLocally);
-    if (activeTags.length > 0) rows = rows.filter(m => activeTags.every(t => m.tags.includes(t)));
+    if (activeTags.length > 0) rows = rows.filter(m => activeTags.every(t => m.tags?.includes(t)));
     const q = search.trim().toLowerCase();
     if (q) rows = rows.filter(m => m.name.toLowerCase().includes(q) || m.provider.toLowerCase().includes(q));
     return rows;
@@ -428,8 +420,8 @@ export default function AIBenchmarksClient({ models }: Props) {
   const sorted = useMemo(
     () =>
       [...filtered].sort((a, b) => {
-        const av = sortKey === "name" || sortKey === "provider" ? a[sortKey] : a[sortKey as BenchKey];
-        const bv = sortKey === "name" || sortKey === "provider" ? b[sortKey] : b[sortKey as BenchKey];
+        const av = sortKey === "name" || sortKey === "provider" ? a[sortKey] : a.scores[sortKey as BenchKey];
+        const bv = sortKey === "name" || sortKey === "provider" ? b[sortKey] : b.scores[sortKey as BenchKey];
         if (av === null && bv === null) return 0;
         if (av === null) return 1;
         if (bv === null) return -1;
@@ -442,30 +434,18 @@ export default function AIBenchmarksClient({ models }: Props) {
 
   /* ── tab counts ── */
   const FILTER_TABS = [
-    { id: "all" as const, label: "All", icon: <Bot className="h-3.5 w-3.5" />, count: MODELS.length },
-    {
-      id: "free" as const,
-      label: "Free",
-      icon: <Gift className="h-3.5 w-3.5" />,
-      count: MODELS.filter(m => m.isFree).length,
-    },
+    { id: "all" as const, label: "All Models", icon: <Bot className="h-3.5 w-3.5" />, count: MODELS.length },
     {
       id: "opensource" as const,
       label: "Open Source",
       icon: <Cpu className="h-3.5 w-3.5" />,
       count: MODELS.filter(m => m.isOpenSource).length,
     },
-    {
-      id: "local" as const,
-      label: "Run Locally",
-      icon: <HardDrive className="h-3.5 w-3.5" />,
-      count: MODELS.filter(m => m.canRunLocally).length,
-    },
   ];
 
   /* ── top stats ── */
-  const topModel = MODELS.reduce((a, b) => ((a.aaIndex ?? 0) > (b.aaIndex ?? 0) ? a : b));
-  const topArena = MODELS.reduce((a, b) => ((a.arenaElo ?? 0) > (b.arenaElo ?? 0) ? a : b));
+  const topGPQA = MODELS.reduce((a, b) => ((a.scores.gpqa ?? 0) > (b.scores.gpqa ?? 0) ? a : b));
+  const topMath = MODELS.reduce((a, b) => ((a.scores.math500 ?? 0) > (b.scores.math500 ?? 0) ? a : b));
 
   /* ═══════════════ Render ═══════════════ */
   return (
@@ -511,15 +491,15 @@ export default function AIBenchmarksClient({ models }: Props) {
           {[
             { label: "Models Tracked", value: String(MODELS.length), accent: "text-violet-500" },
             {
-              label: "Top Intelligence",
-              value: topModel.name,
-              sub: `Score: ${topModel.aaIndex}`,
+              label: "Top Reasoning",
+              value: topGPQA.name,
+              sub: `GPQA: ${topGPQA.scores.gpqa}%`,
               accent: "text-emerald-500",
             },
             {
-              label: "Top Arena ELO",
-              value: topArena.name,
-              sub: `ELO: ${topArena.arenaElo}`,
+              label: "Top Math",
+              value: topMath.name,
+              sub: `MATH: ${topMath.scores.math500}%`,
               accent: "text-blue-500",
             },
             {
@@ -542,16 +522,14 @@ export default function AIBenchmarksClient({ models }: Props) {
             </div>
           ))}
           {/* Auto-discovered count — only if > 0 */}
-          {MODELS.filter(m => m.isAutoDiscovered).length > 0 && (
             <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 px-4 py-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">Auto-Discovered</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">Top Tier</p>
               <p className="text-lg font-bold text-violet-500 flex items-center gap-1">
                 <Sparkles className="h-4 w-4" />
-                {MODELS.filter(m => m.isAutoDiscovered).length}
+                Frontier
               </p>
-              <p className="text-[10px] text-muted">new from Arena</p>
+              <p className="text-[10px] text-muted">March 2026</p>
             </div>
-          )}
         </div>
 
         {/* ── Global Filters ── */}
@@ -613,7 +591,7 @@ export default function AIBenchmarksClient({ models }: Props) {
                   {t.icon}
                   {t.label}
                   <span className="text-[10px] tabular-nums opacity-70">
-                    {MODELS.filter(m => m.tags.includes(t.id)).length}
+                    {MODELS.filter(m => m.tags?.includes(t.id)).length}
                   </span>
                 </button>
               );
@@ -661,21 +639,52 @@ export default function AIBenchmarksClient({ models }: Props) {
         {/* ════════════════ CHARTS VIEW ════════════════ */}
         {view === "charts" && (
           <div className="space-y-6">
-            {/* Benchmark selector pills */}
-            <div className="flex gap-2 flex-wrap">
-              {BENCHMARK_COLS.map(col => (
-                <button
-                  key={col.key}
-                  onClick={() => setSelectedBench(col.key as BenchKey)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
-                    selectedBench === col.key
-                      ? "bg-violet-500 text-white border-violet-500 shadow-sm"
-                      : "border-border/40 text-muted hover:text-foreground hover:border-border"
-                  }`}
-                >
-                  {col.label}
-                </button>
-              ))}
+            {/* Benchmark filter categories */}
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="flex items-center gap-1 text-xs text-muted mr-1">
+                  <Filter className="h-3 w-3" /> Benchmark Groups:
+                </span>
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setBenchCategory(cat.id);
+                      if (!cat.benchmarks.includes(selectedBench as any) && cat.id !== "all") {
+                        setSelectedBench(cat.benchmarks[0] as BenchKey);
+                      }
+                    }}
+                    className={`px-3 py-1 text-xs font-medium rounded-full border transition-all ${
+                      benchCategory === cat.id
+                        ? "bg-violet-600 text-white border-violet-600 shadow-sm"
+                        : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Benchmark selector pills (filtered by category) */}
+              <div className="flex gap-2 flex-wrap">
+                {BENCHMARK_COLS.filter(col => {
+                  if (benchCategory === "all") return true;
+                  const catData = CATEGORIES.find(c => c.id === benchCategory);
+                  return catData?.benchmarks.includes(col.key as any);
+                }).map(col => (
+                  <button
+                    key={col.key}
+                    onClick={() => setSelectedBench(col.key as BenchKey)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
+                      selectedBench === col.key
+                        ? "bg-violet-500 text-white border-violet-500 shadow-sm outline outline-2 outline-violet-500/20"
+                        : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                    }`}
+                  >
+                    {col.shortName}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Bar chart */}
@@ -685,7 +694,7 @@ export default function AIBenchmarksClient({ models }: Props) {
 
             {/* Scatter plot */}
             <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-6">
-              <EloVsIndexScatter models={filtered} />
+              <MMLUVsGPQAScatter models={filtered} />
             </div>
           </div>
         )}
@@ -754,12 +763,12 @@ export default function AIBenchmarksClient({ models }: Props) {
                       {BENCHMARK_COLS.map(col => (
                         <th
                           key={col.key}
-                          title={col.fullName}
+                          title={col.name}
                           onClick={() => handleSort(col.key as BenchKey)}
                           className="px-3 py-3 text-left text-xs font-semibold text-muted cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap"
                         >
                           <span className="flex items-center gap-1">
-                            {col.label} <SortIcon col={col.key} sortKey={sortKey} sortDir={sortDir} />
+                            {col.shortName} <SortIcon col={col.key} sortKey={sortKey} sortDir={sortDir} />
                           </span>
                         </th>
                       ))}
@@ -794,29 +803,26 @@ export default function AIBenchmarksClient({ models }: Props) {
                                 {m.provider}
                               </span>
                               <span className="text-sm font-semibold flex items-center gap-1">
-                                {m.isAutoDiscovered && (
-                                  <span title="Auto-discovered from Arena" className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded-full px-1.5 py-0.5 bg-violet-500/15 text-violet-500">
+                                {m.isNew && (
+                                  <span title="New Release" className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded-full px-1.5 py-0.5 bg-violet-500/15 text-violet-500">
                                     <Sparkles className="h-2 w-2" /> NEW
                                   </span>
                                 )}
                                 {m.name}
                               </span>
-                              {m.params && (
-                                <span className="text-[10px] text-muted ml-1.5 font-mono">{m.params}</span>
+                              {m.parameterCount && (
+                                <span className="text-[10px] text-muted ml-0.5 font-mono">{m.parameterCount}</span>
                               )}
-                              <div className="flex gap-1 mt-0.5 flex-wrap">
-                                {m.tags.map(t => {
-                                  const cfg = TAG_CONFIG.find(tc => tc.id === t);
-                                  return cfg ? (
-                                    <span key={t} className={`inline-flex items-center gap-0.5 text-[8px] font-medium rounded-full px-1.5 py-0.5 ${cfg.color}`}>
-                                      {cfg.label}
-                                    </span>
-                                  ) : null;
-                                })}
+                              <div className="flex gap-1 mt-1 flex-wrap">
+                                {m.tags?.map(t => (
+                                  <span key={t} className={`inline-flex items-center gap-0.5 text-[8px] font-medium rounded-full px-1.5 py-0.5 border ${TAG_CONFIG.find(tc => tc.id === t)?.color || "bg-muted/20 text-muted"}`}>
+                                    {t}
+                                  </span>
+                                ))}
                               </div>
                             </td>
                             {BENCHMARK_COLS.map(col => {
-                              const v = m[col.key as BenchKey];
+                              const v = m.scores[col.key as BenchKey];
                               return (
                                 <td key={col.key} className={`px-3 py-2.5 ${scoreBg(v, col.key as BenchKey)}`}>
                                   <span
@@ -833,6 +839,12 @@ export default function AIBenchmarksClient({ models }: Props) {
                                   <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold rounded-full px-1.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 w-fit">
                                     <Cpu className="h-2.5 w-2.5" />
                                     Open
+                                  </span>
+                                )}
+                                {!m.isOpenSource && (
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold rounded-full px-1.5 py-0.5 bg-muted/20 text-muted w-fit">
+                                    <Lock className="h-2.5 w-2.5" />
+                                    Paid
                                   </span>
                                 )}
                                 {m.canRunLocally && (
@@ -865,11 +877,11 @@ export default function AIBenchmarksClient({ models }: Props) {
                                   <td colSpan={BENCHMARK_COLS.length + 2} className="px-5 py-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
                                       {BENCHMARK_COLS.map(col => {
-                                        const v = m[col.key as BenchKey];
+                                        const v = m.scores[col.key as BenchKey];
                                         return (
                                           <a
                                             key={col.key}
-                                            href={col.sourceUrl}
+                                            href={col.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             onClick={e => e.stopPropagation()}
@@ -877,14 +889,14 @@ export default function AIBenchmarksClient({ models }: Props) {
                                           >
                                             <div className="flex items-center justify-between mb-1">
                                               <span className="text-[10px] font-bold text-violet-500 group-hover:underline">
-                                                {col.fullName}
+                                                {col.name}
                                               </span>
                                               <ExternalLink className="h-2.5 w-2.5 text-muted" />
                                             </div>
                                             <p
-                                              className={`text-xl font-bold tabular-nums ${scoreColor(v, col.key as BenchKey)}`}
+                                              className={`text-xl font-bold tabular-nums ${scoreColor(v as number | null, col.key as BenchKey)}`}
                                             >
-                                              {fmt(v, col.key as BenchKey)}
+                                              {fmt(v as number | null, col.key as BenchKey)}
                                             </p>
                                             <p className="text-[10px] text-muted mt-0.5">{col.source}</p>
                                           </a>
@@ -892,39 +904,13 @@ export default function AIBenchmarksClient({ models }: Props) {
                                       })}
                                     </div>
                                     <div className="text-xs text-muted flex flex-wrap gap-x-4 gap-y-1">
-                                      {m.params && (
-                                        <span>
-                                          <span className="text-foreground font-medium">Params:</span> {m.params}
-                                        </span>
-                                      )}
                                       <span>
-                                        <span className="text-foreground font-medium">Released:</span>{" "}
-                                        {m.releasedAt}
+                                        <span className="text-foreground font-medium">Context Window:</span>{" "}
+                                        {m.contextWindow}
                                       </span>
-                                      <span>
-                                        <span className="text-foreground font-medium">License:</span>{" "}
-                                        {m.isOpenSource ? "Open weights" : "Proprietary"}
-                                      </span>
-                                      <span>
-                                        <span className="text-foreground font-medium">Access:</span>{" "}
-                                        {m.isFree ? "Free tier available" : "Paid API only"}
-                                      </span>
-                                      {m.canRunLocally && (
-                                        <span className="inline-flex items-center gap-0.5">
-                                          <HardDrive className="h-3 w-3 text-purple-500" />
-                                          <span className="text-foreground font-medium">Can run locally</span> via Ollama / llama.cpp
-                                        </span>
-                                      )}
-                                      <div className="flex gap-1 mt-1">
-                                        {m.tags.map(t => {
-                                          const cfg = TAG_CONFIG.find(tc => tc.id === t);
-                                          return cfg ? (
-                                            <span key={t} className={`inline-flex items-center gap-0.5 text-[9px] font-medium rounded-full px-1.5 py-0.5 ${cfg.color}`}>
-                                              {cfg.icon} {cfg.label}
-                                            </span>
-                                          ) : null;
-                                        })}
-                                      </div>
+                                      <p className="mt-2 text-[11px] text-foreground/80 leading-relaxed italic">
+                                        &quot;{m.notes}&quot;
+                                      </p>
                                     </div>
                                   </td>
                                 </tr>,
@@ -956,7 +942,7 @@ export default function AIBenchmarksClient({ models }: Props) {
             </span>
           ))}
           <span className="text-muted ml-1">
-            &mdash; Arena ELO normalised to 1250&ndash;1550 &middot; AA Index to 0&ndash;60 for colour
+            &mdash; High granularity data refreshed via ISR &middot; Scores normalised by benchmark-specific max values.
           </span>
         </div>
 
@@ -967,16 +953,16 @@ export default function AIBenchmarksClient({ models }: Props) {
             {BENCHMARK_COLS.map(col => (
               <a
                 key={col.key}
-                href={col.sourceUrl}
+                href={col.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group rounded-xl border border-border/30 bg-card/50 px-3 py-2.5 hover:border-violet-500/40 hover:bg-violet-500/5 transition-all"
               >
                 <div className="flex items-center justify-between mb-0.5">
-                  <p className="text-xs font-bold text-violet-500 group-hover:underline">{col.fullName}</p>
+                  <p className="text-xs font-bold text-violet-500 group-hover:underline">{col.name}</p>
                   <ExternalLink className="h-3 w-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <p className="text-[10px] text-muted leading-tight">{col.desc}</p>
+                <p className="text-[10px] text-muted leading-tight">{col.description}</p>
               </a>
             ))}
           </div>
@@ -988,10 +974,10 @@ export default function AIBenchmarksClient({ models }: Props) {
           <div className="text-xs text-muted leading-relaxed space-y-1.5">
             {BENCHMARK_COLS.map(col => (
               <p key={col.key}>
-                <strong className="text-foreground">{col.fullName}:</strong> {col.desc}{" "}
+                <strong className="text-foreground">{col.name}:</strong> {col.description}{" "}
                 Source:{" "}
                 <a
-                  href={col.sourceUrl}
+                  href={col.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-violet-500 hover:underline"

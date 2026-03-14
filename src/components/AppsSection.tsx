@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser,
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
@@ -160,6 +160,17 @@ const apps = [
     category: "Finance",
     isNew: true,
     isFeatured: false,
+  },
+  {
+    title: "Math Tug of War",
+    description:
+      "An interactive 2-player math game for kids up to 5th standard! Solve addition, subtraction, and multiplication problems faster than your opponent to pull the rope to your side.",
+    href: "/apps/math-tug-of-war",
+    icon: Users, // Using a different icon here later since I need to import it properly
+    gradient: "from-blue-500 to-red-500",
+    category: "Games",
+    isNew: true,
+    isFeatured: true,
   },
 ];
 
