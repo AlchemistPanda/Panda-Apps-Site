@@ -12,7 +12,7 @@
 //
 // Scores are as reported in official releases / papers.
 // null = benchmark not officially reported for that model.
-// Data synced: March 15 2026
+// Data synced: March 3 2026
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type BenchmarkId =
@@ -29,10 +29,6 @@ export type BenchmarkId =
   | "humaneval"     // HumanEval – Python function synthesis
   | "swe_bench"     // SWE-bench Verified – real GitHub issues
   | "livecodebench" // LiveCodeBench – contamination-free coding
-  | "bigcodebench"  // BigCodeBench – complex library usage
-  | "terminalbench" // TerminalBench 2.0 – tool-use in terminal
-  | "taubench"      // Tau Bench – agentic interaction & policies
-  | "scicode"       // SciCode – scientific research programming
   // General / Knowledge
   | "mmlu"          // MMLU – 57-subject multiple choice
   | "mmlu_pro"      // MMLU-Pro – harder version, 10-choice
@@ -44,7 +40,6 @@ export type BenchmarkId =
   // Instruction following
   | "ifeval"        // IFEval – verifiable instruction adherence
   | "mt_bench"      // MT-Bench – multi-turn chat quality (score /10)
-  | "arena_elo"     // Chatbot Arena ELO – human preference points
 
 export const BENCHMARKS: Record<
   BenchmarkId,
@@ -240,56 +235,6 @@ export const BENCHMARKS: Record<
     higher: true, max: 10, unit: "/10",
     category: "instruction",
   },
-  bigcodebench: {
-    name: "BigCodeBench",
-    shortName: "BigCode",
-    description:
-      "Evaluates LLMs on practical and challenging programming tasks involving 139 libraries. Requires complex library usage and precise instruction following.",
-    source: "Zhuo et al., 2024 (arXiv:2406.15877)",
-    url: "https://bigcodebench.github.io",
-    higher: true, max: 100, unit: "%",
-    category: "coding",
-  },
-  terminalbench: {
-    name: "TerminalBench 2.0",
-    shortName: "Terminal",
-    description:
-      "Evaluates AI agents in a real terminal environment for tasks like compilation, system admin, and scientific computing. Tests tool-use grounding and state tracking.",
-    source: "Interconnected Research, 2025",
-    url: "https://terminalbench.github.io",
-    higher: true, max: 100, unit: "%",
-    category: "coding",
-  },
-  taubench: {
-    name: "Tau Bench",
-    shortName: "τ-Bench",
-    description:
-      "Agentic benchmark evaluating interactions with simulated users and APIs in complex domains (Retail, Airline). Measures policy adherence and task completion.",
-    source: "Xia et al., 2024 (arXiv:2406.12045)",
-    url: "https://github.com/tau-bench/tau-bench",
-    higher: true, max: 100, unit: "%",
-    category: "instruction",
-  },
-  scicode: {
-    name: "SciCode",
-    shortName: "SciCode",
-    description:
-      "Evaluates LLMs on generating code for realistic scientific research problems across various physical sciences. Requires deep domain knowledge and synthesis.",
-    source: "Wang et al., 2024 (arXiv:2407.12738)",
-    url: "https://scicode-bench.github.io",
-    higher: true, max: 100, unit: "%",
-    category: "coding",
-  },
-  arena_elo: {
-    name: "Chatbot Arena ELO",
-    shortName: "Arena",
-    description:
-      "Crowdsourced human preference leaderboard based on 1M+ blind side-by-side comparisons. The gold standard for perceived 'intelligence' and chat quality.",
-    source: "LMSYS (arena.lmsys.org)",
-    url: "https://chat.lmsys.org/?leaderboard",
-    higher: true, max: 1550, unit: "pts",
-    category: "instruction",
-  },
 };
 
 // ──────────────────────────────────────────────────────────────────
@@ -320,9 +265,6 @@ export type ModelScore = {
   releasedAt: string; // ISO date
   isNew: boolean;     // released within ~90 days of DATA_DATE
   isOpenSource: boolean;
-  isFree: boolean;
-  canRunLocally: boolean;
-  tags: string[];         // e.g. ["coding", "reasoning"]
   contextWindow: string;   // e.g. "200K"
   parameterCount?: string; // e.g. "~1T (MoE)"
   scores: Partial<Record<BenchmarkId, number | null>>;
@@ -332,203 +274,302 @@ export type ModelScore = {
 export const MODELS: ModelScore[] = [
   // ── OpenAI ────────────────────────────────────────────────────────
   {
-    id: "gpt-5-4-pro",
-    name: "GPT-5.4 Pro",
+    id: "gpt-o3",
+    name: "GPT o3",
     provider: "openai",
-    releasedAt: "2026-03",
+    releasedAt: "2025-01-31",
     isNew: true,
     isOpenSource: false,
-    isFree: false,
-    canRunLocally: false,
-    tags: ["reasoning", "coding", "multimodal"],
-    contextWindow: "256K",
+    contextWindow: "200K",
     scores: {
-      gpqa: 94.2, bbh: 96.5, arc_c: 98.2, musr: 95.8,
-      math500: 99.8, aime24: 98.2, amc23: 100,
-      humaneval: 98.5, swe_bench: 78.2, livecodebench: 65.4, bigcodebench: 74.2, terminalbench: 85.1, scicode: 90.4,
-      mmlu: 95.8, mmlu_pro: 88.4, simpleqa: 82.1,
-      mmmu: 94.2, mathvista: 92.1, chartqa: 95.8,
-      ifeval: 94.2, mt_bench: 9.8, taubench: 88.5, arena_elo: 1504,
+      gpqa: 87.7, bbh: 94.2, arc_c: 96.7, musr: 93.1,
+      math500: 99.7, aime24: 96.7, amc23: 100,
+      humaneval: 97.9, swe_bench: 71.7, livecodebench: 79.1,
+      mmlu: 91.8, mmlu_pro: 82.6, simpleqa: 61.6,
+      mmmu: 82.9, mathvista: 90.2, chartqa: 93.5,
+      ifeval: 93.2, mt_bench: 9.41,
     },
-    notes: "OpenAI's latest flagship. Integrates specialized coding capabilities with a 33% reduction in factual errors.",
+    notes: "OpenAI's most capable reasoning model. Uses long chain-of-thought at inference time.",
   },
   {
-    id: "gpt-5-3-instant",
-    name: "GPT-5.3 Instant",
+    id: "gpt-o3-mini",
+    name: "GPT o3-mini",
     provider: "openai",
-    releasedAt: "2026-02",
+    releasedAt: "2025-01-31",
     isNew: true,
     isOpenSource: false,
-    isFree: true,
-    canRunLocally: false,
-    tags: ["coding", "multimodal", "chat"],
+    contextWindow: "200K",
+    scores: {
+      gpqa: 79.7, bbh: 90.8, arc_c: 93.1, musr: 88.6,
+      math500: 97.9, aime24: 87.3, amc23: 98.0,
+      humaneval: 93.8, swe_bench: 49.3, livecodebench: 66.8,
+      mmlu: 86.9, mmlu_pro: 74.2, simpleqa: 36.9,
+      mmmu: 73.2, mathvista: 82.5, chartqa: 88.4,
+      ifeval: 90.4, mt_bench: 9.10,
+    },
+    notes: "Efficient reasoning model. High math/coding performance at lower cost than o3.",
+  },
+  {
+    id: "gpt-4o",
+    name: "GPT-4o (Nov 2024)",
+    provider: "openai",
+    releasedAt: "2024-11-05",
+    isNew: false,
+    isOpenSource: false,
     contextWindow: "128K",
     scores: {
-      gpqa: 88.5, bbh: 92.1, arc_c: 95.8, musr: 91.2,
-      math500: 98.5, aime24: 92.4, amc23: 98.8,
-      humaneval: 96.2, swe_bench: 71.4, livecodebench: 58.2, bigcodebench: 62.1, terminalbench: 74.8, scicode: 72.1,
-      mmlu: 91.2, mmlu_pro: 81.1, simpleqa: 75.8,
-      mmmu: 90.2, mathvista: 85.8, chartqa: 91.2,
-      ifeval: 91.2, mt_bench: 9.5, taubench: 81.2, arena_elo: 1479,
+      gpqa: 53.6, bbh: 83.1, arc_c: 96.4, musr: 78.3,
+      math500: 76.6, aime24: 9.3, amc23: 52.5,
+      humaneval: 90.2, swe_bench: 38.9, livecodebench: 42.7,
+      mmlu: 88.7, mmlu_pro: 74.4, simpleqa: 38.2,
+      mmmu: 69.1, mathvista: 63.8, chartqa: 85.7,
+      ifeval: 85.3, mt_bench: 9.32,
     },
-    notes: "Optimized for speed and efficiency. Replaced GPT-4o as the conversational default.",
   },
-
   // ── Anthropic ─────────────────────────────────────────────────────
   {
-    id: "claude-4-6-opus",
-    name: "Claude 4.6 Opus",
+    id: "claude-3-7-sonnet",
+    name: "Claude 3.7 Sonnet",
     provider: "anthropic",
-    releasedAt: "2026-03",
+    releasedAt: "2025-02-24",
     isNew: true,
     isOpenSource: false,
-    isFree: false,
-    canRunLocally: false,
-    tags: ["reasoning", "coding"],
-    contextWindow: "300K",
+    contextWindow: "200K",
     scores: {
-      gpqa: 91.3, bbh: 95.8, arc_c: 97.4, musr: 93.5,
-      math500: 98.2, aime24: 86.0, amc23: 96.5,
-      humaneval: 97.8, swe_bench: 80.8, livecodebench: 85.2,
-      mmlu: 88.0, mmlu_pro: 85.2, simpleqa: 45.4,
-      mmmu: 82.3, mathvista: 88.4, chartqa: 93.1,
-      ifeval: 94.8, mt_bench: 9.68,
-      bigcodebench: 45.4, terminalbench: 81.8, taubench: 52.8, scicode: 12.8,
+      gpqa: 84.8, bbh: 93.3, arc_c: 96.7, musr: 89.7,
+      math500: 96.2, aime24: 55.0, amc23: 91.0,
+      humaneval: 93.7, swe_bench: 70.3, livecodebench: 66.0,
+      mmlu: 90.1, mmlu_pro: 78.0, simpleqa: 38.0,
+      mmmu: 75.1, mathvista: 81.2, chartqa: 90.9,
+      ifeval: 90.6, mt_bench: 9.48,
     },
-    notes: "Anthropic's frontier reasoning behemoth. Leads in agentic coding and complex tool use.",
+    notes: "Anthropic's latest and most capable model. Hybrid reasoning with or without extended thinking.",
   },
   {
-    id: "claude-4-6-sonnet",
-    name: "Claude 4.6 Sonnet",
+    id: "claude-3-5-sonnet",
+    name: "Claude 3.5 Sonnet (Oct 2024)",
     provider: "anthropic",
-    releasedAt: "2026-02",
-    isNew: true,
+    releasedAt: "2024-10-22",
+    isNew: false,
     isOpenSource: false,
-    isFree: true,
-    canRunLocally: false,
-    tags: ["coding", "reasoning"],
-    contextWindow: "300K",
+    contextWindow: "200K",
     scores: {
-      gpqa: 89.2, bbh: 94.5, arc_c: 96.9, musr: 92.1,
-      math500: 97.5, aime24: 84.5, amc23: 95.8,
-      humaneval: 93.1, swe_bench: 72.4, livecodebench: 54.1, bigcodebench: 58.0, terminalbench: 71.2, scicode: 68.5,
-      mmlu: 88.4, mmlu_pro: 78.4, simpleqa: 70.2,
-      mmmu: 88.1, mathvista: 82.1, chartqa: 88.5,
-      ifeval: 88.5, mt_bench: 9.3, taubench: 78.4, arena_elo: 1461,
+      gpqa: 65.0, bbh: 93.1, arc_c: 96.7, musr: 86.2,
+      math500: 78.3, aime24: 16.0, amc23: 76.0,
+      humaneval: 93.7, swe_bench: 49.0, livecodebench: 53.5,
+      mmlu: 88.3, mmlu_pro: 78.0, simpleqa: 28.4,
+      mmmu: 70.4, mathvista: 67.7, chartqa: 90.8,
+      ifeval: 88.3, mt_bench: 9.40,
     },
-    notes: "Exceptional cost-to-performance ratio. Frequently beats larger models in human preference evaluations.",
   },
-
   // ── Google ────────────────────────────────────────────────────────
   {
-    id: "gemini-3-1-pro",
-    name: "Gemini 3.1 Pro",
+    id: "gemini-2-0-pro-exp",
+    name: "Gemini 2.0 Pro Exp",
     provider: "google",
-    releasedAt: "2026-03",
+    releasedAt: "2025-02-05",
     isNew: true,
     isOpenSource: false,
-    isFree: false,
-    canRunLocally: false,
-    tags: ["reasoning", "multimodal"],
-    contextWindow: "2M",
-    scores: {
-      gpqa: 94.3, bbh: 95.2, arc_c: 97.1, musr: 94.1,
-      math500: 92.1, aime24: 72.1, amc23: 88.1,
-      humaneval: 90.2, swe_bench: 62.1, livecodebench: 42.1, bigcodebench: 44.1, terminalbench: 52.4, scicode: 45.1,
-      mmlu: 84.1, mmlu_pro: 62.1, simpleqa: 55.1,
-      mmmu: 82.1, mathvista: 70.1, chartqa: 80.1,
-      ifeval: 85.2, mt_bench: 8.8, taubench: 60.1, arena_elo: 1445,
-    },
-    notes: "Google's most advanced reasoning model. Industry leader in long-context (2M+) and scientific research.",
-  },
-  {
-    id: "gemini-3-flash",
-    name: "Gemini 3 Flash",
-    provider: "google",
-    releasedAt: "2026-01",
-    isNew: true,
-    isOpenSource: false,
-    isFree: true,
-    canRunLocally: false,
-    tags: ["coding", "multimodal"],
     contextWindow: "1M",
     scores: {
-      gpqa: 90.4, bbh: 91.8, arc_c: 94.5, musr: 88.7,
-      math500: 97.2, aime24: 88.1, amc23: 94.2,
-      humaneval: 95.2, swe_bench: 75.8, livecodebench: 58.1, bigcodebench: 54.2, terminalbench: 68.1, scicode: 62.4,
-      mmlu: 88.5, mmlu_pro: 74.2, simpleqa: 68.1,
-      mmmu: 85.1, mathvista: 80.1, chartqa: 85.2,
-      ifeval: 88.1, mt_bench: 9.2, taubench: 72.4, arena_elo: 1473,
+      gpqa: 84.0, bbh: 92.7, arc_c: 96.3, musr: 88.3,
+      math500: 97.5, aime24: 50.0, amc23: 92.5,
+      humaneval: 92.0, swe_bench: 63.8, livecodebench: 68.2,
+      mmlu: 89.7, mmlu_pro: 79.1, simpleqa: 51.8,
+      mmmu: 81.3, mathvista: 86.0, chartqa: 88.7,
+      ifeval: 90.3, mt_bench: 9.36,
     },
-    notes: "Lightning fast with multimodal reasoning. Matches GPT-4 class models at tiny-model speeds.",
+    notes: "Experimental release with 1M context window. Strong multimodal capabilities.",
   },
   {
-    id: "gemini-3-1-flash-lite",
-    name: "Gemini 3.1 Flash Lite",
+    id: "gemini-2-0-flash",
+    name: "Gemini 2.0 Flash",
     provider: "google",
-    releasedAt: "2026-03",
+    releasedAt: "2025-02-05",
     isNew: true,
     isOpenSource: false,
-    isFree: true,
-    canRunLocally: false,
-    tags: ["multimodal", "chat"],
     contextWindow: "1M",
     scores: {
-      gpqa: 86.9, bbh: 88.5, arc_c: 92.1, musr: 85.2,
-      math500: 95.6, aime24: 82.1, amc23: 92.4,
-      humaneval: 91.4, swe_bench: 69.9, livecodebench: 69.9,
-      mmlu: 85.2, mmlu_pro: 83.0, simpleqa: 44.5,
-      mmmu: 78.5, mathvista: 84.6, chartqa: 88.2,
-      ifeval: 89.4, mt_bench: 9.15,
-      bigcodebench: 35.8, terminalbench: 32.6, taubench: 42.1, scicode: 22.5,
+      gpqa: 78.8, bbh: 89.2, arc_c: 92.6, musr: 83.7,
+      math500: 93.7, aime24: 35.0, amc23: 81.5,
+      humaneval: 89.9, swe_bench: 43.8, livecodebench: 55.3,
+      mmlu: 89.0, mmlu_pro: 77.0, simpleqa: 47.1,
+      mmmu: 77.9, mathvista: 81.7, chartqa: 87.0,
+      ifeval: 88.7, mt_bench: 9.14,
     },
-    notes: "Ultra-low latency model for edge and real-time applications. Extremely cost-effective.",
+    notes: "Fast, cost-efficient model with 1M context. Best speed/performance ratio in Google's lineup.",
   },
-
+  {
+    id: "gemini-1-5-pro",
+    name: "Gemini 1.5 Pro (May 2024)",
+    provider: "google",
+    releasedAt: "2024-05-14",
+    isNew: false,
+    isOpenSource: false,
+    contextWindow: "1M",
+    scores: {
+      gpqa: 46.2, bbh: 89.2, arc_c: 88.0, musr: 79.4,
+      math500: 67.7, aime24: 8.7, amc23: 52.0,
+      humaneval: 84.1, swe_bench: null, livecodebench: 34.9,
+      mmlu: 85.9, mmlu_pro: 75.8, simpleqa: 36.7,
+      mmmu: 62.2, mathvista: 63.9, chartqa: 81.3,
+      ifeval: 86.0, mt_bench: 9.15,
+    },
+  },
   // ── xAI ──────────────────────────────────────────────────────────
   {
-    id: "grok-4-beta",
-    name: "Grok 4 (Beta)",
+    id: "grok-3",
+    name: "Grok 3",
     provider: "xai",
-    releasedAt: "2026-03",
+    releasedAt: "2025-02-17",
     isNew: true,
     isOpenSource: false,
-    isFree: false,
-    canRunLocally: false,
-    tags: ["reasoning", "chat"],
-    contextWindow: "512K",
+    contextWindow: "128K",
+    parameterCount: "~2T",
     scores: {
-      gpqa: 92.4, bbh: 95.1, arc_c: 97.5, musr: 94.2,
-      math500: 99.2, aime24: 96.2, amc23: 99.4,
-      humaneval: 98.1, swe_bench: 76.5, livecodebench: 64.1, bigcodebench: 71.2, terminalbench: 82.4, scicode: 88.1,
-      mmlu: 94.3, mmlu_pro: 86.5, simpleqa: 80.1,
-      mmmu: 92.1, mathvista: 90.1, chartqa: 94.2,
-      ifeval: 93.1, mt_bench: 9.7, taubench: 86.1, arena_elo: 1500,
+      gpqa: 84.6, bbh: 93.5, arc_c: 96.0, musr: 89.0,
+      math500: 98.2, aime24: 83.9, amc23: 96.6,
+      humaneval: 96.0, swe_bench: 49.0, livecodebench: 70.6,
+      mmlu: 90.4, mmlu_pro: 79.6, simpleqa: 43.6,
+      mmmu: 79.7, mathvista: 88.2, chartqa: 87.3,
+      ifeval: 90.4, mt_bench: 9.38,
     },
-    notes: "xAI's massive compute release. Extremely strong on math and real-time knowledge synthesis.",
+    notes: "xAI's flagship model trained on 100,000+ GPUs. Particularly strong on math.",
   },
-
-  // ── DeepSeek ─────────────────────────────────────────────────────
   {
-    id: "deepseek-v3-2",
-    name: "DeepSeek V3.2",
-    provider: "deepseek",
-    releasedAt: "2026-01",
-    isNew: true,
-    isOpenSource: true,
-    isFree: true,
-    canRunLocally: true,
-    tags: ["coding", "reasoning"],
+    id: "grok-2",
+    name: "Grok 2",
+    provider: "xai",
+    releasedAt: "2024-08-13",
+    isNew: false,
+    isOpenSource: false,
     contextWindow: "128K",
     scores: {
-      gpqa: 88.2, bbh: 91.4, arc_c: 96.5, musr: 89.4,
-      math500: 98.0, aime24: 88.4, amc23: 91.2,
-      humaneval: 97.5, swe_bench: 70.0, livecodebench: 58.4, bigcodebench: 64.1, terminalbench: 75.2, scicode: 78.1,
-      mmlu: 88.2, mmlu_pro: 76.4, simpleqa: 62.1,
-      mmmu: 84.2, mathvista: 82.1, chartqa: 85.2,
-      ifeval: 88.4, mt_bench: 9.1, taubench: 72.1, arena_elo: 1420,
+      gpqa: 56.0, bbh: 87.0, arc_c: 93.0, musr: 82.1,
+      math500: 76.0, aime24: 25.0, amc23: 74.2,
+      humaneval: 88.5, swe_bench: null, livecodebench: 46.8,
+      mmlu: 87.5, mmlu_pro: 72.0, simpleqa: 43.0,
+      mmmu: 70.4, mathvista: 71.8, chartqa: 82.5,
+      ifeval: 82.0, mt_bench: 9.00,
     },
-    notes: "The latest open-weights state-of-the-art. Exceptional competitive programming performance per parameter.",
+  },
+  // ── DeepSeek ─────────────────────────────────────────────────────
+  {
+    id: "deepseek-r1",
+    name: "DeepSeek R1",
+    provider: "deepseek",
+    releasedAt: "2025-01-20",
+    isNew: true,
+    isOpenSource: true,
+    contextWindow: "64K",
+    parameterCount: "671B (MoE)",
+    scores: {
+      gpqa: 71.5, bbh: 86.7, arc_c: 95.1, musr: 83.4,
+      math500: 97.3, aime24: 79.8, amc23: 94.9,
+      humaneval: 92.6, swe_bench: 49.2, livecodebench: 65.9,
+      mmlu: 90.8, mmlu_pro: 84.0, simpleqa: 30.1,
+      mmmu: 69.7, mathvista: null, chartqa: null,
+      ifeval: 83.3, mt_bench: 9.53,
+    },
+    notes: "Open-source reasoning model. Competitive with frontier closed models on math/coding. Apache 2.0 licensed.",
+  },
+  {
+    id: "deepseek-v3",
+    name: "DeepSeek V3",
+    provider: "deepseek",
+    releasedAt: "2024-12-26",
+    isNew: true,
+    isOpenSource: true,
+    contextWindow: "64K",
+    parameterCount: "671B (MoE)",
+    scores: {
+      gpqa: 59.1, bbh: 87.5, arc_c: 94.8, musr: 82.6,
+      math500: 90.2, aime24: 39.2, amc23: 82.8,
+      humaneval: 91.6, swe_bench: 42.0, livecodebench: 57.5,
+      mmlu: 88.5, mmlu_pro: 75.9, simpleqa: 24.9,
+      mmmu: 73.8, mathvista: 76.2, chartqa: null,
+      ifeval: 86.1, mt_bench: 9.35,
+    },
+    notes: "Pre-training / non-reasoning version. Extremely efficient: trained for ~$6M on H800 GPUs.",
+  },
+  // ── Meta ─────────────────────────────────────────────────────────
+  {
+    id: "llama-3-3-70b",
+    name: "Llama 3.3 70B",
+    provider: "meta",
+    releasedAt: "2024-12-06",
+    isNew: true,
+    isOpenSource: true,
+    contextWindow: "128K",
+    parameterCount: "70B",
+    scores: {
+      gpqa: 50.5, bbh: 84.2, arc_c: 93.0, musr: 78.0,
+      math500: 77.0, aime24: 29.0, amc23: 68.0,
+      humaneval: 88.4, swe_bench: null, livecodebench: 41.7,
+      mmlu: 86.0, mmlu_pro: 68.9, simpleqa: null,
+      mmmu: null, mathvista: null, chartqa: null,
+      ifeval: 88.4, mt_bench: 9.15,
+    },
+    notes: "Best open-source model at 70B class. Text-only.",
+  },
+  {
+    id: "llama-3-1-405b",
+    name: "Llama 3.1 405B",
+    provider: "meta",
+    releasedAt: "2024-07-23",
+    isNew: false,
+    isOpenSource: true,
+    contextWindow: "128K",
+    parameterCount: "405B",
+    scores: {
+      gpqa: 50.7, bbh: 85.9, arc_c: 96.9, musr: 80.9,
+      math500: 73.8, aime24: 23.3, amc23: 62.0,
+      humaneval: 89.0, swe_bench: null, livecodebench: 38.8,
+      mmlu: 88.6, mmlu_pro: 73.3, simpleqa: null,
+      mmmu: 64.5, mathvista: null, chartqa: null,
+      ifeval: 88.6, mt_bench: 9.10,
+    },
+    notes: "Largest openly available Llama 3.1 model. Supports multilingual + tool calling.",
+  },
+  // ── Mistral ───────────────────────────────────────────────────────
+  {
+    id: "mistral-large-2",
+    name: "Mistral Large 2",
+    provider: "mistral",
+    releasedAt: "2024-07-24",
+    isNew: false,
+    isOpenSource: false,
+    contextWindow: "128K",
+    parameterCount: "123B",
+    scores: {
+      gpqa: 52.0, bbh: 83.6, arc_c: 94.0, musr: 77.5,
+      math500: 66.1, aime24: 12.0, amc23: null,
+      humaneval: 92.0, swe_bench: null, livecodebench: 38.2,
+      mmlu: 84.0, mmlu_pro: 69.5, simpleqa: null,
+      mmmu: 60.5, mathvista: null, chartqa: null,
+      ifeval: 88.3, mt_bench: 9.05,
+    },
+    notes: "Mistral's flagship; strong multilingual and long-document capabilities.",
+  },
+  // ── Alibaba ───────────────────────────────────────────────────────
+  {
+    id: "qwen-2-5-max",
+    name: "Qwen 2.5 Max",
+    provider: "alibaba",
+    releasedAt: "2025-01-26",
+    isNew: true,
+    isOpenSource: false,
+    contextWindow: "32K",
+    parameterCount: "~72B+",
+    scores: {
+      gpqa: 62.5, bbh: 87.8, arc_c: 95.2, musr: 83.1,
+      math500: 91.2, aime24: 50.0, amc23: 87.5,
+      humaneval: 92.0, swe_bench: null, livecodebench: 56.4,
+      mmlu: 88.0, mmlu_pro: 75.0, simpleqa: null,
+      mmmu: 74.8, mathvista: 82.4, chartqa: null,
+      ifeval: 87.0, mt_bench: 9.22,
+    },
+    notes: "Top-tier Chinese model; strong multilingual + coding benchmarks.",
   },
 ];
 
@@ -536,15 +577,15 @@ export const CATEGORIES = [
   { id: "all",         label: "Overall",     benchmarks: ["gpqa","mmlu","math500","humaneval","swe_bench","ifeval"] as BenchmarkId[] },
   { id: "reasoning",   label: "Reasoning",   benchmarks: ["gpqa","bbh","arc_c","musr"] as BenchmarkId[] },
   { id: "math",        label: "Math",        benchmarks: ["math500","aime24","amc23"] as BenchmarkId[] },
-  { id: "coding",      label: "Coding",      benchmarks: ["humaneval","swe_bench","livecodebench","bigcodebench","terminalbench","scicode"] as BenchmarkId[] },
+  { id: "coding",      label: "Coding",      benchmarks: ["humaneval","swe_bench","livecodebench"] as BenchmarkId[] },
   { id: "knowledge",   label: "Knowledge",   benchmarks: ["mmlu","mmlu_pro","simpleqa"] as BenchmarkId[] },
   { id: "multimodal",  label: "Multimodal",  benchmarks: ["mmmu","mathvista","chartqa"] as BenchmarkId[] },
-  { id: "instruction", label: "Instruction", benchmarks: ["ifeval","mt_bench","taubench","arena_elo"] as BenchmarkId[] },
+  { id: "instruction", label: "Instruction", benchmarks: ["ifeval","mt_bench"] as BenchmarkId[] },
 ] as const;
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
 
-export const DATA_DATE = "15 March 2026";
+export const DATA_DATE = "3 March 2026";
 
 // Compute a normalised average score (0–100) for a model across given benchmarks
 export function avgScore(model: ModelScore, benchmarkIds: BenchmarkId[]): number | null {
