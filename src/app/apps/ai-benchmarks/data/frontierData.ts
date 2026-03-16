@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Frontier AI Model Benchmark Data — 15 March 2026
+// Frontier AI Model Benchmark Data — 16 March 2026
 //
 // All scores independently verified from official leaderboards:
 //   Arena ELO      – arena.ai  Text Arena overall  (March 2, 2026 snapshot)
@@ -12,7 +12,7 @@
 //   τ-Bench        – taubench.com  retail domain  (Mar 2026)
 //   SciCode        – scicode-bench.github.io  with background  (Feb 2026)
 //
-// Last verified: 15 March 2026
+// Last verified: 16 March 2026
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ModelTag = "coding" | "reasoning" | "multimodal" | "chat";
@@ -755,4 +755,4 @@ export const MODELS: BenchmarkModel[] = [
   },
 ];
 
-export const DATA_DATE = "15 March 2026";
+export const DATA_DATE = "16 March 2026";
