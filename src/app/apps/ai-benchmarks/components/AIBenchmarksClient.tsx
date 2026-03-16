@@ -598,6 +598,12 @@ export default function AIBenchmarksClient({ models }: Props) {
   /* ── top stats ── */
   const topModel = MODELS.reduce((a, b) => ((a.aaIndex ?? 0) > (b.aaIndex ?? 0) ? a : b));
   const topArena = MODELS.reduce((a, b) => ((a.arenaElo ?? 0) > (b.arenaElo ?? 0) ? a : b));
+  const lowestLatencyModel = MODELS
+    .filter((m) => m.ttft !== null)
+    .reduce<BenchmarkModel | null>((best, current) => {
+      if (!best || (current.ttft as number) < (best.ttft as number)) return current;
+      return best;
+    }, null);
 
   /* ═══════════════ Render ═══════════════ */
   return (
@@ -857,10 +863,16 @@ export default function AIBenchmarksClient({ models }: Props) {
                 </p>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-foreground">0.2s</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {lowestLatencyModel?.ttft !== null && lowestLatencyModel?.ttft !== undefined
+                        ? `${lowestLatencyModel.ttft.toFixed(2)}s`
+                        : "--"}
+                    </p>
                     <p className="text-[10px] text-muted">to first token</p>
                   </div>
-                  <span className="text-[10px] font-medium bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Instant</span>
+                  <span className="text-[10px] font-medium bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded max-w-[140px] truncate" title={lowestLatencyModel?.name ?? "No model data"}>
+                    {lowestLatencyModel?.name ?? "N/A"}
+                  </span>
                 </div>
               </div>
               <div className="rounded-2xl border border-border/40 bg-card p-4">
