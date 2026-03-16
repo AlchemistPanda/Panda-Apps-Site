@@ -54,7 +54,7 @@ type BenchKey = "gpqa" | "swe" | "arcagi2" | "arenaElo" | "aaIndex" | "livecodeb
   | "hle"
   | "frontierMath"
   | "gdpVal";
-type SortKey = "name" | "provider" | BenchKey;
+type SortKey = "name" | "provider" | BenchKey | "economy";
 type SortDir = "asc" | "desc";
 type TabFilter = "all" | "free" | "opensource" | "local";
 type ViewTab = "charts" | "economy" | "scatter" | "table";
@@ -132,6 +132,15 @@ const SPECIAL_DOMAIN: Record<string, (data: { value: number }[]) => [number, num
   aaIndex: (d) => [0, Math.ceil((d[0]?.value ?? 60) / 5) * 5 + 5],
   scicode: (d) => [0, Math.ceil((d[0]?.value ?? 30) / 5) * 5 + 5],
 };
+
+function economyScore(m: BenchmarkModel): number {
+  // Higher score means more economical access options.
+  if (m.isFree && m.isOpenSource && m.canRunLocally) return 4;
+  if (m.isFree && (m.isOpenSource || m.canRunLocally)) return 3;
+  if (m.isFree) return 2;
+  if (m.isOpenSource || m.canRunLocally) return 1;
+  return 0;
+}
 
 function SortIcon({ col, sortKey, sortDir }: { col: string; sortKey: SortKey; sortDir: SortDir }) {
   if (col !== sortKey) return <ChevronsUpDown className="h-3 w-3 opacity-30" />;
@@ -541,8 +550,18 @@ export default function AIBenchmarksClient({ models }: Props) {
   const sorted = useMemo(
     () =>
       [...filtered].sort((a, b) => {
-        const av = sortKey === "name" || sortKey === "provider" ? a[sortKey] : a[sortKey as BenchKey];
-        const bv = sortKey === "name" || sortKey === "provider" ? b[sortKey] : b[sortKey as BenchKey];
+        const av =
+          sortKey === "economy"
+            ? economyScore(a)
+            : sortKey === "name" || sortKey === "provider"
+              ? a[sortKey]
+              : a[sortKey as BenchKey];
+        const bv =
+          sortKey === "economy"
+            ? economyScore(b)
+            : sortKey === "name" || sortKey === "provider"
+              ? b[sortKey]
+              : b[sortKey as BenchKey];
         if (av === null && bv === null) return 0;
         if (av === null) return 1;
         if (bv === null) return -1;
@@ -933,8 +952,13 @@ export default function AIBenchmarksClient({ models }: Props) {
                           </span>
                         </th>
                       ))}
-                      <th className="px-3 py-3 text-left text-xs font-semibold text-muted whitespace-nowrap">
-                        Access
+                      <th
+                        onClick={() => handleSort("economy")}
+                        className="px-3 py-3 text-left text-xs font-semibold text-muted cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap"
+                      >
+                        <span className="flex items-center gap-1">
+                          Economy <SortIcon col="economy" sortKey={sortKey} sortDir={sortDir} />
+                        </span>
                       </th>
                     </tr>
                   </thead>
