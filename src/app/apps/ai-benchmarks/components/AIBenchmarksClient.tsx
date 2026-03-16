@@ -628,7 +628,9 @@ export default function AIBenchmarksClient({ models }: Props) {
               <RefreshCw className="h-2.5 w-2.5" />
               Auto-updates
             </span>
-            <span className="text-xs text-muted hidden sm:block">Data: {DATA_DATE}</span>
+            <span className="text-xs text-muted hidden sm:block">
+              Data: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
           </div>
           <ThemeToggle />
         </div>
