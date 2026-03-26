@@ -7,7 +7,7 @@ import {
   Info, ExternalLink, Search, Lock, Cpu, Gift,
   BarChart3, Zap, TrendingUp, LayoutList, ArrowUpRight, RefreshCw,
   Code2, Brain, Eye, MessageSquare, HardDrive, Filter, Sparkles,
-  Coins, Activity, Layers,
+  Coins, Activity, Layers, Image, Video, Palette, Film,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -22,9 +22,19 @@ import {
   type ModelTag,
   DATA_DATE,
 } from "../data/frontierData";
+import {
+  IMAGE_MODELS,
+  IMAGE_BENCHMARK_COLS,
+  type ImageModel,
+  VIDEO_MODELS,
+  VIDEO_BENCHMARK_COLS,
+  type VideoModel,
+} from "../data/imageVideoData";
 import ThemeToggle from "@/components/ThemeToggle";
 
 /* ═══════════════ Constants ═══════════════ */
+
+type DomainTab = "llm" | "image" | "video";
 
 const PCOLOR: Record<string, string> = {
   Anthropic: "#f97316",
@@ -38,6 +48,17 @@ const PCOLOR: Record<string, string> = {
   MiniMax: "#f43f5e",
   Mistral: "#ec4899",
   Meta: "#0ea5e9",
+  "Black Forest Labs": "#8b5cf6",
+  Midjourney: "#06b6d4",
+  "Stability AI": "#f43f5e",
+  Ideogram: "#f59e0b",
+  Recraft: "#10b981",
+  Adobe: "#ef4444",
+  Runway: "#a855f7",
+  Kuaishou: "#f97316",
+  Pika: "#ec4899",
+  Luma: "#6366f1",
+  ByteDance: "#14b8a6",
 };
 const pc = (p: string) => PCOLOR[p] || "#8b5cf6";
 
@@ -497,6 +518,100 @@ function ValueVsCostScatter({ models }: { models: BenchmarkModel[] }) {
 }
 
 
+/* ═══════════════ Image/Video Bar Chart ═══════════════ */
+
+function GenericBarChart<T extends Record<string, any>>({
+  benchKey,
+  col,
+  models,
+  getProvider,
+}: {
+  benchKey: string;
+  col: { fullName: string; desc: string; sourceUrl: string; label: string; unit: string; max: number };
+  models: T[];
+  getProvider: (m: T) => string;
+}) {
+  const data = useMemo(
+    () =>
+      models
+        .filter(m => m[benchKey] !== null && m[benchKey] !== undefined)
+        .sort((a, b) => ((b[benchKey] as number) ?? 0) - ((a[benchKey] as number) ?? 0))
+        .map(m => ({
+          name: m.name as string,
+          value: m[benchKey] as number,
+          provider: getProvider(m),
+          fill: pc(getProvider(m)),
+        })),
+    [benchKey, models, getProvider],
+  );
+
+  if (data.length === 0)
+    return <p className="text-muted text-sm py-8 text-center">No data available for this benchmark</p>;
+
+  const isElo = benchKey === "arenaElo";
+  const isAesthetic = benchKey === "aestheticScore";
+  const isCost = benchKey === "costPerImage" || benchKey === "costPerMin";
+  const xDomain: [number, number] = isElo
+    ? [Math.floor((data[data.length - 1]?.value ?? 900) / 50) * 50 - 50, Math.ceil((data[0]?.value ?? 1300) / 50) * 50 + 50]
+    : isAesthetic
+      ? [0, 10]
+      : isCost
+        ? [0, Math.ceil((data[0]?.value ?? 1) * 1.2 * 100) / 100]
+        : [0, 100];
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-1">
+        <h3 className="text-lg font-bold">{col.fullName}</h3>
+        <a href={col.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-violet-500 hover:underline text-xs flex items-center gap-0.5">
+          Source <ArrowUpRight className="h-2.5 w-2.5" />
+        </a>
+      </div>
+      <p className="text-xs text-muted mb-4">{col.desc}</p>
+      <div className="overflow-x-auto -mx-2 px-2">
+        <div style={{ minWidth: 600 }}>
+          <ResponsiveContainer width="100%" height={data.length * 34 + 40}>
+            <BarChart layout="vertical" data={data} margin={{ left: 0, right: 50, top: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#6b728022" />
+              <XAxis type="number" domain={xDomain} tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={{ stroke: "#6b728033" }} />
+              <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(139,92,246,0.06)" }} />
+              <Bar dataKey="value" name={col.label} radius={[0, 6, 6, 0]} barSize={22}>
+                {data.map((e, i) => (
+                  <Cell key={i} fill={e.fill} fillOpacity={0.85} />
+                ))}
+                <LabelList
+                  dataKey="value"
+                  position="right"
+                  fontSize={10}
+                  fill="#9ca3af"
+                  formatter={(v: unknown) => {
+                    const n = Number(v);
+                    if (!isFinite(n)) return "";
+                    if (isElo) return n.toFixed(0);
+                    if (isCost) return `$${n.toFixed(2)}`;
+                    if (isAesthetic) return n.toFixed(1);
+                    if (col.unit === "sec") return `${n.toFixed(0)}s`;
+                    return n.toFixed(1) + "%";
+                  }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-[10px]">
+        {[...new Set(data.map(d => d.provider))].map(p => (
+          <span key={p} className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: pc(p) }} />
+            <span className="text-muted">{p}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════ Main Component ═══════════════ */
 
 type Props = { models?: BenchmarkModel[] };
@@ -505,8 +620,11 @@ export default function AIBenchmarksClient({ models }: Props) {
   const MODELS = models ?? STATIC_MODELS;
 
   /* ── state ── */
+  const [domain, setDomain] = useState<DomainTab>("llm");
   const [view, setView] = useState<ViewTab>("charts");
   const [selectedBench, setSelectedBench] = useState<BenchKey>("swe");
+  const [selectedImageBench, setSelectedImageBench] = useState<string>("arenaElo");
+  const [selectedVideoBench, setSelectedVideoBench] = useState<string>("arenaElo");
   const [sortKey, setSortKey] = useState<SortKey>("arenaElo");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [search, setSearch] = useState("");
@@ -641,10 +759,39 @@ export default function AIBenchmarksClient({ models }: Props) {
         <div className="space-y-2">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">AI Model Benchmarks</h1>
           <p className="text-muted max-w-2xl text-sm">
-            Verified scores for <strong className="text-foreground">{MODELS.length} frontier models</strong> across {BENCHMARK_COLS.length}
-            {" "}key benchmarks &mdash; sourced from official leaderboards. Charts auto-refresh daily via ISR.
+            Verified scores across <strong className="text-foreground">LLM, Image &amp; Video</strong> models &mdash; sourced from official leaderboards. Charts auto-refresh daily via ISR.
           </p>
         </div>
+
+        {/* ── Domain Selector ── */}
+        <div className="flex rounded-2xl border border-border/40 overflow-hidden w-fit">
+          {([
+            { id: "llm" as DomainTab, icon: <Bot className="h-4 w-4" />, label: "LLM Models", count: MODELS.length },
+            { id: "image" as DomainTab, icon: <Image className="h-4 w-4" />, label: "Image Models", count: IMAGE_MODELS.length },
+            { id: "video" as DomainTab, icon: <Film className="h-4 w-4" />, label: "Video Models", count: VIDEO_MODELS.length },
+          ]).map(d => (
+            <button
+              key={d.id}
+              onClick={() => { setDomain(d.id); setView("charts"); }}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors ${
+                domain === d.id
+                  ? "bg-violet-500 text-white"
+                  : "text-muted hover:text-foreground hover:bg-muted/10"
+              }`}
+            >
+              {d.icon}
+              <span className="hidden sm:inline">{d.label}</span>
+              <span className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${domain === d.id ? "bg-white/20" : "bg-muted/20"}`}>
+                {d.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* ═══════════════ LLM DOMAIN ═══════════════ */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {domain === "llm" && (<>
 
         {/* ── Stats Cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
@@ -1168,8 +1315,6 @@ export default function AIBenchmarksClient({ models }: Props) {
           </span>
         </div>
 
-
-
         {/* ── Sources ── */}
         <div className="rounded-2xl border border-border/30 bg-card/30 px-5 py-4 flex gap-3">
           <Info className="h-4 w-4 text-muted shrink-0 mt-0.5" />
@@ -1196,6 +1341,296 @@ export default function AIBenchmarksClient({ models }: Props) {
             </p>
           </div>
         </div>
+
+        </>)}
+
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* ═══════════════ IMAGE DOMAIN ═══════════════ */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {domain === "image" && (
+          <div className="space-y-6">
+            {/* ── Image Stats Cards ── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {(() => {
+                const topElo = IMAGE_MODELS.reduce((a, b) => ((a.arenaElo ?? 0) > (b.arenaElo ?? 0) ? a : b));
+                const topAesthetic = IMAGE_MODELS.reduce((a, b) => ((a.aestheticScore ?? 0) > (b.aestheticScore ?? 0) ? a : b));
+                const fastest = IMAGE_MODELS.filter(m => m.speedSec !== null).reduce<ImageModel | null>((best, cur) => (!best || (cur.speedSec as number) < (best.speedSec as number)) ? cur : best, null);
+                const openCount = IMAGE_MODELS.filter(m => m.isOpenSource).length;
+                return [
+                  { label: "Top Arena ELO", value: topElo.name, sub: `ELO: ${topElo.arenaElo}`, accent: "text-violet-500" },
+                  { label: "Best Aesthetic", value: topAesthetic.name, sub: `Score: ${topAesthetic.aestheticScore}/10`, accent: "text-emerald-500" },
+                  { label: "Fastest Generation", value: fastest?.name ?? "N/A", sub: fastest ? `${fastest.speedSec}s per image` : "", accent: "text-blue-500" },
+                  { label: "Open Source", value: String(openCount), sub: `of ${IMAGE_MODELS.length} models`, accent: "text-amber-500" },
+                ];
+              })().map(s => (
+                <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
+                  <p className={`text-lg font-bold truncate ${s.accent}`}>{s.value}</p>
+                  {s.sub && <p className="text-[10px] text-muted">{s.sub}</p>}
+                </div>
+              ))}
+            </div>
+
+            {/* ── Image View Tabs ── */}
+            <div className="flex rounded-xl border border-border/40 overflow-hidden w-fit">
+              {([
+                { id: "charts" as ViewTab, icon: <BarChart3 className="h-3.5 w-3.5" />, label: "Charts" },
+                { id: "table" as ViewTab, icon: <LayoutList className="h-3.5 w-3.5" />, label: "Table" },
+              ]).map(v => (
+                <button
+                  key={v.id}
+                  onClick={() => setView(v.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
+                    view === v.id ? "bg-violet-500 text-white" : "text-muted hover:text-foreground hover:bg-muted/10"
+                  }`}
+                >
+                  {v.icon}
+                  {v.label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Image Charts View ── */}
+            {view === "charts" && (
+              <div className="space-y-6">
+                <div className="flex gap-2 flex-wrap">
+                  {IMAGE_BENCHMARK_COLS.map(col => (
+                    <button
+                      key={col.key}
+                      onClick={() => setSelectedImageBench(col.key)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
+                        selectedImageBench === col.key
+                          ? "bg-violet-500 text-white border-violet-500 shadow-sm"
+                          : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                      }`}
+                    >
+                      {col.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-6">
+                  <GenericBarChart
+                    benchKey={selectedImageBench}
+                    col={IMAGE_BENCHMARK_COLS.find(c => c.key === selectedImageBench)!}
+                    models={IMAGE_MODELS}
+                    getProvider={(m: ImageModel) => m.provider}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ── Image Table View ── */}
+            {view === "table" && (
+              <div className="rounded-2xl border border-border/40 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border/50 bg-muted/5">
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-muted whitespace-nowrap">Model</th>
+                        {IMAGE_BENCHMARK_COLS.map(col => (
+                          <th key={col.key} title={col.fullName} className="px-3 py-3 text-left text-xs font-semibold text-muted whitespace-nowrap">
+                            {col.label}
+                          </th>
+                        ))}
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-muted whitespace-nowrap">Max Res</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...IMAGE_MODELS].sort((a, b) => ((b.arenaElo ?? 0) - (a.arenaElo ?? 0))).map(m => (
+                        <tr key={m.id} className="border-b border-border/20 hover:bg-violet-500/5 transition-colors">
+                          <td className="px-3 py-2.5">
+                            <span className="text-xs font-medium block" style={{ color: pc(m.provider) }}>{m.provider}</span>
+                            <span className="text-sm font-semibold flex items-center gap-1">
+                              {m.name}
+                              {m.isOpenSource && (
+                                <span className="text-[8px] font-bold rounded-full px-1.5 py-0.5 bg-emerald-500/15 text-emerald-500">OSS</span>
+                              )}
+                            </span>
+                            <span className="text-[10px] text-muted">{m.releasedAt}</span>
+                          </td>
+                          {IMAGE_BENCHMARK_COLS.map(col => {
+                            const v = m[col.key as keyof ImageModel] as number | null;
+                            return (
+                              <td key={col.key} className="px-3 py-2.5 text-sm tabular-nums">
+                                {v === null ? <span className="text-muted/40">&mdash;</span> : (
+                                  col.key === "arenaElo" ? Math.round(v) :
+                                  col.key === "costPerImage" ? (v === 0 ? <span className="text-emerald-500 font-medium">Free</span> : `$${v.toFixed(2)}`) :
+                                  col.key === "speedSec" ? `${v}s` :
+                                  col.key === "aestheticScore" ? v.toFixed(1) :
+                                  `${v}%`
+                                )}
+                              </td>
+                            );
+                          })}
+                          <td className="px-3 py-2.5 text-xs font-mono text-muted">{m.maxResolution ?? "\u2014"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── Image Sources ── */}
+            <div className="rounded-2xl border border-border/30 bg-card/30 px-5 py-4 flex gap-3">
+              <Info className="h-4 w-4 text-muted shrink-0 mt-0.5" />
+              <div className="text-xs text-muted leading-relaxed space-y-1.5">
+                {IMAGE_BENCHMARK_COLS.map(col => (
+                  <p key={col.key}>
+                    <strong className="text-foreground">{col.fullName}:</strong> {col.desc}{" "}
+                    Source:{" "}
+                    <a href={col.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-violet-500 hover:underline">{col.source}</a>.
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* ═══════════════ VIDEO DOMAIN ═══════════════ */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {domain === "video" && (
+          <div className="space-y-6">
+            {/* ── Video Stats Cards ── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {(() => {
+                const topElo = VIDEO_MODELS.reduce((a, b) => ((a.arenaElo ?? 0) > (b.arenaElo ?? 0) ? a : b));
+                const topVBench = VIDEO_MODELS.reduce((a, b) => ((a.vbenchTotal ?? 0) > (b.vbenchTotal ?? 0) ? a : b));
+                const longestDuration = VIDEO_MODELS.reduce((a, b) => ((a.maxDuration ?? 0) > (b.maxDuration ?? 0) ? a : b));
+                const openCount = VIDEO_MODELS.filter(m => m.isOpenSource).length;
+                return [
+                  { label: "Top Arena ELO", value: topElo.name, sub: `ELO: ${topElo.arenaElo}`, accent: "text-violet-500" },
+                  { label: "Top VBench", value: topVBench.name, sub: `Score: ${topVBench.vbenchTotal}%`, accent: "text-emerald-500" },
+                  { label: "Longest Clips", value: longestDuration.name, sub: `${longestDuration.maxDuration}s max`, accent: "text-blue-500" },
+                  { label: "Open Source", value: String(openCount), sub: `of ${VIDEO_MODELS.length} models`, accent: "text-amber-500" },
+                ];
+              })().map(s => (
+                <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
+                  <p className={`text-lg font-bold truncate ${s.accent}`}>{s.value}</p>
+                  {s.sub && <p className="text-[10px] text-muted">{s.sub}</p>}
+                </div>
+              ))}
+            </div>
+
+            {/* ── Video View Tabs ── */}
+            <div className="flex rounded-xl border border-border/40 overflow-hidden w-fit">
+              {([
+                { id: "charts" as ViewTab, icon: <BarChart3 className="h-3.5 w-3.5" />, label: "Charts" },
+                { id: "table" as ViewTab, icon: <LayoutList className="h-3.5 w-3.5" />, label: "Table" },
+              ]).map(v => (
+                <button
+                  key={v.id}
+                  onClick={() => setView(v.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
+                    view === v.id ? "bg-violet-500 text-white" : "text-muted hover:text-foreground hover:bg-muted/10"
+                  }`}
+                >
+                  {v.icon}
+                  {v.label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Video Charts View ── */}
+            {view === "charts" && (
+              <div className="space-y-6">
+                <div className="flex gap-2 flex-wrap">
+                  {VIDEO_BENCHMARK_COLS.map(col => (
+                    <button
+                      key={col.key}
+                      onClick={() => setSelectedVideoBench(col.key)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
+                        selectedVideoBench === col.key
+                          ? "bg-violet-500 text-white border-violet-500 shadow-sm"
+                          : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                      }`}
+                    >
+                      {col.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-6">
+                  <GenericBarChart
+                    benchKey={selectedVideoBench}
+                    col={VIDEO_BENCHMARK_COLS.find(c => c.key === selectedVideoBench)!}
+                    models={VIDEO_MODELS}
+                    getProvider={(m: VideoModel) => m.provider}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ── Video Table View ── */}
+            {view === "table" && (
+              <div className="rounded-2xl border border-border/40 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border/50 bg-muted/5">
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-muted whitespace-nowrap">Model</th>
+                        {VIDEO_BENCHMARK_COLS.map(col => (
+                          <th key={col.key} title={col.fullName} className="px-3 py-3 text-left text-xs font-semibold text-muted whitespace-nowrap">
+                            {col.label}
+                          </th>
+                        ))}
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-muted whitespace-nowrap">Res</th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-muted whitespace-nowrap">FPS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...VIDEO_MODELS].sort((a, b) => ((b.arenaElo ?? 0) - (a.arenaElo ?? 0))).map(m => (
+                        <tr key={m.id} className="border-b border-border/20 hover:bg-violet-500/5 transition-colors">
+                          <td className="px-3 py-2.5">
+                            <span className="text-xs font-medium block" style={{ color: pc(m.provider) }}>{m.provider}</span>
+                            <span className="text-sm font-semibold flex items-center gap-1">
+                              {m.name}
+                              {m.isOpenSource && (
+                                <span className="text-[8px] font-bold rounded-full px-1.5 py-0.5 bg-emerald-500/15 text-emerald-500">OSS</span>
+                              )}
+                            </span>
+                            <span className="text-[10px] text-muted">{m.releasedAt}</span>
+                          </td>
+                          {VIDEO_BENCHMARK_COLS.map(col => {
+                            const v = m[col.key as keyof VideoModel] as number | null;
+                            return (
+                              <td key={col.key} className="px-3 py-2.5 text-sm tabular-nums">
+                                {v === null ? <span className="text-muted/40">&mdash;</span> : (
+                                  col.key === "arenaElo" ? Math.round(v) :
+                                  col.key === "costPerMin" ? (v === 0 ? <span className="text-emerald-500 font-medium">Free</span> : `$${v.toFixed(2)}`) :
+                                  col.key === "maxDuration" ? `${v}s` :
+                                  `${v.toFixed(1)}%`
+                                )}
+                              </td>
+                            );
+                          })}
+                          <td className="px-3 py-2.5 text-xs font-mono text-muted">{m.maxResolution ?? "\u2014"}</td>
+                          <td className="px-3 py-2.5 text-xs font-mono text-muted">{m.fps ?? "\u2014"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── Video Sources ── */}
+            <div className="rounded-2xl border border-border/30 bg-card/30 px-5 py-4 flex gap-3">
+              <Info className="h-4 w-4 text-muted shrink-0 mt-0.5" />
+              <div className="text-xs text-muted leading-relaxed space-y-1.5">
+                {VIDEO_BENCHMARK_COLS.map(col => (
+                  <p key={col.key}>
+                    <strong className="text-foreground">{col.fullName}:</strong> {col.desc}{" "}
+                    Source:{" "}
+                    <a href={col.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-violet-500 hover:underline">{col.source}</a>.
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );
