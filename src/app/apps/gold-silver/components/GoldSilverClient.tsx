@@ -227,7 +227,7 @@ export default function GoldSilverClient() {
 
   const goldSpot  = live ? live.gold  : GOLD_SPOT;
   const silverSpot = live ? live.silver : SILVER_SPOT;
-  const liveUsdInr = live ? live.usdInr : USD_INR;
+  const currentUsdInr = live ? live.usdInr : USD_INR;
 
   const spot    = metal === "gold" ? goldSpot : silverSpot;
   const isGold  = metal === "gold";
@@ -244,7 +244,6 @@ export default function GoldSilverClient() {
   const usdPerOz    = spot.usdPerOz;
   const usdPerGram  = usdPerOz / TROY_OZ_TO_G;
   const usdPerKg    = usdPerGram * 1000;
-  void liveUsdInr; // consumed to avoid unused-var warning
 
   // Trend data change (first → last)
   const trendFirst = METAL_TREND[0][metal];
@@ -410,7 +409,7 @@ export default function GoldSilverClient() {
                 {[
                   ["Per gram",   `$${fmtUsd(usdPerGram, 3)}`],
                   ["Per kg",     `$${fmtUsd(usdPerKg, 0)}`],
-                  ["USD/INR fx", `₹${fmt(USD_INR, 2)}`],
+                  ["USD/INR fx", `₹${fmt(currentUsdInr, 2)}`],
                   isGold
                     ? ["1 yr ago ~", `$${fmtUsd(METAL_TREND[METAL_TREND.length - 13].gold, 0)}/oz`]
                     : ["1 yr ago ~", `$${fmtUsd(METAL_TREND[METAL_TREND.length - 13].silver, 2)}/oz`],
