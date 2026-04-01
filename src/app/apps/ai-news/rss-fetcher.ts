@@ -1,3 +1,4 @@
+import { isAIContent } from "./ai-filter";
 import { SOURCES } from "./sources";
 import type { NewsItem, NewsSource } from "./types";
 
@@ -109,7 +110,7 @@ async function fetchRSSSource(source: NewsSource): Promise<NewsItem[]> {
           publishedAt: parseDate(pubDate),
         } satisfies NewsItem;
       })
-      .filter((item) => item.title && item.url);
+      .filter((item) => item.title && item.url && isAIContent(item.title, item.excerpt));
   } catch {
     // Silently skip failing sources
     return [];
