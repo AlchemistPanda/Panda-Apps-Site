@@ -19,9 +19,12 @@ import {
   ArrowUp,
   Loader2,
   Star,
+  Zap,
+  Users,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import type { NewsItem, NewsSource, SourceType, TrendPeriod } from "../types";
+import type { NewsItem, NewsSource, SourceType, TrendPeriod, RedditSort } from "../types";
+import { REDDIT_AI_SUBREDDITS, REDDIT_COLORS } from "../reddit-fetcher";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -275,15 +278,213 @@ function TrendingSection() {
   );
 }
 
+// ── Reddit section ────────────────────────────────────────────────────────────
+
+const SORT_TABS: { id: RedditSort; label: string; icon: React.ElementType }[] = [
+  { id: "hot",  label: "Hot",  icon: Flame },
+  { id: "new",  label: "New",  icon: Zap },
+  { id: "top",  label: "Top",  icon: TrendingUp },
+];
+
+function RedditSection() {
+  const [sort, setSort]           = useState<RedditSort>("hot");
+  const [subreddit, setSubreddit] = useState<string | null>(null);
+  const [items, setItems]         = useState<NewsItem[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [cache, setCache]         = useState<Partial<Record<RedditSort, NewsItem[]>>>({});
+  const [query, setQuery]         = useState("");
+
+  useEffect(() => {
+    if (cache[sort]) {
+      setItems(cache[sort]!);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetch(`/api/ai-news/reddit?sort=${sort}`)
+      .then((r) => r.json())
+      .then((data: { items: NewsItem[] }) => {
+        setItems(data.items ?? []);
+        setCache((prev) => ({ ...prev, [sort]: data.items ?? [] }));
+      })
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, [sort]);
+
+  const filtered = useMemo(() => {
+    let result = subreddit
+      ? items.filter((i) => i.sourceId === `reddit-${subreddit.toLowerCase()}`)
+      : items;
+    if (query.trim()) {
+      const q = query.trim().toLowerCase();
+      result = result.filter(
+        (i) => i.title.toLowerCase().includes(q) || i.excerpt.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [items, subreddit, query]);
+
+  // subreddits present in current result set
+  const activeSubreddits = useMemo(() => {
+    const ids = new Set(items.map((i) => i.sourceId.replace("reddit-", "")));
+    return REDDIT_AI_SUBREDDITS.filter((s) => ids.has(s.toLowerCase()));
+  }, [items]);
+
+  return (
+    <div>
+      {/* Sort + search row */}
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        <div className="flex items-center gap-1 rounded-full border border-border/40 bg-card/30 p-1">
+          {SORT_TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => { setSort(id); setSubreddit(null); }}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                sort === id
+                  ? "bg-orange-500 text-white"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              <Icon className="h-3 w-3" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search Reddit posts…"
+            className="w-full rounded-full border border-border/50 bg-card/40 pl-9 pr-8 py-2 text-xs text-foreground placeholder-muted focus:outline-none focus:border-accent/40 transition-all"
+          />
+          {query && (
+            <button onClick={() => setQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground">
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Subreddit chips */}
+      <div className="flex flex-wrap gap-1.5 mb-6">
+        <button
+          onClick={() => setSubreddit(null)}
+          className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+            subreddit === null
+              ? "bg-foreground/10 text-foreground border border-border/70"
+              : "text-muted hover:text-foreground"
+          }`}
+        >
+          All subreddits
+        </button>
+        {activeSubreddits.map((s) => {
+          const c = REDDIT_COLORS[s.toLowerCase()] ?? { bg: "bg-accent/15", text: "text-accent" };
+          const active = subreddit === s;
+          return (
+            <button
+              key={s}
+              onClick={() => setSubreddit(active ? null : s)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-all border ${
+                active
+                  ? `${c.bg} ${c.text} border-current/30`
+                  : "text-muted border-transparent hover:text-foreground"
+              }`}
+            >
+              r/{s}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Posts grid */}
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-5 w-5 animate-spin text-muted" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-20">
+          <div className="text-4xl mb-3">🐼</div>
+          <p className="text-sm text-muted">No posts found.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((item) => (
+            <a
+              key={item.id}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col gap-3 rounded-2xl border border-border/40 bg-card/30 p-5 hover:border-orange-400/30 hover:bg-card/60 transition-all duration-200"
+            >
+              <div className="flex items-center justify-between gap-2">
+                {(() => {
+                  const key = item.sourceId.replace("reddit-", "");
+                  const c = REDDIT_COLORS[key] ?? { bg: "bg-orange-500/15", text: "text-orange-400" };
+                  return (
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
+                      {item.source}
+                    </span>
+                  );
+                })()}
+                <span className="flex items-center gap-1 text-xs text-muted shrink-0">
+                  <Clock className="h-3 w-3" />
+                  {relativeTime(item.publishedAt)}
+                </span>
+              </div>
+
+              <h3 className="text-sm font-semibold leading-snug text-foreground group-hover:text-orange-400 transition-colors line-clamp-3">
+                {item.title}
+              </h3>
+
+              {item.excerpt && (
+                <p className="text-xs text-muted leading-relaxed line-clamp-2">{item.excerpt}</p>
+              )}
+
+              <div className="flex items-center gap-3 mt-auto pt-1">
+                {item.score != null && (
+                  <span className="flex items-center gap-0.5 text-xs text-muted">
+                    <ArrowUp className="h-3 w-3 text-orange-400/70" />
+                    {fmt(item.score)}
+                  </span>
+                )}
+                {item.commentCount != null && (
+                  <span className="flex items-center gap-0.5 text-xs text-muted">
+                    <MessageSquare className="h-3 w-3" />
+                    {fmt(item.commentCount)}
+                  </span>
+                )}
+                <span className="ml-auto flex items-center gap-1 text-xs text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ExternalLink className="h-3 w-3" />
+                  Open
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-muted/50 mt-6 flex items-center gap-1.5">
+        <Users className="h-3 w-3" />
+        {filtered.length} AI posts from {activeSubreddits.length} subreddits · updated hourly
+      </p>
+    </div>
+  );
+}
+
 // ── Filter tabs ───────────────────────────────────────────────────────────────
 
-type FilterTab = "all" | SourceType;
+type FilterTab = "all" | SourceType | "reddit";
 
 const TABS: { id: FilterTab; label: string; icon: React.ElementType }[] = [
   { id: "all",        label: "All",         icon: Newspaper },
   { id: "news",       label: "News",        icon: Globe },
   { id: "newsletter", label: "Newsletters", icon: Mail },
   { id: "blog",       label: "Blogs",       icon: Rss },
+  { id: "reddit",     label: "Reddit",      icon: Flame },
 ];
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -299,6 +500,8 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [query, setQuery]       = useState("");
 
+  const isRedditTab = tab === "reddit";
+
   const activeSources = useMemo(() => {
     const ids = new Set(items.map((i) => i.sourceId));
     // Priority sources come first
@@ -311,7 +514,7 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
 
   const filtered = useMemo(() => {
     let result = items;
-    if (tab !== "all") result = result.filter((i) => i.sourceType === tab);
+    if (tab !== "all" && tab !== "reddit") result = result.filter((i) => i.sourceType === tab);
     if (sourceId) result = result.filter((i) => i.sourceId === sourceId);
     if (query.trim()) {
       const q = query.trim().toLowerCase();
@@ -330,12 +533,13 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
     setSourceId(null);
   };
 
-  const counts: Record<FilterTab, number> = useMemo(
+  const counts = useMemo(
     () => ({
       all:        items.length,
       news:       items.filter((i) => i.sourceType === "news").length,
       newsletter: items.filter((i) => i.sourceType === "newsletter").length,
       blog:       items.filter((i) => i.sourceType === "blog").length,
+      reddit:     null, // loaded on-demand
     }),
     [items]
   );
@@ -375,15 +579,15 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
           </p>
         </div>
 
-        {/* ── Divider ── */}
-        <div className="flex items-center gap-4 mb-8">
+        {/* ── Divider (hidden on Reddit tab) ── */}
+        {!isRedditTab && <div className="flex items-center gap-4 mb-8">
           <div className="h-px flex-1 bg-border/30" />
           <span className="text-xs text-muted/60 font-medium uppercase tracking-widest">Latest Feed</span>
           <div className="h-px flex-1 bg-border/30" />
-        </div>
+        </div>}
 
-        {/* ── Search ── */}
-        <div className="relative max-w-md mb-8">
+        {/* ── Search (hidden on Reddit tab) ── */}
+        {!isRedditTab && <div className="relative max-w-md mb-8">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
           <input
             type="text"
@@ -401,7 +605,7 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
               <X className="h-3.5 w-3.5" />
             </button>
           )}
-        </div>
+        </div>}
 
         {/* ── Type tabs ── */}
         <div className="flex flex-wrap gap-2 mb-5">
@@ -411,21 +615,28 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
               onClick={() => handleTabChange(id)}
               className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
                 tab === id
-                  ? "bg-accent text-black shadow-sm shadow-accent/20"
+                  ? id === "reddit"
+                    ? "bg-orange-500 text-white shadow-sm shadow-orange-500/20"
+                    : "bg-accent text-black shadow-sm shadow-accent/20"
                   : "bg-card/40 border border-border/40 text-muted hover:text-foreground hover:border-border/70"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
               {label}
-              <span className={`text-xs ${tab === id ? "text-black/70" : "text-muted/70"}`}>
-                {counts[id]}
-              </span>
+              {counts[id] !== null && (
+                <span className={`text-xs ${tab === id ? "text-black/70" : "text-muted/70"}`}>
+                  {counts[id]}
+                </span>
+              )}
             </button>
           ))}
         </div>
 
-        {/* ── Source chips ── */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        {/* ── Reddit section ── */}
+        {isRedditTab && <RedditSection />}
+
+        {/* ── Source chips (hidden on Reddit tab) ── */}
+        {!isRedditTab && <div className="flex flex-wrap gap-2 mb-8">
           <button
             onClick={() => setSourceId(null)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
@@ -468,10 +679,10 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
               Hacker News
             </button>
           )}
-        </div>
+        </div>}
 
-        {/* ── Article grid ── */}
-        {filtered.length > 0 ? (
+        {/* ── Article grid (hidden on Reddit tab) ── */}
+        {!isRedditTab && (filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((item) => (
               <NewsCard key={item.id} item={item} />
@@ -491,7 +702,7 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
               </button>
             </p>
           </div>
-        )}
+        ))}
 
         {/* ── Trending section ── */}
         <div className="flex items-center gap-4 mt-14 mb-8">

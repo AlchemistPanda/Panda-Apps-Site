@@ -1,5 +1,6 @@
 export type SourceType = "news" | "newsletter" | "blog";
 export type TrendPeriod = "day" | "week" | "month";
+export type RedditSort = "hot" | "new" | "top";
 
 export interface NewsItem {
   id: string;
