@@ -20,4 +20,5 @@ export interface NewsSource {
   type: SourceType;
   rssUrl: string;
   color: string;
+  priority?: boolean; // priority sources are shown first
 }

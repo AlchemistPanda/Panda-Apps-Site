@@ -157,31 +157,97 @@ async function fetchHackerNews(): Promise<NewsItem[]> {
   }
 }
 
+// ── Deduplication helpers ─────────────────────────────────────────────────────
+
+/** Strip protocol, www, trailing slashes, query params for comparison. */
+function normalizeUrl(raw: string): string {
+  try {
+    const u = new URL(raw);
+    return (u.hostname.replace(/^www\./, "") + u.pathname)
+      .replace(/\/+$/, "")
+      .toLowerCase();
+  } catch {
+    return raw.toLowerCase().replace(/\/+$/, "");
+  }
+}
+
+/**
+ * Rough title fingerprint: lowercase, strip punctuation + stopwords,
+ * sort remaining words. Two articles with the same fingerprint are
+ * almost certainly the same story.
+ */
+function titleFingerprint(title: string): string {
+  const stops = new Set([
+    "a","an","the","and","or","but","in","on","at","to","for","of",
+    "with","by","from","is","are","was","were","be","been","has","have",
+    "had","do","does","did","will","can","could","should","may","might",
+  ]);
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .split(/\s+/)
+    .filter((w) => w.length > 1 && !stops.has(w))
+    .sort()
+    .join(" ");
+}
+
+/**
+ * Deduplicate items by normalized URL **and** title fingerprint.
+ * Priority sources win when there is a collision (they appear first
+ * in the input list).
+ */
+function deduplicateItems(items: NewsItem[]): NewsItem[] {
+  const seenUrls = new Set<string>();
+  const seenTitles = new Set<string>();
+
+  return items.filter((item) => {
+    const nUrl = normalizeUrl(item.url);
+    const nTitle = titleFingerprint(item.title);
+
+    if (seenUrls.has(nUrl)) return false;
+    if (nTitle.length > 10 && seenTitles.has(nTitle)) return false;
+
+    seenUrls.add(nUrl);
+    if (nTitle.length > 10) seenTitles.add(nTitle);
+    return true;
+  });
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export async function fetchAllNews(): Promise<NewsItem[]> {
-  const [hnItems, ...rssResults] = await Promise.allSettled([
+  // Fetch priority sources first so they win in deduplication
+  const prioritySources = SOURCES.filter((s) => s.priority);
+  const regularSources = SOURCES.filter((s) => !s.priority);
+
+  const [hnItems, ...allRss] = await Promise.allSettled([
     fetchHackerNews(),
-    ...SOURCES.map(fetchRSSSource),
+    ...prioritySources.map(fetchRSSSource),
+    ...regularSources.map(fetchRSSSource),
   ]);
 
-  const all: NewsItem[] = [];
+  // Build combined list: priority items first, then HN, then regular
+  const priorityItems: NewsItem[] = [];
+  const regularItems: NewsItem[] = [];
 
-  if (hnItems.status === "fulfilled") all.push(...hnItems.value);
-  for (const r of rssResults) {
-    if (r.status === "fulfilled") all.push(...r.value);
+  // Priority sources come after HN in allRss (indices 0..prioritySources.length-1)
+  for (let i = 0; i < prioritySources.length; i++) {
+    const r = allRss[i];
+    if (r.status === "fulfilled") priorityItems.push(...r.value);
   }
 
-  // Deduplicate by URL, then sort newest-first
-  const seen = new Set<string>();
-  return all
-    .filter((item) => {
-      if (seen.has(item.url)) return false;
-      seen.add(item.url);
-      return true;
-    })
-    .sort(
-      (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    );
+  if (hnItems.status === "fulfilled") regularItems.push(...hnItems.value);
+
+  for (let i = prioritySources.length; i < allRss.length; i++) {
+    const r = allRss[i];
+    if (r.status === "fulfilled") regularItems.push(...r.value);
+  }
+
+  // Merge: priority first so they survive deduplication
+  const merged = [...priorityItems, ...regularItems];
+
+  return deduplicateItems(merged).sort(
+    (a, b) =>
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
 }

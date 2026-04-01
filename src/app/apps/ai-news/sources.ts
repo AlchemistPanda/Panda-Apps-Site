@@ -59,6 +59,32 @@ export const SOURCES: NewsSource[] = [
     rssUrl: "https://www.anthropic.com/news/rss",
     color: "#d97706",
   },
+  // ── Priority Newsletters ────────────────────────────────────────────────────
+  // These are shown first and marked with a priority badge.
+  {
+    id: "innov8-l8r",
+    name: "L8R by innov8",
+    type: "newsletter",
+    rssUrl: "https://innov8ai.substack.com/feed",
+    color: "#f43f5e",
+    priority: true,
+  },
+  {
+    id: "world-of-ai",
+    name: "World of AI",
+    type: "newsletter",
+    rssUrl: "https://worldofai.beehiiv.com/feed",
+    color: "#8b5cf6",
+    priority: true,
+  },
+  {
+    id: "evolving-ai",
+    name: "Evolving AI Insights",
+    type: "newsletter",
+    rssUrl: "https://evolvingai.io/feed",
+    color: "#06b6d4",
+    priority: true,
+  },
   // ── Newsletters ────────────────────────────────────────────────────────────
   {
     id: "tldr-ai",

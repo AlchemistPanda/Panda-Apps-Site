@@ -18,6 +18,7 @@ import {
   MessageSquare,
   ArrowUp,
   Loader2,
+  Star,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { NewsItem, NewsSource, SourceType, TrendPeriod } from "../types";
@@ -56,6 +57,9 @@ const SOURCE_COLORS: Record<string, { bg: string; text: string }> = {
   "tldr-ai":          { bg: "bg-violet-500/15",  text: "text-violet-400" },
   "import-ai":        { bg: "bg-cyan-500/15",    text: "text-cyan-400" },
   "bens-bites":       { bg: "bg-yellow-500/15",  text: "text-yellow-400" },
+  "innov8-l8r":       { bg: "bg-rose-500/15",    text: "text-rose-400" },
+  "world-of-ai":      { bg: "bg-violet-500/15",  text: "text-violet-400" },
+  "evolving-ai":      { bg: "bg-cyan-500/15",    text: "text-cyan-400" },
   "hacker-news":      { bg: "bg-orange-600/15",  text: "text-orange-500" },
   "reddit-artificial":    { bg: "bg-rose-500/15",    text: "text-rose-400" },
   "reddit-machinelearning": { bg: "bg-indigo-500/15", text: "text-indigo-400" },
@@ -297,7 +301,10 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
 
   const activeSources = useMemo(() => {
     const ids = new Set(items.map((i) => i.sourceId));
-    return sources.filter((s) => ids.has(s.id));
+    // Priority sources come first
+    return sources
+      .filter((s) => ids.has(s.id))
+      .sort((a, b) => (b.priority ? 1 : 0) - (a.priority ? 1 : 0));
   }, [items, sources]);
 
   const hnPresent = useMemo(() => items.some((i) => i.sourceId === "hacker-news"), [items]);
@@ -359,8 +366,8 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
             Daily AI News & Newsletters
           </h1>
           <p className="text-muted max-w-2xl text-base leading-relaxed">
-            Top stories from VentureBeat, TechCrunch, The Verge, Wired, OpenAI, Google AI, TLDR AI,
-            Import AI, Ben&apos;s Bites, and Hacker News — refreshed every 24 hours.
+            Curated from L8R by innov8, World of AI, Evolving AI Insights, plus VentureBeat,
+            TechCrunch, The Verge, TLDR AI, and more — refreshed every 24 hours.
           </p>
           <p className="flex items-center gap-1.5 text-xs text-muted/60 mt-3">
             <RefreshCw className="h-3 w-3" />
@@ -441,12 +448,13 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
                 <button
                   key={s.id}
                   onClick={() => setSourceId(active ? null : s.id)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-all border ${
+                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-all border ${
                     active
                       ? `${c.bg} ${c.text} border-current/30`
                       : "text-muted border-transparent hover:text-foreground"
                   }`}
                 >
+                  {s.priority && <Star className="h-3 w-3 fill-current" />}
                   {s.name}
                 </button>
               );
