@@ -56,16 +56,13 @@ async function fetchRedditSubreddit(
     const posts: RedditPost[] = json?.data?.children ?? [];
 
     return posts
-      .filter((p) => p.data.score > 5)
-      .map((p) => {
-        // Extract title and text for AI filtering
+      .filter((p) => {
+        if (p.data.score <= 5) return false;
         const title = p.data.title || "";
         const selftext = p.data.selftext?.slice(0, 500) || "";
-
-        // Only keep AI-related posts
-        if (!isAIContent(title, selftext)) {
-          return null;
-        }
+        return isAIContent(title, selftext);
+      })
+      .map((p) => {
         const post = p.data;
         const url = post.is_self
           ? `https://www.reddit.com${post.permalink}`
@@ -88,8 +85,7 @@ async function fetchRedditSubreddit(
           score: post.score,
           commentCount: post.num_comments,
         } satisfies NewsItem;
-      })
-      .filter((item): item is NewsItem => item !== null);
+      });
   } catch (err) {
     console.error(`[trending] Failed to fetch r/${subreddit}:`, err);
     return [];
