@@ -1,10 +1,10 @@
-// ── Current spot prices (as of 4 March 2026) ─────────────────────────────────
+// ── Current spot prices (as of 1 April 2026) ──────────────────────────────────
 // International prices in USD; India prices in INR.
 // Gold is quoted per troy ounce (31.1035 g). Silver similarly.
-// USD/INR rate used: 84.50
+// NOTE: These are fallback values. Live prices are fetched from /api/metals
 
-export const DATA_DATE = "4 March 2026";
-export const USD_INR   = 92.15;
+export const DATA_DATE = "1 April 2026";
+export const USD_INR   = 93.83;
 
 // Troy oz → gram conversion
 export const TROY_OZ_TO_G  = 31.1035;
@@ -12,9 +12,9 @@ export const TROY_OZ_TO_G  = 31.1035;
 export const TOLA_TO_G     = 11.6638;
 
 // ── Current prices ────────────────────────────────────────────────────────────
-// Gold: ~$5,098/oz (goldprice.org, 4 Mar 2026). INR = spot × USD_INR.
-// Silver: ~$33.85/oz. To enable live prices, add a /api/metals route handler
-// that fetches from goldapi.io and revalidates every hour.
+// Fallback prices (live prices are fetched from /api/metals endpoint)
+// Gold: $5,153.64/oz (1 Apr 2026) → ₹15,547/g at 93.83 USD/INR
+// Silver: $57.26/oz → ₹172.74/g
 export type MetalSpot = {
   /** USD per troy ounce */
   usdPerOz:   number;
@@ -22,10 +22,10 @@ export type MetalSpot = {
   inrPerGram: number;
 };
 
-// Calculated: 5098.13 / 31.1035 * 92.15 = ₹15,105/g
-export const GOLD_SPOT: MetalSpot  = { usdPerOz: 5098.13, inrPerGram: 15105  };
-// Calculated: 82.48 / 31.1035 * 92.15 = ₹244.4/g (silver rose with gold bull market)
-export const SILVER_SPOT: MetalSpot = { usdPerOz: 82.48,  inrPerGram: 244.4  };
+// Calculated: 5153.64 / 31.1035 * 93.83 = ₹15,547/g
+export const GOLD_SPOT: MetalSpot  = { usdPerOz: 5153.64, inrPerGram: 15547  };
+// Calculated: 57.26 / 31.1035 * 93.83 = ₹172.74/g
+export const SILVER_SPOT: MetalSpot = { usdPerOz: 57.26,  inrPerGram: 172.74  };
 
 // Derived helpers
 export function goldInr22k(inrPerGram24k: number) {
