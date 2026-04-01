@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -13,9 +13,14 @@ import {
   Clock,
   RefreshCw,
   Rss,
+  Flame,
+  TrendingUp,
+  MessageSquare,
+  ArrowUp,
+  Loader2,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import type { NewsItem, NewsSource, SourceType } from "../types";
+import type { NewsItem, NewsSource, SourceType, TrendPeriod } from "../types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -32,21 +37,34 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-// ── Source badge colours (Tailwind-safe subset) ───────────────────────────────
+function fmt(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return String(n);
+}
+
+// ── Source badge colours ──────────────────────────────────────────────────────
 
 const SOURCE_COLORS: Record<string, { bg: string; text: string }> = {
-  venturebeat:   { bg: "bg-blue-500/15",   text: "text-blue-400" },
-  techcrunch:    { bg: "bg-sky-500/15",     text: "text-sky-400" },
-  theverge:      { bg: "bg-orange-500/15",  text: "text-orange-400" },
-  wired:         { bg: "bg-zinc-500/15",    text: "text-zinc-400" },
-  "mit-tech-review": { bg: "bg-red-500/15", text: "text-red-400" },
-  openai:        { bg: "bg-emerald-500/15", text: "text-emerald-400" },
-  "google-ai":   { bg: "bg-blue-400/15",   text: "text-blue-300" },
-  anthropic:     { bg: "bg-amber-500/15",   text: "text-amber-400" },
-  "tldr-ai":     { bg: "bg-violet-500/15",  text: "text-violet-400" },
-  "import-ai":   { bg: "bg-cyan-500/15",    text: "text-cyan-400" },
-  "bens-bites":  { bg: "bg-yellow-500/15",  text: "text-yellow-400" },
-  "hacker-news": { bg: "bg-orange-600/15",  text: "text-orange-500" },
+  venturebeat:        { bg: "bg-blue-500/15",   text: "text-blue-400" },
+  techcrunch:         { bg: "bg-sky-500/15",     text: "text-sky-400" },
+  theverge:           { bg: "bg-orange-500/15",  text: "text-orange-400" },
+  wired:              { bg: "bg-zinc-500/15",    text: "text-zinc-400" },
+  "mit-tech-review":  { bg: "bg-red-500/15",     text: "text-red-400" },
+  openai:             { bg: "bg-emerald-500/15", text: "text-emerald-400" },
+  "google-ai":        { bg: "bg-blue-400/15",    text: "text-blue-300" },
+  anthropic:          { bg: "bg-amber-500/15",   text: "text-amber-400" },
+  "tldr-ai":          { bg: "bg-violet-500/15",  text: "text-violet-400" },
+  "import-ai":        { bg: "bg-cyan-500/15",    text: "text-cyan-400" },
+  "bens-bites":       { bg: "bg-yellow-500/15",  text: "text-yellow-400" },
+  "hacker-news":      { bg: "bg-orange-600/15",  text: "text-orange-500" },
+  "reddit-artificial":    { bg: "bg-rose-500/15",    text: "text-rose-400" },
+  "reddit-machinelearning": { bg: "bg-indigo-500/15", text: "text-indigo-400" },
+  "reddit-localllama":    { bg: "bg-lime-500/15",    text: "text-lime-400" },
+  "reddit-claudeai":      { bg: "bg-amber-400/15",   text: "text-amber-300" },
+  "reddit-openai":        { bg: "bg-emerald-400/15", text: "text-emerald-300" },
+  "reddit-singularity":   { bg: "bg-fuchsia-500/15", text: "text-fuchsia-400" },
+  "reddit-chatgpt":       { bg: "bg-teal-500/15",    text: "text-teal-400" },
+  "reddit-bard":          { bg: "bg-blue-300/15",    text: "text-blue-300" },
 };
 
 const TYPE_ICON: Record<SourceType, React.ElementType> = {
@@ -96,7 +114,6 @@ function NewsCard({ item }: { item: NewsItem }) {
       rel="noopener noreferrer"
       className="group flex flex-col gap-3 rounded-2xl border border-border/40 bg-card/30 p-5 hover:border-accent/30 hover:bg-card/60 transition-all duration-200"
     >
-      {/* Top row: source + type + time */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-wrap">
           <SourceBadge sourceId={item.sourceId} sourceName={item.source} />
@@ -108,22 +125,149 @@ function NewsCard({ item }: { item: NewsItem }) {
         </span>
       </div>
 
-      {/* Title */}
       <h3 className="text-sm font-semibold leading-snug text-foreground group-hover:text-accent transition-colors line-clamp-3">
         {item.title}
       </h3>
 
-      {/* Excerpt */}
       {item.excerpt && (
         <p className="text-xs text-muted leading-relaxed line-clamp-3">{item.excerpt}</p>
       )}
 
-      {/* Footer */}
       <div className="flex items-center gap-1 text-xs text-accent opacity-0 group-hover:opacity-100 transition-opacity mt-auto pt-1">
         <ExternalLink className="h-3 w-3" />
         Read article
       </div>
     </a>
+  );
+}
+
+// ── Trending row card ─────────────────────────────────────────────────────────
+
+function TrendingCard({ item, rank }: { item: NewsItem; rank: number }) {
+  const rankColors = ["text-amber-400", "text-zinc-300", "text-orange-600"];
+  const rankColor = rank <= 3 ? rankColors[rank - 1] : "text-muted/50";
+
+  return (
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-start gap-4 rounded-xl border border-border/30 bg-card/20 px-4 py-3.5 hover:border-accent/25 hover:bg-card/50 transition-all duration-150"
+    >
+      {/* Rank */}
+      <span className={`shrink-0 w-5 text-center text-sm font-bold tabular-nums ${rankColor}`}>
+        {rank}
+      </span>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap mb-1.5">
+          <SourceBadge sourceId={item.sourceId} sourceName={item.source} />
+          <span className="text-xs text-muted">{relativeTime(item.publishedAt)}</span>
+        </div>
+        <p className="text-sm font-medium leading-snug text-foreground group-hover:text-accent transition-colors line-clamp-2">
+          {item.title}
+        </p>
+      </div>
+
+      {/* Engagement */}
+      <div className="shrink-0 flex flex-col items-end gap-1 text-xs text-muted">
+        {item.score != null && (
+          <span className="flex items-center gap-0.5">
+            <ArrowUp className="h-3 w-3 text-accent/60" />
+            {fmt(item.score)}
+          </span>
+        )}
+        {item.commentCount != null && (
+          <span className="flex items-center gap-0.5">
+            <MessageSquare className="h-3 w-3" />
+            {fmt(item.commentCount)}
+          </span>
+        )}
+      </div>
+    </a>
+  );
+}
+
+// ── Trending section ──────────────────────────────────────────────────────────
+
+const TREND_TABS: { id: TrendPeriod; label: string }[] = [
+  { id: "day",   label: "Today" },
+  { id: "week",  label: "This Week" },
+  { id: "month", label: "This Month" },
+];
+
+function TrendingSection() {
+  const [period, setPeriod]   = useState<TrendPeriod>("day");
+  const [items, setItems]     = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [cache, setCache]     = useState<Partial<Record<TrendPeriod, NewsItem[]>>>({});
+
+  useEffect(() => {
+    if (cache[period]) {
+      setItems(cache[period]!);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetch(`/api/ai-news/trending?period=${period}`)
+      .then((r) => r.json())
+      .then((data: { items: NewsItem[] }) => {
+        setItems(data.items ?? []);
+        setCache((prev) => ({ ...prev, [period]: data.items ?? [] }));
+      })
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, [period, cache]);
+
+  return (
+    <section className="mb-14">
+      {/* Section header */}
+      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <Flame className="h-5 w-5 text-orange-400" />
+          <h2 className="text-lg font-semibold">Top AI News</h2>
+          <span className="text-xs text-muted/60 ml-1">ranked by community engagement</span>
+        </div>
+
+        {/* Period tabs */}
+        <div className="flex items-center gap-1 rounded-full border border-border/40 bg-card/30 p-1">
+          {TREND_TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setPeriod(id)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                period === id
+                  ? "bg-accent text-black"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-5 w-5 animate-spin text-muted" />
+        </div>
+      ) : items.length === 0 ? (
+        <p className="text-sm text-muted text-center py-10">No trending data available right now.</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {items.slice(0, 10).map((item, i) => (
+            <TrendingCard key={item.id} item={item} rank={i + 1} />
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-muted/50 mt-4 flex items-center gap-1.5">
+        <TrendingUp className="h-3 w-3" />
+        Pulled from Hacker News &amp; Reddit AI communities (r/artificial, r/MachineLearning, r/LocalLLaMA, r/ClaudeAI, r/OpenAI…). Updated hourly.
+      </p>
+    </section>
   );
 }
 
@@ -147,28 +291,21 @@ interface Props {
 }
 
 export default function AINewsClient({ items, sources, fetchedAt }: Props) {
-  const [tab, setTab]       = useState<FilterTab>("all");
+  const [tab, setTab]           = useState<FilterTab>("all");
   const [sourceId, setSourceId] = useState<string | null>(null);
-  const [query, setQuery]   = useState("");
+  const [query, setQuery]       = useState("");
 
-  // All source IDs that appear in the data
   const activeSources = useMemo(() => {
     const ids = new Set(items.map((i) => i.sourceId));
     return sources.filter((s) => ids.has(s.id));
   }, [items, sources]);
 
-  // Also include Hacker News if present
   const hnPresent = useMemo(() => items.some((i) => i.sourceId === "hacker-news"), [items]);
 
   const filtered = useMemo(() => {
     let result = items;
-
-    if (tab !== "all") {
-      result = result.filter((i) => i.sourceType === tab);
-    }
-    if (sourceId) {
-      result = result.filter((i) => i.sourceId === sourceId);
-    }
+    if (tab !== "all") result = result.filter((i) => i.sourceType === tab);
+    if (sourceId) result = result.filter((i) => i.sourceId === sourceId);
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       result = result.filter(
@@ -178,7 +315,6 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
           i.source.toLowerCase().includes(q)
       );
     }
-
     return result;
   }, [items, tab, sourceId, query]);
 
@@ -230,6 +366,16 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
             <RefreshCw className="h-3 w-3" />
             Last fetched {relativeTime(fetchedAt)} · {items.length} articles
           </p>
+        </div>
+
+        {/* ── Trending section ── */}
+        <TrendingSection />
+
+        {/* ── Divider ── */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-px flex-1 bg-border/30" />
+          <span className="text-xs text-muted/60 font-medium uppercase tracking-widest">Latest Feed</span>
+          <div className="h-px flex-1 bg-border/30" />
         </div>
 
         {/* ── Search ── */}
