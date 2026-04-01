@@ -222,10 +222,10 @@ function TrendingSection() {
       })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, [period, cache]);
+  }, [period]);
 
   return (
-    <section className="mb-14">
+    <section className="mt-14">
       {/* Section header */}
       <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
         <div className="flex items-center gap-2">
@@ -269,7 +269,7 @@ function TrendingSection() {
 
       <p className="text-xs text-muted/50 mt-4 flex items-center gap-1.5">
         <TrendingUp className="h-3 w-3" />
-        Pulled from Hacker News &amp; Reddit AI communities (r/artificial, r/MachineLearning, r/LocalLLaMA, r/ClaudeAI, r/OpenAI…). Updated hourly.
+        Ranked by upvotes from Reddit AI communities (r/artificial, r/MachineLearning, r/LocalLLaMA, r/ClaudeAI, r/OpenAI…). Updated hourly.
       </p>
     </section>
   );
@@ -374,9 +374,6 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
             Last fetched {relativeTime(fetchedAt)} · {items.length} articles
           </p>
         </div>
-
-        {/* ── Trending section ── */}
-        <TrendingSection />
 
         {/* ── Divider ── */}
         <div className="flex items-center gap-4 mb-8">
@@ -495,6 +492,14 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
             </p>
           </div>
         )}
+
+        {/* ── Trending section ── */}
+        <div className="flex items-center gap-4 mt-14 mb-8">
+          <div className="h-px flex-1 bg-border/30" />
+          <span className="text-xs text-muted/60 font-medium uppercase tracking-widest">Trending Now</span>
+          <div className="h-px flex-1 bg-border/30" />
+        </div>
+        <TrendingSection />
 
         {/* ── Footer note ── */}
         <p className="text-center text-xs text-muted/50 mt-14">
