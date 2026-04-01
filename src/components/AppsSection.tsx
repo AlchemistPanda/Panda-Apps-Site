@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
@@ -160,6 +160,17 @@ const apps = [
     category: "Finance",
     isNew: true,
     isFeatured: false,
+  },
+  {
+    title: "AI News",
+    description:
+      "Daily AI news and newsletters in one place. Top stories from VentureBeat, TechCrunch, The Verge, Wired, TLDR AI, OpenAI, Google AI, and more — refreshed every 24 hours.",
+    href: "/apps/ai-news",
+    icon: Newspaper,
+    gradient: "from-violet-500 to-fuchsia-600",
+    category: "AI",
+    isNew: true,
+    isFeatured: true,
   },
   {
     title: "Math Tug of War",
