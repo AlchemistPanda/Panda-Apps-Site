@@ -571,7 +571,7 @@ export default function AINewsClient({ items, sources, fetchedAt }: Props) {
           </h1>
           <p className="text-muted max-w-2xl text-base leading-relaxed">
             Curated from L8R by innov8, World of AI, Evolving AI Insights, plus VentureBeat,
-            TechCrunch, The Verge, TLDR AI, and more — refreshed every 24 hours.
+            TechCrunch, The Verge, TLDR AI, and more — refreshed every hour.
           </p>
           <p className="flex items-center gap-1.5 text-xs text-muted/60 mt-3">
             <RefreshCw className="h-3 w-3" />

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchAllNews } from "@/app/apps/ai-news/rss-fetcher";
 import { SOURCES } from "@/app/apps/ai-news/sources";
 
-export const revalidate = 86400; // 24 hours
+export const revalidate = 3600; // 1 hour
 
 export async function GET() {
   const items = await fetchAllNews();
@@ -15,7 +15,7 @@ export async function GET() {
     },
     {
       headers: {
-        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600",
       },
     }
   );
