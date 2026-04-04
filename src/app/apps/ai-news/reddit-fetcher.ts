@@ -78,147 +78,130 @@ export const REDDIT_COLORS: Record<string, { bg: string; text: string }> = {
   languagemodelsevals:   { bg: "bg-slate-400/15",    text: "text-slate-300" },
 };
 
-interface RedditPost {
-  data: {
-    id: string;
-    title: string;
-    url: string;
-    permalink: string;
-    score: number;
-    num_comments: number;
-    created_utc: number;
-    selftext?: string;
-    is_self: boolean;
-    subreddit: string;
-    thumbnail?: string;
-  };
+// ── Minimal RSS helpers ───────────────────────────────────────────────────────
+
+function extractCdata(xml: string, tag: string): string {
+  const re = new RegExp(
+    `<${tag}[^>]*>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*<\\/${tag}>`,
+    "i"
+  );
+  return xml.match(re)?.[1].trim() ?? "";
 }
 
-// ── Reddit OAuth token (module-level cache) ───────────────────────────────────
-
-let cachedToken: string | null = null;
-let tokenExpiresAt = 0;
-
-async function getRedditToken(): Promise<string | null> {
-  const clientId     = process.env.REDDIT_CLIENT_ID;
-  const clientSecret = process.env.REDDIT_CLIENT_SECRET;
-
-  if (!clientId || !clientSecret) return null;
-
-  if (cachedToken && Date.now() < tokenExpiresAt - 60_000) return cachedToken;
-
-  try {
-    const creds = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-    const res = await fetch("https://www.reddit.com/api/v1/access_token", {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${creds}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "PandaApps-NewsBot/1.0 (by /u/pandaappsbot)",
-      },
-      body: "grant_type=client_credentials",
-    });
-
-    if (!res.ok) {
-      console.error("[reddit] OAuth token request failed:", res.status);
-      return null;
-    }
-
-    const data = await res.json();
-    cachedToken   = data.access_token ?? null;
-    tokenExpiresAt = Date.now() + (data.expires_in ?? 3600) * 1000;
-    return cachedToken;
-  } catch (err) {
-    console.error("[reddit] OAuth error:", err);
-    return null;
-  }
+function extractText(xml: string, tag: string): string {
+  const cdata = extractCdata(xml, tag);
+  if (cdata) return cdata;
+  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i");
+  return xml.match(re)?.[1].replace(/<[^>]+>/g, "").trim() ?? "";
 }
 
-// ── Per-subreddit fetch ───────────────────────────────────────────────────────
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
 
-async function fetchSubreddit(
+// ── Per-subreddit RSS fetch ───────────────────────────────────────────────────
+
+async function fetchSubredditRSS(
   subreddit: string,
-  sort: RedditSort,
-  limit = 15
+  sort: RedditSort
 ): Promise<NewsItem[]> {
-  const token = await getRedditToken();
-
-  // Build URL: oauth.reddit.com with OAuth, www.reddit.com as fallback
-  const base   = token ? "https://oauth.reddit.com" : "https://www.reddit.com";
-  const tParam = sort === "top" ? `?t=week&limit=${limit}` : `?limit=${limit}`;
-  const url    = `${base}/r/${subreddit}/${sort}.json${tParam}`;
-
-  const headers: Record<string, string> = {
-    "User-Agent": "PandaApps-NewsBot/1.0 (by /u/pandaappsbot)",
-    "Accept": "application/json",
-  };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  // Reddit exposes public RSS feeds — no API key needed
+  const tParam = sort === "top" ? "?t=week&limit=25" : "?limit=25";
+  const url = `https://www.reddit.com/r/${subreddit}/${sort}.rss${tParam}`;
 
   try {
     const res = await fetch(url, {
-      headers,
+      headers: {
+        // Reddit requires a descriptive User-Agent for RSS too
+        "User-Agent": "PandaApps-NewsBot/1.0 (news aggregator; contact pandaapps.com)",
+        "Accept": "application/rss+xml, application/xml, text/xml",
+      },
       next: { revalidate: 3600 },
       signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {
-      console.error(`[reddit] r/${subreddit}/${sort} → ${res.status}`);
+      console.error(`[reddit-rss] r/${subreddit}/${sort} → ${res.status}`);
       return [];
     }
 
-    const json = await res.json();
-    const posts: RedditPost[] = json?.data?.children ?? [];
+    const xml = await res.text();
 
-    return posts
-      .filter((p) => p.data.score >= 1)
-      .map((p) => {
-        const post = p.data;
-        const postUrl = post.is_self
-          ? `https://www.reddit.com${post.permalink}`
-          : post.url;
+    // Split into <entry> (Atom) or <item> (RSS 2) blocks
+    const entryRe = /<entry[\s>]([\s\S]*?)<\/entry>/gi;
+    const itemRe  = /<item[\s>]([\s\S]*?)<\/item>/gi;
+    const blocks  = [...xml.matchAll(entryRe), ...xml.matchAll(itemRe)].map((m) => m[0]);
 
-        const excerpt =
-          post.is_self && post.selftext && post.selftext.length > 10
-            ? post.selftext.slice(0, 220).replace(/\s+/g, " ").trim() + "…"
-            : `${post.score.toLocaleString()} upvotes · ${post.num_comments.toLocaleString()} comments`;
+    return blocks.flatMap((block): NewsItem[] => {
+      const title = extractText(block, "title");
+      if (!title) return [];
 
-        return {
-          id: `reddit-${post.id}`,
-          title: post.title,
-          url: postUrl,
-          excerpt,
-          source: `r/${post.subreddit}`,
-          sourceId: `reddit-${post.subreddit.toLowerCase()}`,
-          sourceType: "news" as const,
-          publishedAt: new Date(post.created_utc * 1000).toISOString(),
-          score: post.score,
-          commentCount: post.num_comments,
-        } satisfies NewsItem;
-      })
-      .filter((item) => item.title && item.url && isAIContent(item.title, item.excerpt));
+      // Prefer <link href="..."> (Atom), fall back to <link> text node
+      const linkHref = block.match(/<link[^>]+href="([^"]+)"/i)?.[1];
+      const linkText = extractCdata(block, "link") || extractText(block, "link");
+      const rawUrl   = linkHref ?? linkText ?? "";
+
+      // Reddit Atom entries have the Reddit permalink as the link; the actual
+      // external URL is buried in the <content> HTML — extract it if present
+      const contentHtml = extractCdata(block, "content") || extractText(block, "content");
+      const externalUrl = contentHtml.match(/href="(https?:\/\/(?!www\.reddit\.com)[^"]+)"/)?.[1];
+      const url = externalUrl ?? rawUrl;
+
+      if (!url || !url.startsWith("http")) return [];
+
+      const pubDate = extractText(block, "published") || extractText(block, "updated") || extractText(block, "pubDate");
+      const publishedAt = pubDate ? new Date(pubDate).toISOString() : new Date().toISOString();
+
+      // Build a short excerpt from the content/description HTML
+      const descHtml = contentHtml || extractCdata(block, "description") || extractText(block, "description");
+      const excerpt = stripHtml(descHtml).slice(0, 220).trim() + (descHtml.length > 220 ? "…" : "");
+
+      if (!isAIContent(title, excerpt)) return [];
+
+      return [{
+        id: `reddit-${Buffer.from(rawUrl).toString("base64").slice(0, 16)}`,
+        title,
+        url,
+        excerpt,
+        source: `r/${subreddit}`,
+        sourceId: `reddit-${subreddit.toLowerCase()}`,
+        sourceType: "news" as const,
+        publishedAt,
+        score: undefined,
+        commentCount: undefined,
+      }];
+    });
   } catch (err) {
-    console.error(`[reddit] Failed to fetch r/${subreddit}:`, err);
+    console.error(`[reddit-rss] Failed r/${subreddit}:`, err);
     return [];
   }
 }
 
-// ── Batch helper to avoid rate-limit bursts ───────────────────────────────────
+// ── Batched fetch to avoid hammering Reddit ───────────────────────────────────
 
 async function batchFetch(
   subreddits: string[],
   sort: RedditSort,
-  batchSize = 8,
-  delayMs = 200
+  batchSize = 6,
+  delayMs = 300
 ): Promise<NewsItem[]> {
   const all: NewsItem[] = [];
 
   for (let i = 0; i < subreddits.length; i += batchSize) {
     const batch = subreddits.slice(i, i + batchSize);
-    const results = await Promise.allSettled(batch.map((s) => fetchSubreddit(s, sort)));
+    const results = await Promise.allSettled(batch.map((s) => fetchSubredditRSS(s, sort)));
     for (const r of results) {
       if (r.status === "fulfilled") all.push(...r.value);
     }
-    // Small delay between batches to stay within rate limits
     if (i + batchSize < subreddits.length) {
       await new Promise((res) => setTimeout(res, delayMs));
     }
@@ -240,9 +223,9 @@ export async function fetchRedditAI(sort: RedditSort): Promise<NewsItem[]> {
     return true;
   });
 
-  // Sort: hot/new → by date desc, top → by score desc
+  // Sort: top → by score (no score from RSS so just keep order), hot/new → by date desc
   if (sort === "top") {
-    return deduped.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    return deduped; // already ordered by Reddit's top ranking in the feed
   }
   return deduped.sort(
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
