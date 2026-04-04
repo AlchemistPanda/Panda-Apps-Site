@@ -94,26 +94,75 @@ interface RedditPost {
   };
 }
 
+// ── Reddit OAuth token (module-level cache) ───────────────────────────────────
+
+let cachedToken: string | null = null;
+let tokenExpiresAt = 0;
+
+async function getRedditToken(): Promise<string | null> {
+  const clientId     = process.env.REDDIT_CLIENT_ID;
+  const clientSecret = process.env.REDDIT_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) return null;
+
+  if (cachedToken && Date.now() < tokenExpiresAt - 60_000) return cachedToken;
+
+  try {
+    const creds = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    const res = await fetch("https://www.reddit.com/api/v1/access_token", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${creds}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "PandaApps-NewsBot/1.0 (by /u/pandaappsbot)",
+      },
+      body: "grant_type=client_credentials",
+    });
+
+    if (!res.ok) {
+      console.error("[reddit] OAuth token request failed:", res.status);
+      return null;
+    }
+
+    const data = await res.json();
+    cachedToken   = data.access_token ?? null;
+    tokenExpiresAt = Date.now() + (data.expires_in ?? 3600) * 1000;
+    return cachedToken;
+  } catch (err) {
+    console.error("[reddit] OAuth error:", err);
+    return null;
+  }
+}
+
+// ── Per-subreddit fetch ───────────────────────────────────────────────────────
+
 async function fetchSubreddit(
   subreddit: string,
   sort: RedditSort,
   limit = 15
 ): Promise<NewsItem[]> {
-  const tParam = sort === "top" ? "?t=week&limit=" + limit : `?limit=${limit}`;
-  const url = `https://old.reddit.com/r/${subreddit}/${sort}.json${tParam}`;
+  const token = await getRedditToken();
+
+  // Build URL: oauth.reddit.com with OAuth, www.reddit.com as fallback
+  const base   = token ? "https://oauth.reddit.com" : "https://www.reddit.com";
+  const tParam = sort === "top" ? `?t=week&limit=${limit}` : `?limit=${limit}`;
+  const url    = `${base}/r/${subreddit}/${sort}.json${tParam}`;
+
+  const headers: Record<string, string> = {
+    "User-Agent": "PandaApps-NewsBot/1.0 (by /u/pandaappsbot)",
+    "Accept": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   try {
     const res = await fetch(url, {
-      headers: {
-        "User-Agent": "PandaApps-NewsBot/1.0 (https://pandaapps.com)",
-        "Accept": "application/json",
-      },
+      headers,
       next: { revalidate: 3600 },
       signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {
-      console.error(`[reddit] r/${subreddit}/${sort} responded ${res.status}`);
+      console.error(`[reddit] r/${subreddit}/${sort} → ${res.status}`);
       return [];
     }
 
@@ -153,15 +202,35 @@ async function fetchSubreddit(
   }
 }
 
-export async function fetchRedditAI(sort: RedditSort): Promise<NewsItem[]> {
-  const results = await Promise.allSettled(
-    REDDIT_AI_SUBREDDITS.map((s) => fetchSubreddit(s, sort))
-  );
+// ── Batch helper to avoid rate-limit bursts ───────────────────────────────────
 
+async function batchFetch(
+  subreddits: string[],
+  sort: RedditSort,
+  batchSize = 8,
+  delayMs = 200
+): Promise<NewsItem[]> {
   const all: NewsItem[] = [];
-  for (const r of results) {
-    if (r.status === "fulfilled") all.push(...r.value);
+
+  for (let i = 0; i < subreddits.length; i += batchSize) {
+    const batch = subreddits.slice(i, i + batchSize);
+    const results = await Promise.allSettled(batch.map((s) => fetchSubreddit(s, sort)));
+    for (const r of results) {
+      if (r.status === "fulfilled") all.push(...r.value);
+    }
+    // Small delay between batches to stay within rate limits
+    if (i + batchSize < subreddits.length) {
+      await new Promise((res) => setTimeout(res, delayMs));
+    }
   }
+
+  return all;
+}
+
+// ── Public entry point ────────────────────────────────────────────────────────
+
+export async function fetchRedditAI(sort: RedditSort): Promise<NewsItem[]> {
+  const all = await batchFetch(REDDIT_AI_SUBREDDITS, sort);
 
   // Deduplicate by URL
   const seen = new Set<string>();
