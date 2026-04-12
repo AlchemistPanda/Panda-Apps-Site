@@ -44,6 +44,26 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+/** Try to extract an image URL from an RSS/Atom item block. */
+function extractImageUrl(itemXml: string, rawDesc: string): string | undefined {
+  // 1. <media:content url="..."> or <media:thumbnail url="...">
+  const media = itemXml.match(/<media:(?:content|thumbnail)[^>]+url="([^"]+)"/i);
+  if (media?.[1]) return media[1];
+
+  // 2. <enclosure url="..." type="image/...">
+  const enclosure = itemXml.match(/<enclosure[^>]+url="([^"]+)"[^>]+type="image\/[^"]+"/i);
+  if (enclosure?.[1]) return enclosure[1];
+  // Also match when type comes before url
+  const enclosure2 = itemXml.match(/<enclosure[^>]+type="image\/[^"]+"[^>]+url="([^"]+)"/i);
+  if (enclosure2?.[1]) return enclosure2[1];
+
+  // 3. First <img src="..."> in description/content HTML
+  const img = rawDesc.match(/<img[^>]+src="(https?:\/\/[^"]+)"/i);
+  if (img?.[1]) return img[1];
+
+  return undefined;
+}
+
 function toExcerpt(raw: string, maxLen = 220): string {
   const clean = stripHtml(raw);
   if (clean.length <= maxLen) return clean;
@@ -89,21 +109,27 @@ async function fetchRSSSource(source: NewsSource): Promise<NewsItem[]> {
           extractText(item, "published") ||
           extractText(item, "updated") ||
           extractText(item, "dc:date");
-        const rawDesc =
+        // Keep the raw HTML around for image extraction before stripping
+        const rawDescHtml =
           extractCdata(item, "content:encoded") ||
-          extractText(item, "content:encoded") ||
           extractCdata(item, "description") ||
+          "";
+        const rawDesc =
+          rawDescHtml ||
+          extractText(item, "content:encoded") ||
           extractText(item, "description") ||
           extractText(item, "summary") ||
           extractText(item, "content");
 
         const excerpt = toExcerpt(rawDesc);
+        const imageUrl = extractImageUrl(item, rawDescHtml || rawDesc);
 
         return {
           id: `${source.id}-${i}-${Date.now()}`,
           title,
           url,
           excerpt,
+          imageUrl,
           source: source.name,
           sourceId: source.id,
           sourceType: source.type,

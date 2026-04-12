@@ -27,6 +27,12 @@ interface RedditPost {
     selftext?: string;
     is_self: boolean;
     subreddit: string;
+    thumbnail?: string;
+    preview?: {
+      images?: Array<{
+        source?: { url?: string };
+      }>;
+    };
   };
 }
 
@@ -73,11 +79,17 @@ async function fetchRedditSubreddit(
             ? post.selftext.slice(0, 220).replace(/\s+/g, " ").trim() + "…"
             : `${post.score.toLocaleString()} upvotes · ${post.num_comments.toLocaleString()} comments on r/${subreddit}`;
 
+        // Extract best available image: preview > thumbnail
+        const previewUrl = post.preview?.images?.[0]?.source?.url?.replace(/&amp;/g, "&");
+        const thumb = post.thumbnail && post.thumbnail.startsWith("http") ? post.thumbnail : undefined;
+        const imageUrl = previewUrl || thumb;
+
         return {
           id: `reddit-${post.id}`,
           title: post.title,
           url,
           excerpt,
+          imageUrl,
           source: `r/${subreddit}`,
           sourceId: `reddit-${subreddit.toLowerCase()}`,
           sourceType: "news" as const,

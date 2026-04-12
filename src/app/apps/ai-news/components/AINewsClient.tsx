@@ -114,35 +114,52 @@ function TypeBadge({ type }: { type: SourceType }) {
 }
 
 function NewsCard({ item }: { item: NewsItem }) {
+  const [imgError, setImgError] = useState(false);
+  const showImage = item.imageUrl && !imgError;
+
   return (
     <a
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex flex-col gap-3 rounded-2xl border border-border/40 bg-card/30 p-5 hover:border-accent/30 hover:bg-card/60 transition-all duration-200"
+      className="group flex flex-col rounded-2xl border border-border/40 bg-card/30 overflow-hidden hover:border-accent/30 hover:bg-card/60 transition-all duration-200"
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <SourceBadge sourceId={item.sourceId} sourceName={item.source} />
-          <TypeBadge type={item.sourceType} />
+      {showImage && (
+        <div className="relative w-full aspect-[16/9] bg-card/50 overflow-hidden">
+          <img
+            src={item.imageUrl}
+            alt=""
+            loading="lazy"
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         </div>
-        <span className="flex items-center gap-1 text-xs text-muted shrink-0">
-          <Clock className="h-3 w-3" />
-          {relativeTime(item.publishedAt)}
-        </span>
-      </div>
-
-      <h3 className="text-sm font-semibold leading-snug text-foreground group-hover:text-accent transition-colors line-clamp-3">
-        {item.title}
-      </h3>
-
-      {item.excerpt && (
-        <p className="text-xs text-muted leading-relaxed line-clamp-3">{item.excerpt}</p>
       )}
 
-      <div className="flex items-center gap-1 text-xs text-accent opacity-0 group-hover:opacity-100 transition-opacity mt-auto pt-1">
-        <ExternalLink className="h-3 w-3" />
-        Read article
+      <div className="flex flex-col gap-3 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <SourceBadge sourceId={item.sourceId} sourceName={item.source} />
+            <TypeBadge type={item.sourceType} />
+          </div>
+          <span className="flex items-center gap-1 text-xs text-muted shrink-0">
+            <Clock className="h-3 w-3" />
+            {relativeTime(item.publishedAt)}
+          </span>
+        </div>
+
+        <h3 className="text-sm font-semibold leading-snug text-foreground group-hover:text-accent transition-colors line-clamp-3">
+          {item.title}
+        </h3>
+
+        {item.excerpt && (
+          <p className="text-xs text-muted leading-relaxed line-clamp-3">{item.excerpt}</p>
+        )}
+
+        <div className="flex items-center gap-1 text-xs text-accent opacity-0 group-hover:opacity-100 transition-opacity mt-auto pt-1">
+          <ExternalLink className="h-3 w-3" />
+          Read article
+        </div>
       </div>
     </a>
   );
@@ -191,6 +208,75 @@ function TrendingCard({ item, rank }: { item: NewsItem; rank: number }) {
             {fmt(item.commentCount)}
           </span>
         )}
+      </div>
+    </a>
+  );
+}
+
+// ── Reddit post card ─────────────────────────────────────────────────────
+
+function RedditCard({ item }: { item: NewsItem }) {
+  const [imgError, setImgError] = useState(false);
+  const showImage = item.imageUrl && !imgError;
+  const key = item.sourceId.replace("reddit-", "");
+  const c = REDDIT_COLORS[key] ?? { bg: "bg-orange-500/15", text: "text-orange-400" };
+
+  return (
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex flex-col rounded-2xl border border-border/40 bg-card/30 overflow-hidden hover:border-orange-400/30 hover:bg-card/60 transition-all duration-200"
+    >
+      {showImage && (
+        <div className="relative w-full aspect-[16/9] bg-card/50 overflow-hidden">
+          <img
+            src={item.imageUrl}
+            alt=""
+            loading="lazy"
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
+            {item.source}
+          </span>
+          <span className="flex items-center gap-1 text-xs text-muted shrink-0">
+            <Clock className="h-3 w-3" />
+            {relativeTime(item.publishedAt)}
+          </span>
+        </div>
+
+        <h3 className="text-sm font-semibold leading-snug text-foreground group-hover:text-orange-400 transition-colors line-clamp-3">
+          {item.title}
+        </h3>
+
+        {item.excerpt && (
+          <p className="text-xs text-muted leading-relaxed line-clamp-2">{item.excerpt}</p>
+        )}
+
+        <div className="flex items-center gap-3 mt-auto pt-1">
+          {item.score != null && (
+            <span className="flex items-center gap-0.5 text-xs text-muted">
+              <ArrowUp className="h-3 w-3 text-orange-400/70" />
+              {fmt(item.score)}
+            </span>
+          )}
+          {item.commentCount != null && (
+            <span className="flex items-center gap-0.5 text-xs text-muted">
+              <MessageSquare className="h-3 w-3" />
+              {fmt(item.commentCount)}
+            </span>
+          )}
+          <span className="ml-auto flex items-center gap-1 text-xs text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            <ExternalLink className="h-3 w-3" />
+            Open
+          </span>
+        </div>
       </div>
     </a>
   );
@@ -413,56 +499,7 @@ function RedditSection() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((item) => (
-            <a
-              key={item.id}
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex flex-col gap-3 rounded-2xl border border-border/40 bg-card/30 p-5 hover:border-orange-400/30 hover:bg-card/60 transition-all duration-200"
-            >
-              <div className="flex items-center justify-between gap-2">
-                {(() => {
-                  const key = item.sourceId.replace("reddit-", "");
-                  const c = REDDIT_COLORS[key] ?? { bg: "bg-orange-500/15", text: "text-orange-400" };
-                  return (
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
-                      {item.source}
-                    </span>
-                  );
-                })()}
-                <span className="flex items-center gap-1 text-xs text-muted shrink-0">
-                  <Clock className="h-3 w-3" />
-                  {relativeTime(item.publishedAt)}
-                </span>
-              </div>
-
-              <h3 className="text-sm font-semibold leading-snug text-foreground group-hover:text-orange-400 transition-colors line-clamp-3">
-                {item.title}
-              </h3>
-
-              {item.excerpt && (
-                <p className="text-xs text-muted leading-relaxed line-clamp-2">{item.excerpt}</p>
-              )}
-
-              <div className="flex items-center gap-3 mt-auto pt-1">
-                {item.score != null && (
-                  <span className="flex items-center gap-0.5 text-xs text-muted">
-                    <ArrowUp className="h-3 w-3 text-orange-400/70" />
-                    {fmt(item.score)}
-                  </span>
-                )}
-                {item.commentCount != null && (
-                  <span className="flex items-center gap-0.5 text-xs text-muted">
-                    <MessageSquare className="h-3 w-3" />
-                    {fmt(item.commentCount)}
-                  </span>
-                )}
-                <span className="ml-auto flex items-center gap-1 text-xs text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ExternalLink className="h-3 w-3" />
-                  Open
-                </span>
-              </div>
-            </a>
+            <RedditCard key={item.id} item={item} />
           ))}
         </div>
       )}

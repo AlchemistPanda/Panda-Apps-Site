@@ -165,6 +165,10 @@ async function fetchSubredditRSS(
       const descHtml = contentHtml || extractCdata(block, "description") || extractText(block, "description");
       const excerpt = stripHtml(descHtml).slice(0, 220).trim() + (descHtml.length > 220 ? "…" : "");
 
+      // Extract thumbnail image from the content HTML
+      const imgMatch = descHtml.match(/<img[^>]+src="(https?:\/\/[^"]+)"/i);
+      const imageUrl = imgMatch?.[1];
+
       if (!isAIContent(title, excerpt)) return [];
 
       return [{
@@ -172,6 +176,7 @@ async function fetchSubredditRSS(
         title,
         url,
         excerpt,
+        imageUrl,
         source: `r/${subreddit}`,
         sourceId: `reddit-${subreddit.toLowerCase()}`,
         sourceType: "news" as const,

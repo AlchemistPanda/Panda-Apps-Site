@@ -11,8 +11,9 @@ export interface NewsItem {
   sourceId: string;
   sourceType: SourceType;
   publishedAt: string; // ISO date string
-  score?: number;        // upvotes / HN points
-  commentCount?: number; // comment count
+  imageUrl?: string;       // article thumbnail / hero image
+  score?: number;          // upvotes / HN points
+  commentCount?: number;   // comment count
 }
 
 export interface NewsSource {
