@@ -240,30 +240,93 @@ function deduplicateItems(items: NewsItem[]): NewsItem[] {
   });
 }
 
+// ── TechCrunch via WordPress REST API (RSS has no images) ─────────────────────
+
+async function fetchTechCrunchWP(): Promise<NewsItem[]> {
+  // Category 577047203 = "AI" on techcrunch.com
+  const url =
+    "https://techcrunch.com/wp-json/wp/v2/posts" +
+    "?categories=577047203&per_page=12" +
+    "&_fields=link,date,title,excerpt,jetpack_featured_media_url";
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "PandaApps-NewsBot/1.0 (https://pandaapps.com)",
+        Accept: "application/json",
+      },
+      next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return [];
+
+    const posts: Array<{
+      link: string;
+      date: string;
+      title: { rendered: string };
+      excerpt: { rendered: string };
+      jetpack_featured_media_url?: string;
+    }> = await res.json();
+
+    return posts
+      .map((p, i) => {
+        const title = p.title.rendered
+          .replace(/&#8217;/g, "'")
+          .replace(/&#8220;/g, '"')
+          .replace(/&#8221;/g, '"')
+          .replace(/&#8230;/g, "…")
+          .replace(/&amp;/g, "&")
+          .replace(/<[^>]+>/g, "")
+          .trim();
+
+        const excerpt = toExcerpt(p.excerpt.rendered);
+        const imageUrl = p.jetpack_featured_media_url || undefined;
+
+        return {
+          id: `techcrunch-wp-${i}-${Date.now()}`,
+          title,
+          url: p.link,
+          excerpt,
+          imageUrl,
+          source: "TechCrunch",
+          sourceId: "techcrunch",
+          sourceType: "news" as const,
+          publishedAt: new Date(p.date + "Z").toISOString(),
+        } satisfies NewsItem;
+      })
+      .filter((item) => item.title && item.url && isAIContent(item.title, item.excerpt));
+  } catch {
+    return [];
+  }
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export async function fetchAllNews(): Promise<NewsItem[]> {
   // Fetch priority sources first so they win in deduplication
+  // TechCrunch is fetched via WP REST API (has images); skip it from RSS
   const prioritySources = SOURCES.filter((s) => s.priority);
-  const regularSources = SOURCES.filter((s) => !s.priority);
+  const regularSources = SOURCES.filter((s) => !s.priority && s.id !== "techcrunch");
 
-  const [hnItems, ...allRss] = await Promise.allSettled([
+  const [hnItems, tcItems, ...allRss] = await Promise.allSettled([
     fetchHackerNews(),
+    fetchTechCrunchWP(),
     ...prioritySources.map(fetchRSSSource),
     ...regularSources.map(fetchRSSSource),
   ]);
 
-  // Build combined list: priority items first, then HN, then regular
+  // Build combined list: priority items first, then HN + TC, then regular
   const priorityItems: NewsItem[] = [];
   const regularItems: NewsItem[] = [];
 
-  // Priority sources come after HN in allRss (indices 0..prioritySources.length-1)
+  // Priority sources come after HN + TC in allRss (indices 0..prioritySources.length-1)
   for (let i = 0; i < prioritySources.length; i++) {
     const r = allRss[i];
     if (r.status === "fulfilled") priorityItems.push(...r.value);
   }
 
   if (hnItems.status === "fulfilled") regularItems.push(...hnItems.value);
+  if (tcItems.status === "fulfilled") regularItems.push(...tcItems.value);
 
   for (let i = prioritySources.length; i < allRss.length; i++) {
     const r = allRss[i];
