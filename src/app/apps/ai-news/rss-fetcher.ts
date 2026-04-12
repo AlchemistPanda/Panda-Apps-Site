@@ -59,7 +59,7 @@ function extractImageUrl(itemXml: string, rawDesc: string): string | undefined {
 
   // 3. First <img src="..."> in description/content HTML
   const img = rawDesc.match(/<img[^>]+src="(https?:\/\/[^"]+)"/i);
-  if (img?.[1]) return img[1];
+  if (img?.[1]) return img[1].replace(/&#0*38;/g, "&").replace(/&amp;/g, "&");
 
   return undefined;
 }
@@ -109,9 +109,11 @@ async function fetchRSSSource(source: NewsSource): Promise<NewsItem[]> {
           extractText(item, "published") ||
           extractText(item, "updated") ||
           extractText(item, "dc:date");
-        // Keep the raw HTML around for image extraction before stripping
+        // Keep the raw HTML around for image extraction before stripping.
+        // Also check bare <content> (Atom feeds like The Verge).
         const rawDescHtml =
           extractCdata(item, "content:encoded") ||
+          extractCdata(item, "content") ||
           extractCdata(item, "description") ||
           "";
         const rawDesc =
