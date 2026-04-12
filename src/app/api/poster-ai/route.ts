@@ -17,43 +17,33 @@ export async function POST(req: Request) {
       return Response.json({ error: "Prompt required" }, { status: 400 });
     }
 
-    // Use Gemini 2.0 Flash with image generation capability
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Use Gemini 2.0 Flash Preview Image Generation model
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-preview-image-generation" } as any);
 
-    // Generate image via Gemini
+    const imagePrompt = `Generate a professional poster background image ${width}x${height}. No text, no words, no letters, no typography anywhere in the image. Only visual elements: colors, patterns, textures, gradients, and decorative graphics. Description: ${prompt}`;
+
     const result = await model.generateContent({
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              text: `Generate a professional poster background image. The image should be ${width}x${height} pixels. Do not include any text, words, or letters in the image. Only visual elements like colors, patterns, textures, and graphics. Description: ${prompt}`,
-            },
-          ],
-        },
-      ],
+      contents: [{ role: "user", parts: [{ text: imagePrompt }] }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      generationConfig: { responseModalities: ["IMAGE", "TEXT"] } as any,
     });
 
     const response = result.response;
-    const content = response.candidates?.[0]?.content;
+    const parts = response.candidates?.[0]?.content?.parts ?? [];
 
-    if (!content?.parts || content.parts.length === 0) {
+    const imagePart = parts.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (p: any) => p.inlineData?.mimeType?.startsWith("image/")
+    );
+
+    if (!imagePart?.inlineData) {
       return Response.json(
-        { error: "Failed to generate image" },
+        { error: "No image in response. Try a different description." },
         { status: 500 }
       );
     }
 
-    const imagePart = content.parts.find((p) => p.inlineData?.mimeType?.startsWith("image/"));
-
-    if (!imagePart || !imagePart.inlineData) {
-      return Response.json(
-        { error: "No image data in response" },
-        { status: 500 }
-      );
-    }
-
-    // Return as base64 data URL
     const base64 = imagePart.inlineData.data;
     const mimeType = imagePart.inlineData.mimeType || "image/jpeg";
     const dataUrl = `data:${mimeType};base64,${base64}`;
@@ -61,9 +51,7 @@ export async function POST(req: Request) {
     return Response.json({ imageUrl: dataUrl });
   } catch (error) {
     console.error("Poster AI error:", error);
-    return Response.json(
-      { error: error instanceof Error ? error.message : "Generation failed" },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Generation failed";
+    return Response.json({ error: message }, { status: 500 });
   }
 }
