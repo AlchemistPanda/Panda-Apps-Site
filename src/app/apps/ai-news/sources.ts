@@ -106,7 +106,43 @@ export const SOURCES: NewsSource[] = [
     rssUrl: "https://technology-newsletter.beehiiv.com/", // Beehiiv — scraped via page, not RSS
     color: "#14b8a6",
   },
-  // ── Newsletters ────────────────────────────────────────────────────────────
+  // ── Beehiiv newsletters (archive-scraped) ─────────────────────────────────
+  {
+    id: "the-rundown",
+    name: "The Rundown AI",
+    type: "newsletter",
+    rssUrl: "https://www.therundown.ai/archive", // Beehiiv — scraped via archive page
+    color: "#f97316",
+  },
+  {
+    id: "the-neuron",
+    name: "The Neuron",
+    type: "newsletter",
+    rssUrl: "https://www.theneurondaily.com/archive", // Beehiiv — scraped via archive page
+    color: "#ec4899",
+  },
+  {
+    id: "mindstream",
+    name: "Mindstream",
+    type: "newsletter",
+    rssUrl: "https://www.mindstream.news/archive", // Beehiiv — scraped via archive page
+    color: "#6366f1",
+  },
+  {
+    id: "ai-breakfast",
+    name: "AI Breakfast",
+    type: "newsletter",
+    rssUrl: "https://aibreakfast.beehiiv.com/archive", // Beehiiv — scraped via archive page
+    color: "#f59e0b",
+  },
+  {
+    id: "superhuman-ai",
+    name: "Superhuman AI",
+    type: "newsletter",
+    rssUrl: "https://www.superhuman.ai/archive", // Beehiiv — scraped via archive page
+    color: "#10b981",
+  },
+  // ── RSS Newsletters ────────────────────────────────────────────────────────
   {
     id: "tldr-ai",
     name: "TLDR AI",
@@ -127,6 +163,35 @@ export const SOURCES: NewsSource[] = [
     type: "newsletter",
     rssUrl: "https://bensbites.beehiiv.com/feed",
     color: "#f59e0b",
+  },
+  {
+    id: "last-week-ai",
+    name: "Last Week in AI",
+    type: "newsletter",
+    rssUrl: "https://lastweekin.ai/feed",
+    color: "#8b5cf6",
+  },
+  {
+    id: "algorithmic-bridge",
+    name: "The Algorithmic Bridge",
+    type: "newsletter",
+    rssUrl: "https://www.thealgorithmicbridge.com/feed",
+    color: "#64748b",
+  },
+  // ── AI News Sites ──────────────────────────────────────────────────────────
+  {
+    id: "the-decoder",
+    name: "The Decoder",
+    type: "news",
+    rssUrl: "https://the-decoder.com/feed/",
+    color: "#0f172a",
+  },
+  {
+    id: "marktechpost",
+    name: "MarkTechPost",
+    type: "news",
+    rssUrl: "https://www.marktechpost.com/feed/",
+    color: "#1d4ed8",
   },
 ];
 

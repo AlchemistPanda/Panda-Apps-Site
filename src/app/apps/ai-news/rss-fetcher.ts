@@ -493,20 +493,30 @@ async function fetchInnov8L8R(): Promise<NewsItem[]> {
 const CUSTOM_SOURCE_IDS = new Set([
   "techcrunch",        // WordPress REST API
   "innov8-l8r",        // Beehiiv sitemap
-  "evolving-ai",       // Beehiiv page scraper
-  "world-of-ai",       // Beehiiv page scraper
-  "in-world-of-ai",    // Beehiiv page scraper
-  "deep-view",         // Beehiiv page scraper
-  "tech-newsletter",   // Beehiiv page scraper
+  "evolving-ai",       // Beehiiv archive scraper
+  "world-of-ai",       // Beehiiv archive scraper
+  "in-world-of-ai",    // Beehiiv archive scraper
+  "deep-view",         // Beehiiv archive scraper
+  "tech-newsletter",   // Beehiiv archive scraper
+  "the-rundown",       // Beehiiv archive scraper
+  "the-neuron",        // Beehiiv archive scraper
+  "mindstream",        // Beehiiv archive scraper
+  "ai-breakfast",      // Beehiiv archive scraper
+  "superhuman-ai",     // Beehiiv archive scraper
 ]);
 
-// Beehiiv newsletters fetched via homepage scraper (L8R uses sitemap instead)
+// Beehiiv newsletters fetched via archive page scraper (L8R uses sitemap instead)
 const BEEHIIV_SOURCES: [string, string, string, SourceType][] = [
-  ["https://evolvingai.io/",                    "Evolving AI Insights", "evolving-ai",    "newsletter"],
-  ["https://worldofai.beehiiv.com/",            "World of AI",          "world-of-ai",    "newsletter"],
+  ["https://evolvingai.io/",                     "Evolving AI Insights", "evolving-ai",    "newsletter"],
+  ["https://worldofai.beehiiv.com/",             "World of AI",          "world-of-ai",    "newsletter"],
   ["https://intheworldofai.com/archive",          "In the World of AI",   "in-world-of-ai", "newsletter"],
-  ["https://archive.thedeepview.com/",          "The Deep View",        "deep-view",      "newsletter"],
-  ["https://technology-newsletter.beehiiv.com/","Technology News",      "tech-newsletter","newsletter"],
+  ["https://archive.thedeepview.com/",            "The Deep View",        "deep-view",      "newsletter"],
+  ["https://technology-newsletter.beehiiv.com/", "Technology News",      "tech-newsletter","newsletter"],
+  ["https://www.therundown.ai/archive",           "The Rundown AI",       "the-rundown",    "newsletter"],
+  ["https://www.theneurondaily.com/archive",      "The Neuron",           "the-neuron",     "newsletter"],
+  ["https://www.mindstream.news/archive",         "Mindstream",           "mindstream",     "newsletter"],
+  ["https://aibreakfast.beehiiv.com/archive",     "AI Breakfast",         "ai-breakfast",   "newsletter"],
+  ["https://www.superhuman.ai/archive",           "Superhuman AI",        "superhuman-ai",  "newsletter"],
 ];
 
 export async function fetchAllNews(): Promise<NewsItem[]> {
