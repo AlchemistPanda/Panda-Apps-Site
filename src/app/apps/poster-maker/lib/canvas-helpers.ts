@@ -25,16 +25,26 @@ export async function setBackgroundFromUrl(
   const { FabricImage } = await loadFabric();
 
   return new Promise((resolve, reject) => {
-    FabricImage.fromURL(
-      url,
-      { crossOrigin: "anonymous" }
-    )
+    FabricImage.fromURL(url, { crossOrigin: "anonymous" })
       .then((img: FabricCanvas) => {
-        const canvasWidth = canvas.width as number;
-        const canvasHeight = canvas.height as number;
-        img.scaleToWidth(canvasWidth);
-        img.scaleToHeight(canvasHeight);
-        img.set({ selectable: false, evented: false });
+        // canvas.width/height are display (zoomed) pixels.
+        // Divide by zoom to get the actual canvas coordinate space.
+        const zoom = canvas.getZoom() as number;
+        const actualWidth = (canvas.width as number) / zoom;
+        const actualHeight = (canvas.height as number) / zoom;
+
+        // Stretch image to fill entire canvas (scaleX/Y independently)
+        img.set({
+          left: 0,
+          top: 0,
+          originX: "left",
+          originY: "top",
+          scaleX: actualWidth / img.width,
+          scaleY: actualHeight / img.height,
+          selectable: false,
+          evented: false,
+        });
+
         canvas.backgroundImage = img;
         canvas.renderAll();
         resolve();
