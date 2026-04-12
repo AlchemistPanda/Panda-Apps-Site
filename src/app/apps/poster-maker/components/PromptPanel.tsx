@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Sparkles, RefreshCw, Wand2, LayoutTemplate, ChevronDown } from "lucide-react";
-import { enhancePrompt, buildPollinationsUrl } from "../lib/prompt-enhancer";
+import { enhancePrompt } from "../lib/prompt-enhancer";
 import { CANVAS_PRESETS } from "../lib/types";
 import type { CanvasPresetId, CanvasSize } from "../lib/types";
 
@@ -37,24 +37,29 @@ export default function PromptPanel({
     setShowEnhanced(true);
   };
 
-  const handleGenerate = async (forceSeed?: number) => {
+  const handleGenerate = async () => {
     const finalPrompt = showEnhanced && enhanced ? enhanced : enhancePrompt(prompt);
     if (!finalPrompt.trim()) { setError("Please enter a description first."); return; }
     setError("");
     setIsGenerating(true);
     try {
-      const url = buildPollinationsUrl(finalPrompt, canvasSize.width, canvasSize.height, forceSeed);
-      // Preload the image
-      await new Promise<void>((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error("Image load failed"));
-        img.src = url;
+      const res = await fetch("/api/poster-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: finalPrompt,
+          width: canvasSize.width,
+          height: canvasSize.height,
+        }),
       });
-      onGenerate(url);
-    } catch {
-      setError("Failed to generate image. Please try again.");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Generation failed");
+      }
+      const { imageUrl } = await res.json();
+      onGenerate(imageUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate image. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -205,7 +210,7 @@ export default function PromptPanel({
       {/* Regenerate */}
       {!isGenerating && prompt.trim() && (
         <button
-          onClick={() => handleGenerate(Math.floor(Math.random() * 999999))}
+          onClick={() => handleGenerate()}
           className="w-full flex items-center justify-center gap-2 rounded-xl border border-border/50 bg-card/30 hover:bg-card/60 px-4 py-2.5 text-sm text-muted hover:text-foreground transition-all"
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -217,7 +222,7 @@ export default function PromptPanel({
       <div className="rounded-xl border border-border/30 bg-background/30 px-3 py-2.5">
         <p className="text-[11px] text-muted leading-relaxed">
           <span className="text-fuchsia-400 font-semibold">Tip:</span> The AI generates backgrounds without text so you can add your own styled text on top. Powered by{" "}
-          <span className="text-foreground font-medium">Pollinations.ai</span> — completely free.
+          <span className="text-foreground font-medium">Google Gemini 2.0 Flash</span> — free tier with 15 images/minute.
         </p>
       </div>
     </div>
