@@ -394,27 +394,119 @@ async function fetchBeehiivSite(
   }
 }
 
+// ── L8R by Innov8 — sitemap-based fetcher ────────────────────────────────────
+// letter.innov8academy.in has strict Cloudflare Bot Protection on the homepage,
+// which blocks data-center IPs (Vercel). The sitemap at /sitemap.xml is
+// Cloudflare-whitelisted (needed for Googlebot) and returns clean XML with
+// all post URLs, lastmod dates, and titles for the most recent posts.
+
+function decodeXmlEntities(s: string): string {
+  return s
+    .replace(/&#39;/g, "'")
+    .replace(/&#34;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .trim();
+}
+
+async function fetchInnov8L8R(): Promise<NewsItem[]> {
+  try {
+    const res = await fetch("https://letter.innov8academy.in/sitemap.xml", {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+          "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept: "application/xml, text/xml, */*",
+      },
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return [];
+
+    const xml = await res.text();
+
+    // Parse each <url> block
+    const urlBlocks = xml.match(/<url[\s>][\s\S]*?<\/url>/gi) ?? [];
+    const items: NewsItem[] = [];
+
+    for (const block of urlBlocks) {
+      const locMatch = block.match(/<loc>(https?:\/\/[^<]+)<\/loc>/);
+      if (!locMatch) continue;
+      const url = locMatch[1].trim();
+
+      // Only post pages
+      if (!url.includes("/p/")) continue;
+      const slug = url.split("/p/").pop() ?? "";
+      if (!slug) continue;
+
+      const lastmodMatch = block.match(/<lastmod>([^<]+)<\/lastmod>/);
+
+      // Prefer <news:title> + <news:publication_date> (present on recent posts)
+      const newsTitleMatch  = block.match(/<news:title>([^<]+)<\/news:title>/);
+      const newsDateMatch   = block.match(/<news:publication_date>([^<]+)<\/news:publication_date>/);
+
+      let title: string;
+      let publishedAt: string;
+
+      if (newsTitleMatch) {
+        title       = decodeXmlEntities(newsTitleMatch[1]);
+        publishedAt = newsDateMatch
+          ? new Date(newsDateMatch[1]).toISOString()
+          : new Date((lastmodMatch?.[1] ?? "") + "T00:00:00Z").toISOString();
+      } else {
+        // Derive a readable title from the slug for older posts
+        title = slug
+          .replace(/-/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        publishedAt = lastmodMatch
+          ? new Date(lastmodMatch[1] + "T00:00:00Z").toISOString()
+          : new Date().toISOString();
+      }
+
+      if (!title || !isAIContent(title, "")) continue;
+
+      items.push({
+        id: `innov8-l8r-${slug}`,
+        title,
+        url,
+        excerpt: "",
+        source: "L8R by Innov8",
+        sourceId: "innov8-l8r",
+        sourceType: "newsletter" as const,
+        publishedAt,
+      });
+    }
+
+    return items
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+      .slice(0, 12);
+  } catch {
+    return [];
+  }
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 // Sources fetched via dedicated scrapers/APIs — excluded from generic RSS loop
 const CUSTOM_SOURCE_IDS = new Set([
-  "techcrunch",    // WordPress REST API
-  "innov8-l8r",   // Beehiiv scraper
-  "evolving-ai",  // Beehiiv scraper
-  "world-of-ai",  // Beehiiv scraper
-  "in-world-of-ai",   // Beehiiv scraper (new)
-  "deep-view",        // Beehiiv scraper (new)
-  "tech-newsletter",  // Beehiiv scraper (new)
+  "techcrunch",        // WordPress REST API
+  "innov8-l8r",        // Beehiiv sitemap
+  "evolving-ai",       // Beehiiv page scraper
+  "world-of-ai",       // Beehiiv page scraper
+  "in-world-of-ai",    // Beehiiv page scraper
+  "deep-view",         // Beehiiv page scraper
+  "tech-newsletter",   // Beehiiv page scraper
 ]);
 
-// Beehiiv newsletters — each is a (url, name, id, type) tuple
+// Beehiiv newsletters fetched via homepage scraper (L8R uses sitemap instead)
 const BEEHIIV_SOURCES: [string, string, string, SourceType][] = [
-  ["https://letter.innov8academy.in/",          "L8R by Innov8",           "innov8-l8r",     "newsletter"],
-  ["https://evolvingai.io/",                    "Evolving AI Insights",    "evolving-ai",    "newsletter"],
-  ["https://worldofai.beehiiv.com/",            "World of AI",             "world-of-ai",    "newsletter"],
-  ["https://intheworldofai.com/",               "In the World of AI",      "in-world-of-ai", "newsletter"],
-  ["https://archive.thedeepview.com/",          "The Deep View",           "deep-view",      "newsletter"],
-  ["https://technology-newsletter.beehiiv.com/","Technology News",         "tech-newsletter","newsletter"],
+  ["https://evolvingai.io/",                    "Evolving AI Insights", "evolving-ai",    "newsletter"],
+  ["https://worldofai.beehiiv.com/",            "World of AI",          "world-of-ai",    "newsletter"],
+  ["https://intheworldofai.com/",               "In the World of AI",   "in-world-of-ai", "newsletter"],
+  ["https://archive.thedeepview.com/",          "The Deep View",        "deep-view",      "newsletter"],
+  ["https://technology-newsletter.beehiiv.com/","Technology News",      "tech-newsletter","newsletter"],
 ];
 
 export async function fetchAllNews(): Promise<NewsItem[]> {
@@ -422,10 +514,11 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
   const prioritySources = SOURCES.filter((s) => s.priority && !CUSTOM_SOURCE_IDS.has(s.id));
   const regularSources  = SOURCES.filter((s) => !s.priority && !CUSTOM_SOURCE_IDS.has(s.id));
 
-  const [hnResult, tcResult, ...rest] = await Promise.allSettled([
+  const [hnResult, tcResult, l8rResult, ...rest] = await Promise.allSettled([
     fetchHackerNews(),
     fetchTechCrunchWP(),
-    ...BEEHIIV_SOURCES.map((args) => fetchBeehiivSite(...args)),
+    fetchInnov8L8R(),                                          // sitemap-based
+    ...BEEHIIV_SOURCES.map((args) => fetchBeehiivSite(...args)), // page scrapers
     ...prioritySources.map(fetchRSSSource),
     ...regularSources.map(fetchRSSSource),
   ]);
@@ -433,12 +526,15 @@ export async function fetchAllNews(): Promise<NewsItem[]> {
   const priorityItems: NewsItem[] = [];
   const regularItems:  NewsItem[] = [];
 
-  // First N results in `rest` are Beehiiv newsletters (priority newsletters first)
+  // L8R is priority
+  if (l8rResult.status === "fulfilled") priorityItems.push(...l8rResult.value);
+
+  // First N results in `rest` are Beehiiv page-scraped newsletters
   const beehiivResults = rest.slice(0, BEEHIIV_SOURCES.length);
   const rssResults     = rest.slice(BEEHIIV_SOURCES.length);
 
-  // Beehiiv priority newsletters (innov8-l8r, evolving-ai, world-of-ai are priority)
-  const priorityBeehiivIds = new Set(["innov8-l8r", "evolving-ai", "world-of-ai"]);
+  // evolving-ai and world-of-ai are priority newsletters
+  const priorityBeehiivIds = new Set(["evolving-ai", "world-of-ai"]);
   for (let i = 0; i < BEEHIIV_SOURCES.length; i++) {
     if (beehiivResults[i].status !== "fulfilled") continue;
     const [, , id] = BEEHIIV_SOURCES[i];
