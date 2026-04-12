@@ -2,11 +2,22 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
 const apps = [
+  {
+    title: "AI Poster Maker",
+    description:
+      "Create stunning posters with AI-generated backgrounds, editable text layers, Malayalam/Manglish support, and a full canvas editor. 100% free, no sign-up.",
+    href: "/apps/poster-maker",
+    icon: ImagePlus,
+    gradient: "from-fuchsia-500 to-pink-600",
+    category: "Design",
+    isNew: true,
+    isFeatured: true,
+  },
   {
     title: "QR Code Generator",
     description:
