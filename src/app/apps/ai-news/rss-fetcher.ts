@@ -1,6 +1,6 @@
 import { isAIContent } from "./ai-filter";
 import { SOURCES } from "./sources";
-import type { NewsItem, NewsSource } from "./types";
+import type { NewsItem, NewsSource, SourceType } from "./types";
 
 // ── Minimal RSS/Atom XML parser ───────────────────────────────────────────────
 
@@ -302,15 +302,31 @@ async function fetchTechCrunchWP(): Promise<NewsItem[]> {
   }
 }
 
-// ── L8R by Innov8 via Beehiiv page scrape ────────────────────────────────────
-// The old Substack feed (innov8ai.substack.com) stopped publishing in Oct 2024.
-// The newsletter moved to https://letter.innov8academy.in/ (Beehiiv-powered).
-// Beehiiv blocks bot UA on RSS endpoints, but the homepage SSR HTML embeds
-// all post metadata as JSON — we extract it directly from there.
+// ── Generic Beehiiv page scraper ─────────────────────────────────────────────
+// Beehiiv blocks RSS/feed endpoints with Cloudflare bot protection.
+// However, Beehiiv sites are Remix SSR apps that embed all post metadata
+// as JSON in the homepage HTML. We fetch with browser headers and extract:
+//   web_title, web_subtitle, override_scheduled_at, slug, image_url
 
-async function fetchInnov8L8R(): Promise<NewsItem[]> {
+function decodeBeehiivJson(s: string): string {
+  return s
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) =>
+      String.fromCharCode(parseInt(h, 16))
+    )
+    .replace(/\\"/g, '"')
+    .replace(/\\n/g, " ")
+    .replace(/\\t/g, " ")
+    .trim();
+}
+
+async function fetchBeehiivSite(
+  baseUrl: string,
+  sourceName: string,
+  sourceId: string,
+  sourceType: SourceType = "newsletter"
+): Promise<NewsItem[]> {
   try {
-    const res = await fetch("https://letter.innov8academy.in/", {
+    const res = await fetch(baseUrl, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
@@ -326,52 +342,53 @@ async function fetchInnov8L8R(): Promise<NewsItem[]> {
 
     const html = await res.text();
 
-    // The Remix SSR embeds post data as JSON. Each post has these fields
-    // adjacent in the serialized output:
-    //   "web_title":"…","web_subtitle":"…","featured":…,"hide_from_feed":…,
-    //   "comments_state":"…","override_scheduled_at":"…","slug":"…"
-    const postRe =
-      /"web_title":"((?:[^"\\]|\\.)*)","web_subtitle":"((?:[^"\\]|\\.)*)"(?:,"[^"]+":"[^"]*")*?,"override_scheduled_at":"([^"]+)","slug":"([^"]+)"/g;
-
-    function decodeJson(s: string): string {
-      return s
-        .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) =>
-          String.fromCharCode(parseInt(h, 16))
-        )
-        .replace(/\\"/g, '"')
-        .replace(/\\n/g, " ")
-        .replace(/\\t/g, " ")
-        .trim();
-    }
-
+    // Anchor pattern: these two fields always appear adjacent in every Beehiiv SSR page
+    const anchorRe = /"override_scheduled_at":"([^"]+)","slug":"([^"]+)"/g;
     const items: NewsItem[] = [];
     const seenSlugs = new Set<string>();
     let m: RegExpExecArray | null;
 
-    while ((m = postRe.exec(html)) !== null) {
-      const [, rawTitle, rawSub, date, slug] = m;
+    while ((m = anchorRe.exec(html)) !== null) {
+      const [full, date, slug] = m;
       if (seenSlugs.has(slug)) continue;
       seenSlugs.add(slug);
 
-      const title = decodeJson(rawTitle);
-      const excerpt = decodeJson(rawSub);
-      const url = `https://letter.innov8academy.in/p/${slug}`;
+      // Look up to 1000 chars back for web_title and web_subtitle.
+      // Take the LAST match (closest to the anchor = this post's data).
+      const lookback = html.slice(Math.max(0, m.index - 1000), m.index);
 
-      if (!title || !url) continue;
+      const titleMatches = [...lookback.matchAll(/"web_title":"((?:[^"\\]|\\.)*)"/g)];
+      if (titleMatches.length === 0) continue;
+      const rawTitle = titleMatches[titleMatches.length - 1][1];
+
+      const subMatches = [...lookback.matchAll(/"web_subtitle":"((?:[^"\\]|\\.)*)"/g)];
+      const rawSub = subMatches.length > 0 ? subMatches[subMatches.length - 1][1] : "";
+
+      // Look up to 500 chars ahead for image_url (comes after slug in the JSON)
+      const ahead = html.slice(m.index + full.length, m.index + full.length + 500);
+      const imgMatch = ahead.match(/"image_url":"(https?:\/\/[^"]+)"/);
+      const imageUrl = imgMatch?.[1];
+
+      const title   = decodeBeehiivJson(rawTitle);
+      const excerpt = decodeBeehiivJson(rawSub);
+      const url     = `${baseUrl.replace(/\/$/, "")}/p/${slug}`;
+
+      if (!title) continue;
 
       items.push({
-        id: `innov8-l8r-${slug}`,
+        id: `${sourceId}-${slug}`,
         title,
         url,
         excerpt,
-        source: "L8R by Innov8",
-        sourceId: "innov8-l8r",
-        sourceType: "newsletter" as const,
+        imageUrl,
+        source: sourceName,
+        sourceId,
+        sourceType,
         publishedAt: new Date(date).toISOString(),
       });
     }
 
-    return items;
+    return items.filter((item) => isAIContent(item.title, item.excerpt));
   } catch {
     return [];
   }
@@ -379,47 +396,74 @@ async function fetchInnov8L8R(): Promise<NewsItem[]> {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-// Sources handled by dedicated fetchers (skipped from generic RSS fetching)
-const CUSTOM_SOURCE_IDS = new Set(["techcrunch", "innov8-l8r"]);
+// Sources fetched via dedicated scrapers/APIs — excluded from generic RSS loop
+const CUSTOM_SOURCE_IDS = new Set([
+  "techcrunch",    // WordPress REST API
+  "innov8-l8r",   // Beehiiv scraper
+  "evolving-ai",  // Beehiiv scraper
+  "world-of-ai",  // Beehiiv scraper
+  "in-world-of-ai",   // Beehiiv scraper (new)
+  "deep-view",        // Beehiiv scraper (new)
+  "tech-newsletter",  // Beehiiv scraper (new)
+]);
+
+// Beehiiv newsletters — each is a (url, name, id, type) tuple
+const BEEHIIV_SOURCES: [string, string, string, SourceType][] = [
+  ["https://letter.innov8academy.in/",          "L8R by Innov8",           "innov8-l8r",     "newsletter"],
+  ["https://evolvingai.io/",                    "Evolving AI Insights",    "evolving-ai",    "newsletter"],
+  ["https://worldofai.beehiiv.com/",            "World of AI",             "world-of-ai",    "newsletter"],
+  ["https://intheworldofai.com/",               "In the World of AI",      "in-world-of-ai", "newsletter"],
+  ["https://archive.thedeepview.com/",          "The Deep View",           "deep-view",      "newsletter"],
+  ["https://technology-newsletter.beehiiv.com/","Technology News",         "tech-newsletter","newsletter"],
+];
 
 export async function fetchAllNews(): Promise<NewsItem[]> {
-  // Fetch priority sources first so they win in deduplication.
-  // innov8-l8r and techcrunch use dedicated fetchers — exclude from RSS.
+  // Priority and regular RSS sources (Beehiiv + TechCrunch handled separately)
   const prioritySources = SOURCES.filter((s) => s.priority && !CUSTOM_SOURCE_IDS.has(s.id));
-  const regularSources = SOURCES.filter((s) => !s.priority && !CUSTOM_SOURCE_IDS.has(s.id));
+  const regularSources  = SOURCES.filter((s) => !s.priority && !CUSTOM_SOURCE_IDS.has(s.id));
 
-  const [hnItems, tcItems, l8rItems, ...allRss] = await Promise.allSettled([
+  const [hnResult, tcResult, ...rest] = await Promise.allSettled([
     fetchHackerNews(),
     fetchTechCrunchWP(),
-    fetchInnov8L8R(),
+    ...BEEHIIV_SOURCES.map((args) => fetchBeehiivSite(...args)),
     ...prioritySources.map(fetchRSSSource),
     ...regularSources.map(fetchRSSSource),
   ]);
 
-  // Build combined list: priority items first, then HN + TC, then regular.
-  // l8r is a priority newsletter — prepend it so it wins deduplication.
   const priorityItems: NewsItem[] = [];
-  const regularItems: NewsItem[] = [];
+  const regularItems:  NewsItem[] = [];
 
-  if (l8rItems.status === "fulfilled") priorityItems.push(...l8rItems.value);
+  // First N results in `rest` are Beehiiv newsletters (priority newsletters first)
+  const beehiivResults = rest.slice(0, BEEHIIV_SOURCES.length);
+  const rssResults     = rest.slice(BEEHIIV_SOURCES.length);
 
-  // Priority RSS sources come after the three specials in allRss
+  // Beehiiv priority newsletters (innov8-l8r, evolving-ai, world-of-ai are priority)
+  const priorityBeehiivIds = new Set(["innov8-l8r", "evolving-ai", "world-of-ai"]);
+  for (let i = 0; i < BEEHIIV_SOURCES.length; i++) {
+    if (beehiivResults[i].status !== "fulfilled") continue;
+    const [, , id] = BEEHIIV_SOURCES[i];
+    if (priorityBeehiivIds.has(id)) {
+      priorityItems.push(...(beehiivResults[i] as PromiseFulfilledResult<NewsItem[]>).value);
+    } else {
+      regularItems.push(...(beehiivResults[i] as PromiseFulfilledResult<NewsItem[]>).value);
+    }
+  }
+
+  // Priority RSS sources
   for (let i = 0; i < prioritySources.length; i++) {
-    const r = allRss[i];
+    const r = rssResults[i];
     if (r.status === "fulfilled") priorityItems.push(...r.value);
   }
 
-  if (hnItems.status === "fulfilled") regularItems.push(...hnItems.value);
-  if (tcItems.status === "fulfilled") regularItems.push(...tcItems.value);
-
-  for (let i = prioritySources.length; i < allRss.length; i++) {
-    const r = allRss[i];
+  // Regular items: HN, TechCrunch, regular RSS
+  if (hnResult.status === "fulfilled") regularItems.push(...hnResult.value);
+  if (tcResult.status === "fulfilled") regularItems.push(...tcResult.value);
+  for (let i = prioritySources.length; i < rssResults.length; i++) {
+    const r = rssResults[i];
     if (r.status === "fulfilled") regularItems.push(...r.value);
   }
 
-  // Merge: priority first so they survive deduplication
   const merged = [...priorityItems, ...regularItems];
-
   return deduplicateItems(merged).sort(
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()

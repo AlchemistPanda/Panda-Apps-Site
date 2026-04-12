@@ -73,7 +73,7 @@ export const SOURCES: NewsSource[] = [
     id: "world-of-ai",
     name: "World of AI",
     type: "newsletter",
-    rssUrl: "https://worldofai.beehiiv.com/feed",
+    rssUrl: "https://worldofai.beehiiv.com/", // Beehiiv — scraped via page, not RSS
     color: "#8b5cf6",
     priority: true,
   },
@@ -81,9 +81,30 @@ export const SOURCES: NewsSource[] = [
     id: "evolving-ai",
     name: "Evolving AI Insights",
     type: "newsletter",
-    rssUrl: "https://evolvingai.io/feed",
+    rssUrl: "https://evolvingai.io/", // Beehiiv — scraped via page, not RSS
     color: "#06b6d4",
     priority: true,
+  },
+  {
+    id: "in-world-of-ai",
+    name: "In the World of AI",
+    type: "newsletter",
+    rssUrl: "https://intheworldofai.com/", // Beehiiv — scraped via page, not RSS
+    color: "#a855f7",
+  },
+  {
+    id: "deep-view",
+    name: "The Deep View",
+    type: "newsletter",
+    rssUrl: "https://archive.thedeepview.com/", // Beehiiv — scraped via page, not RSS
+    color: "#0ea5e9",
+  },
+  {
+    id: "tech-newsletter",
+    name: "Technology News",
+    type: "newsletter",
+    rssUrl: "https://technology-newsletter.beehiiv.com/", // Beehiiv — scraped via page, not RSS
+    color: "#14b8a6",
   },
   // ── Newsletters ────────────────────────────────────────────────────────────
   {
