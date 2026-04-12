@@ -302,26 +302,108 @@ async function fetchTechCrunchWP(): Promise<NewsItem[]> {
   }
 }
 
+// ── L8R by Innov8 via Beehiiv page scrape ────────────────────────────────────
+// The old Substack feed (innov8ai.substack.com) stopped publishing in Oct 2024.
+// The newsletter moved to https://letter.innov8academy.in/ (Beehiiv-powered).
+// Beehiiv blocks bot UA on RSS endpoints, but the homepage SSR HTML embeds
+// all post metadata as JSON — we extract it directly from there.
+
+async function fetchInnov8L8R(): Promise<NewsItem[]> {
+  try {
+    const res = await fetch("https://letter.innov8academy.in/", {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+          "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+      },
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return [];
+
+    const html = await res.text();
+
+    // The Remix SSR embeds post data as JSON. Each post has these fields
+    // adjacent in the serialized output:
+    //   "web_title":"…","web_subtitle":"…","featured":…,"hide_from_feed":…,
+    //   "comments_state":"…","override_scheduled_at":"…","slug":"…"
+    const postRe =
+      /"web_title":"((?:[^"\\]|\\.)*)","web_subtitle":"((?:[^"\\]|\\.)*)"(?:,"[^"]+":"[^"]*")*?,"override_scheduled_at":"([^"]+)","slug":"([^"]+)"/g;
+
+    function decodeJson(s: string): string {
+      return s
+        .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) =>
+          String.fromCharCode(parseInt(h, 16))
+        )
+        .replace(/\\"/g, '"')
+        .replace(/\\n/g, " ")
+        .replace(/\\t/g, " ")
+        .trim();
+    }
+
+    const items: NewsItem[] = [];
+    const seenSlugs = new Set<string>();
+    let m: RegExpExecArray | null;
+
+    while ((m = postRe.exec(html)) !== null) {
+      const [, rawTitle, rawSub, date, slug] = m;
+      if (seenSlugs.has(slug)) continue;
+      seenSlugs.add(slug);
+
+      const title = decodeJson(rawTitle);
+      const excerpt = decodeJson(rawSub);
+      const url = `https://letter.innov8academy.in/p/${slug}`;
+
+      if (!title || !url) continue;
+
+      items.push({
+        id: `innov8-l8r-${slug}`,
+        title,
+        url,
+        excerpt,
+        source: "L8R by Innov8",
+        sourceId: "innov8-l8r",
+        sourceType: "newsletter" as const,
+        publishedAt: new Date(date).toISOString(),
+      });
+    }
+
+    return items;
+  } catch {
+    return [];
+  }
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export async function fetchAllNews(): Promise<NewsItem[]> {
-  // Fetch priority sources first so they win in deduplication
-  // TechCrunch is fetched via WP REST API (has images); skip it from RSS
-  const prioritySources = SOURCES.filter((s) => s.priority);
-  const regularSources = SOURCES.filter((s) => !s.priority && s.id !== "techcrunch");
+// Sources handled by dedicated fetchers (skipped from generic RSS fetching)
+const CUSTOM_SOURCE_IDS = new Set(["techcrunch", "innov8-l8r"]);
 
-  const [hnItems, tcItems, ...allRss] = await Promise.allSettled([
+export async function fetchAllNews(): Promise<NewsItem[]> {
+  // Fetch priority sources first so they win in deduplication.
+  // innov8-l8r and techcrunch use dedicated fetchers — exclude from RSS.
+  const prioritySources = SOURCES.filter((s) => s.priority && !CUSTOM_SOURCE_IDS.has(s.id));
+  const regularSources = SOURCES.filter((s) => !s.priority && !CUSTOM_SOURCE_IDS.has(s.id));
+
+  const [hnItems, tcItems, l8rItems, ...allRss] = await Promise.allSettled([
     fetchHackerNews(),
     fetchTechCrunchWP(),
+    fetchInnov8L8R(),
     ...prioritySources.map(fetchRSSSource),
     ...regularSources.map(fetchRSSSource),
   ]);
 
-  // Build combined list: priority items first, then HN + TC, then regular
+  // Build combined list: priority items first, then HN + TC, then regular.
+  // l8r is a priority newsletter — prepend it so it wins deduplication.
   const priorityItems: NewsItem[] = [];
   const regularItems: NewsItem[] = [];
 
-  // Priority sources come after HN + TC in allRss (indices 0..prioritySources.length-1)
+  if (l8rItems.status === "fulfilled") priorityItems.push(...l8rItems.value);
+
+  // Priority RSS sources come after the three specials in allRss
   for (let i = 0; i < prioritySources.length; i++) {
     const r = allRss[i];
     if (r.status === "fulfilled") priorityItems.push(...r.value);

@@ -65,7 +65,7 @@ export const SOURCES: NewsSource[] = [
     id: "innov8-l8r",
     name: "L8R by innov8",
     type: "newsletter",
-    rssUrl: "https://innov8ai.substack.com/feed",
+    rssUrl: "https://letter.innov8academy.in/", // Beehiiv — fetched via page scraper, not RSS
     color: "#f43f5e",
     priority: true,
   },
