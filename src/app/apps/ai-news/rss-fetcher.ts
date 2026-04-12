@@ -504,7 +504,7 @@ const CUSTOM_SOURCE_IDS = new Set([
 const BEEHIIV_SOURCES: [string, string, string, SourceType][] = [
   ["https://evolvingai.io/",                    "Evolving AI Insights", "evolving-ai",    "newsletter"],
   ["https://worldofai.beehiiv.com/",            "World of AI",          "world-of-ai",    "newsletter"],
-  ["https://intheworldofai.com/",               "In the World of AI",   "in-world-of-ai", "newsletter"],
+  ["https://intheworldofai.com/archive",          "In the World of AI",   "in-world-of-ai", "newsletter"],
   ["https://archive.thedeepview.com/",          "The Deep View",        "deep-view",      "newsletter"],
   ["https://technology-newsletter.beehiiv.com/","Technology News",      "tech-newsletter","newsletter"],
 ];

@@ -89,7 +89,7 @@ export const SOURCES: NewsSource[] = [
     id: "in-world-of-ai",
     name: "In the World of AI",
     type: "newsletter",
-    rssUrl: "https://intheworldofai.com/", // Beehiiv — scraped via page, not RSS
+    rssUrl: "https://intheworldofai.com/archive", // Beehiiv — scraped via archive page, not RSS
     color: "#a855f7",
   },
   {
