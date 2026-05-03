@@ -37,6 +37,7 @@ export interface AllianceTally {
   color: string;
   bgColor: string;
   borderColor: string;
+  textColor: string;
   parties: string[];
 }
 
@@ -55,6 +56,7 @@ export interface ElectionData {
   results: ConstituencyResult[];
   dataSource: "live" | "cached" | "demo";
   fetchedAt: string;
+  isFallback?: boolean;
 }
 
 // ── Party ↔ Alliance mapping ──────────────────────────────────────────────────

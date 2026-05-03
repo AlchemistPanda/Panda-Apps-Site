@@ -13,6 +13,8 @@ import {
   ArrowUp,
   MapPin,
   Clock,
+  AlertTriangle,
+  Info,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { ElectionData, ConstituencyResult, Alliance, District } from "../data/types";
@@ -207,8 +209,8 @@ export default function KeralaResultsClient() {
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full border border-border/50">
-              {data?.dataSource === "demo" ? (
-                <><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span></span> Simulation Mode</>
+              {data?.isFallback ? (
+                <><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span></span> Cached Feed</>
               ) : (
                 <><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span> Live ECI Feed</>
               )}
@@ -240,6 +242,16 @@ export default function KeralaResultsClient() {
             </span>
           </div>
         </div>
+
+        {data?.isFallback && (
+          <div className="mb-8 p-4 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
+            <AlertTriangle className="h-5 w-5 shrink-0" />
+            <div>
+              <p className="text-sm font-bold">Live feed temporarily paused</p>
+              <p className="text-xs opacity-90">Official source is currently unavailable due to heavy traffic. Displaying last verified data as of {new Date(data.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.</p>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-8 p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-xl flex items-center gap-3">
@@ -283,7 +295,7 @@ export default function KeralaResultsClient() {
                   <div 
                     className="h-full transition-all duration-1000 ease-out"
                     style={{ 
-                      width: \`\${Math.min(100, (tally.total / 140) * 100)}%\`,
+                      width: `\${Math.min(100, (tally.total / 140) * 100)}%`,
                       backgroundColor: tally.color
                     }}
                   />
