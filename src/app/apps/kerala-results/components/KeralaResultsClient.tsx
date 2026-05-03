@@ -14,9 +14,11 @@ import {
   MapPin,
   Clock,
   AlertTriangle,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import type { ElectionData, ConstituencyResult, Alliance, District } from "../data/types";
+import type { ElectionData, ConstituencyResult, Alliance, District, PartyTally } from "../data/types";
 import { ALLIANCE_META, DISTRICTS } from "../data/types";
 import { KEY_BATTLES } from "../data/constituencies";
 
@@ -54,66 +56,74 @@ function MajorityBar({ data }: { data: ElectionData }) {
       <div className="flex justify-between items-end mb-4">
         <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Majority Tracker</h3>
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-black">{ldf + udf + nda + others}</span>
+          <span className="text-2xl font-black tracking-tighter">{ldf + udf + nda + others}</span>
           <span className="text-xs text-muted-foreground uppercase font-medium">/ {totalSeats} Declared</span>
         </div>
       </div>
 
       <div className="relative h-6 bg-secondary/50 rounded-full overflow-hidden flex shadow-inner">
-        {/* LDF Segment */}
-        <div 
-          className="h-full transition-all duration-1000 ease-out bg-red-500 relative group"
-          style={{ width: `${(ldf / totalSeats) * 100}%` }}
-        >
-          {ldf > 5 && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-sm">{ldf}</span>}
+        <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: `${(ldf / totalSeats) * 100}%` }}>
+          {ldf > 5 && <span className="flex items-center justify-center h-full text-[10px] font-black text-white">{ldf}</span>}
         </div>
-        {/* UDF Segment */}
-        <div 
-          className="h-full transition-all duration-1000 ease-out bg-blue-500 relative group"
-          style={{ width: `${(udf / totalSeats) * 100}%` }}
-        >
-          {udf > 5 && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-sm">{udf}</span>}
+        <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${(udf / totalSeats) * 100}%` }}>
+          {udf > 5 && <span className="flex items-center justify-center h-full text-[10px] font-black text-white">{udf}</span>}
         </div>
-        {/* NDA Segment */}
-        <div 
-          className="h-full transition-all duration-1000 ease-out bg-amber-500 relative group"
-          style={{ width: `${(nda / totalSeats) * 100}%` }}
-        >
-          {nda > 5 && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-sm">{nda}</span>}
+        <div className="h-full bg-amber-500 transition-all duration-1000" style={{ width: `${(nda / totalSeats) * 100}%` }}>
+          {nda > 5 && <span className="flex items-center justify-center h-full text-[10px] font-black text-white">{nda}</span>}
         </div>
-        {/* Others Segment */}
-        <div 
-          className="h-full transition-all duration-1000 ease-out bg-gray-500 relative group"
-          style={{ width: `${(others / totalSeats) * 100}%` }}
-        >
-          {others > 5 && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-sm">{others}</span>}
+        <div className="h-full bg-gray-500 transition-all duration-1000" style={{ width: `${(others / totalSeats) * 100}%` }}>
+          {others > 5 && <span className="flex items-center justify-center h-full text-[10px] font-black text-white">{others}</span>}
         </div>
 
-        {/* Majority Marker (71) */}
         <div 
-          className="absolute top-0 bottom-0 w-1 bg-white dark:bg-black z-10 shadow-[0_0_8px_rgba(0,0,0,0.5)] flex flex-col items-center"
+          className="absolute top-0 bottom-0 w-1 bg-white dark:bg-black z-10 flex flex-col items-center"
           style={{ left: `${(majorityMark / totalSeats) * 100}%` }}
         >
           <div className="absolute -top-6 bg-foreground text-background text-[10px] font-black px-1.5 py-0.5 rounded-sm">71</div>
         </div>
       </div>
-
-      <div className="flex justify-between mt-4">
+      <div className="flex justify-between mt-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
         <div className="flex gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm bg-red-500" />
-            <span className="text-[10px] font-bold uppercase text-muted-foreground">LDF</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
-            <span className="text-[10px] font-bold uppercase text-muted-foreground">UDF</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm bg-amber-500" />
-            <span className="text-[10px] font-bold uppercase text-muted-foreground">NDA</span>
-          </div>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 bg-red-500 rounded-sm" /> LDF</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-500 rounded-sm" /> UDF</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 bg-amber-500 rounded-sm" /> NDA</span>
         </div>
-        <span className="text-[10px] font-black uppercase text-accent tracking-widest">Target: 71 to Win</span>
+        <span className="text-accent">Majority: 71</span>
+      </div>
+    </div>
+  );
+}
+
+function PartyTallyTable({ tallies }: { tallies: PartyTally[] }) {
+  if (tallies.length === 0) return null;
+  return (
+    <div className="mb-10 bg-card/10 rounded-2xl border border-border/40 overflow-hidden">
+      <div className="p-4 bg-secondary/30 border-b border-border/40">
+        <h3 className="text-xs font-bold uppercase tracking-widest">Party-wise Seats</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-border/20 text-muted-foreground font-medium">
+              <th className="px-4 py-2">Party</th>
+              <th className="px-4 py-2">Alliance</th>
+              <th className="px-4 py-2 text-right">Won</th>
+              <th className="px-4 py-2 text-right">Lead</th>
+              <th className="px-4 py-2 text-right font-bold">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tallies.map((pt, i) => (
+              <tr key={i} className="border-b border-border/10 hover:bg-secondary/20 transition-colors">
+                <td className="px-4 py-2 font-bold">{pt.party}</td>
+                <td className="px-4 py-2"><span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${ALLIANCE_META[pt.alliance].bgColor} ${ALLIANCE_META[pt.alliance].textColor}`}>{pt.alliance}</span></td>
+                <td className="px-4 py-2 text-right">{pt.won}</td>
+                <td className="px-4 py-2 text-right">{pt.leading}</td>
+                <td className="px-4 py-2 text-right font-bold text-accent">{pt.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -126,75 +136,81 @@ function SeatCard({ result }: { result: ConstituencyResult }) {
 
   return (
     <div className="flex flex-col rounded-2xl border border-border/40 bg-card/30 overflow-hidden hover:border-accent/30 hover:bg-card/60 transition-all duration-200">
-      <div className="p-4 border-b border-border/30 flex justify-between items-start">
+      <div className="p-4 border-b border-border/30 flex justify-between items-start bg-secondary/10">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-mono text-muted-foreground">#{result.id}</span>
             <h3 className="font-bold text-lg leading-none">{result.name}</h3>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
             <MapPin className="h-3 w-3" />
             {result.district}
           </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-end gap-1">
           {getStatusBadge(result.status)}
           {leader && leader.alliance !== result.prevWinner && result.status !== "not_started" && (
-            <span className="text-[10px] font-medium text-amber-500 flex items-center gap-0.5">
-              <TrendingUp className="h-3 w-3" /> Swing from {result.prevWinner}
+            <span className="text-[10px] font-black text-amber-500 flex items-center gap-0.5 animate-bounce">
+              <TrendingUp className="h-3 w-3" /> SWING
             </span>
           )}
         </div>
       </div>
 
-      <div className="p-4 flex-1 flex flex-col justify-center min-h-[120px]">
+      <div className="p-4 flex-1 flex flex-col justify-center min-h-[130px]">
         {result.status === "not_started" ? (
-          <div className="text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
+          <div className="text-center text-muted-foreground text-xs flex flex-col items-center gap-2">
             <Clock className="h-5 w-5 opacity-50" />
-            Counting begins at 8:00 AM
+            Counting begins 8:00 AM
           </div>
         ) : leader ? (
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className={`font-semibold ${isDeclared ? "text-emerald-500" : ALLIANCE_META[leader.alliance].textColor}`}>
+                  <span className={`font-bold text-sm ${isDeclared ? "text-emerald-500" : ALLIANCE_META[leader.alliance].textColor}`}>
                     {leader.name}
                   </span>
                   {isDeclared && <Trophy className="h-3.5 w-3.5 text-emerald-500" />}
                 </div>
-                <div className="text-xs text-muted-foreground">{leader.party} · {leader.alliance}</div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase">{leader.party} · {leader.alliance}</div>
               </div>
               <div className="text-right">
-                <div className="font-bold font-mono">{fmt(leader.votes)}</div>
-                <div className="text-[10px] text-muted-foreground uppercase">{isDeclared ? "Won" : "Leading"}</div>
+                <div className="font-bold font-mono text-base tracking-tighter">{fmt(leader.votes)}</div>
+                <div className="text-[9px] text-muted-foreground uppercase font-black">{isDeclared ? "Won" : "Leading"}</div>
               </div>
             </div>
 
             {trailing && (
-              <div className="flex items-center justify-between opacity-70">
+              <div className="flex items-center justify-between opacity-60 grayscale hover:grayscale-0 transition-all">
                 <div>
-                  <div className="text-sm">{trailing.name}</div>
-                  <div className="text-[10px] text-muted-foreground">{trailing.party} · {trailing.alliance}</div>
+                  <div className="text-xs font-medium">{trailing.name}</div>
+                  <div className="text-[9px] font-bold text-muted-foreground uppercase">{trailing.party} · {trailing.alliance}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-mono">{fmt(trailing.votes)}</div>
-                  <div className="text-[10px] text-muted-foreground uppercase">Trailing</div>
+                  <div className="text-xs font-mono">{fmt(trailing.votes)}</div>
+                  <div className="text-[9px] text-muted-foreground uppercase font-bold">Trailing</div>
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="text-center text-sm text-muted-foreground">Awaiting trends...</div>
+          <div className="text-center text-xs text-muted-foreground">Awaiting trends...</div>
         )}
       </div>
 
-      {result.status !== "not_started" && leader && trailing && (
-        <div className="bg-black/5 dark:bg-white/5 p-2 px-4 flex justify-between items-center text-xs">
-          <span className="text-muted-foreground flex items-center gap-1">
-            <ArrowUp className="h-3 w-3" /> Margin
-          </span>
-          <span className="font-bold font-mono">{fmt(result.margin)}</span>
+      {result.status !== "not_started" && (
+        <div className="bg-black/5 dark:bg-white/5 p-2 px-4 flex justify-between items-center text-[10px] border-t border-border/20">
+          <div className="flex flex-col">
+            <span className="text-[8px] text-muted-foreground uppercase font-bold">2021 Winner</span>
+            <span className="font-black text-muted-foreground">{result.prevWinnerParty} ({result.prevWinner})</span>
+          </div>
+          {leader && trailing && (
+            <div className="flex flex-col items-end">
+              <span className="text-[8px] text-muted-foreground uppercase font-bold">Margin</span>
+              <span className="font-black font-mono text-accent">{fmt(result.margin)}</span>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -223,14 +239,12 @@ export default function KeralaResultsClient() {
       setLastRefreshed(new Date());
       setError(null);
     } catch (err) {
-      console.error(err);
-      setError("Unable to connect to live feed. Retrying...");
+      setError("Connect error. Retrying...");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Poll every 30 seconds
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 30000);
@@ -239,230 +253,85 @@ export default function KeralaResultsClient() {
 
   const filteredResults = useMemo(() => {
     if (!data) return [];
-    
     return data.results.filter((r) => {
-      // Search
       const sq = searchQuery.toLowerCase();
-      const matchesSearch = !sq || 
-        r.name.toLowerCase().includes(sq) || 
-        r.district.toLowerCase().includes(sq) ||
-        r.candidates.some(c => c.name.toLowerCase().includes(sq));
-
-      // District
+      const matchesSearch = !sq || r.name.toLowerCase().includes(sq) || r.district.toLowerCase().includes(sq) || r.candidates.some(c => c.name.toLowerCase().includes(sq));
       const matchesDistrict = filterDistrict === "All" || r.district === filterDistrict;
-
-      // Alliance Leader
       let matchesAlliance = true;
       if (filterAlliance !== "All") {
         const leader = r.candidates.find(c => c.isLeading || c.isWinner);
         matchesAlliance = leader ? leader.alliance === filterAlliance : false;
       }
-
-      // Key Battles
       const matchesKeyBattle = !showOnlyKeyBattles || KEY_BATTLES.some(kb => kb.id === r.id);
-
       return matchesSearch && matchesDistrict && matchesAlliance && matchesKeyBattle;
     });
   }, [data, searchQuery, filterDistrict, filterAlliance, showOnlyKeyBattles]);
 
 
   if (loading && !data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="h-8 w-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground font-medium">Connecting to Election Data Network...</p>
-        </div>
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center font-bold text-muted-foreground animate-pulse">Initializing Dashboard...</div>;
   }
 
   return (
-    <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mx-auto max-w-7xl">
-        {/* ── Top Nav ── */}
-        <div className="flex flex-wrap gap-4 items-center justify-between mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeft className="h-4 w-4" />
-            All Apps
-          </Link>
+    <div className="min-h-screen px-4 py-10 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/" className="text-xs font-bold text-muted-foreground hover:text-foreground">← All Apps</Link>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full border border-border/50">
-              {data?.isFallback ? (
-                <><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span></span> Cached Feed</>
-              ) : (
-                <><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span> Live ECI Feed</>
-              )}
+            <div className={`text-[10px] font-black px-3 py-1 rounded-full border ${data?.isFallback ? "border-amber-500/50 text-amber-500 bg-amber-500/10" : "border-emerald-500/50 text-emerald-500 bg-emerald-500/10"}`}>
+              {data?.isFallback ? "OFFLINE / CACHED" : "LIVE FEED"}
             </div>
             <ThemeToggle />
           </div>
         </div>
 
-        {/* ── Header ── */}
-        <div className="mb-10 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div>
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">
-              Kerala Election <span className="text-accent">2026</span>
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl">
-              Live counting updates for all 140 Assembly constituencies. Majority mark: 71.
-            </p>
-          </div>
-          <div className="flex flex-col items-center sm:items-end gap-2 text-sm">
-            <button 
-              onClick={() => { setLoading(true); fetchData(); }}
-              className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 rounded-full transition-colors border border-border/50 shadow-sm"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin text-accent" : ""}`} />
-              Refresh Data
-            </button>
-            <span className="text-xs text-muted-foreground">
-              Last updated: {lastRefreshed.toLocaleTimeString()}
-            </span>
-          </div>
+        <div className="mb-10">
+          <h1 className="text-5xl font-black tracking-tighter mb-2">Kerala Results <span className="text-accent">2026</span></h1>
+          <p className="text-muted-foreground font-medium">Live Assembly Election Counting. 140 Seats. Majority mark 71.</p>
         </div>
 
         {data?.isFallback && (
-          <div className="mb-8 p-4 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-            <AlertTriangle className="h-5 w-5 shrink-0" />
-            <div>
-              <p className="text-sm font-bold">Live feed temporarily paused</p>
-              <p className="text-xs opacity-90">Official source is currently unavailable due to heavy traffic. Displaying last verified data as of {new Date(data.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.</p>
-            </div>
+          <div className="mb-10 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+            <p className="text-xs font-bold text-amber-600 dark:text-amber-400">Live feed paused. Showing last verified data as of {new Date(data.fetchedAt).toLocaleTimeString()}.</p>
           </div>
         )}
 
-        {error && (
-          <div className="mb-8 p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-xl flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-sm font-medium">{error}</p>
-          </div>
-        )}
-
-        {/* ── Majority Tracker (The Bar) ── */}
         {data && <MajorityBar data={data} />}
 
-        {/* ── Summary Cards ── */}
-        {data && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-            {data.summary.tallies.map((tally) => (
-              <div 
-                key={tally.alliance} 
-                className={`relative overflow-hidden rounded-2xl border ${tally.borderColor} ${tally.bgColor} p-5 flex flex-col justify-between min-h-[120px] shadow-sm`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className={`font-black text-2xl ${tally.textColor}`}>{tally.label}</h3>
-                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{tally.parties.slice(0,3).join(", ")} {tally.parties.length > 3 && "+"}</p>
-                  </div>
-                  {tally.total >= data.summary.majorityMark && (
-                    <Trophy className={`h-6 w-6 ${tally.textColor} opacity-80`} />
-                  )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+          <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+            {data?.summary.tallies.map((tally) => (
+              <div key={tally.alliance} className={`p-4 rounded-2xl border ${tally.borderColor} ${tally.bgColor}`}>
+                <div className="flex justify-between items-start mb-4">
+                  <span className={`text-xs font-black px-2 py-0.5 rounded bg-white/20 ${tally.textColor}`}>{tally.label}</span>
+                  {tally.total >= 71 && <Trophy className="h-4 w-4 text-emerald-500" />}
                 </div>
-                
-                <div className="flex items-baseline gap-2 mt-auto">
-                  <span className={`text-4xl font-black font-mono tracking-tighter ${tally.textColor}`}>
-                    {tally.total}
-                  </span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-foreground opacity-80 uppercase leading-tight">Total</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">
-                      {tally.won} Won · {tally.leading} Lead
-                    </span>
-                  </div>
-                </div>
-
-                {/* Progress bar line */}
-                <div className="absolute bottom-0 left-0 h-1 bg-black/10 dark:bg-white/10 w-full">
-                  <div 
-                    className="h-full transition-all duration-1000 ease-out"
-                    style={{ 
-                      width: `${Math.min(100, (tally.total / 140) * 100)}%`,
-                      backgroundColor: tally.color
-                    }}
-                  />
+                <div className="flex items-baseline gap-2">
+                  <span className={`text-4xl font-black ${tally.textColor}`}>{tally.total}</span>
+                  <span className="text-[10px] font-bold opacity-70 uppercase leading-none">{tally.won} Won · {tally.leading} Lead</span>
                 </div>
               </div>
             ))}
           </div>
-        )}
-
-        <div className="flex items-center gap-4 mb-8">
-          <div className="h-px flex-1 bg-border/50" />
-          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest px-2">Constituency Results</span>
-          <div className="h-px flex-1 bg-border/50" />
+          <div className="lg:col-span-1">
+             {data && <PartyTallyTable tallies={data.summary.partyTallies} />}
+          </div>
         </div>
 
-        {/* ── Filters ── */}
-        <div className="flex flex-wrap gap-4 mb-8 bg-card/30 p-4 rounded-2xl border border-border/40 shadow-sm backdrop-blur-sm">
+        <div className="sticky top-4 z-40 flex flex-wrap gap-4 mb-8 bg-background/80 backdrop-blur-xl p-4 rounded-2xl border border-border/40 shadow-2xl">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search constituency or candidate..."
-              className="w-full rounded-xl border border-border/50 bg-background/50 pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
-            />
-            {searchQuery && (
-              <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                <X className="h-4 w-4" />
-              </button>
-            )}
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="w-full bg-secondary/30 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none border border-border/50" />
           </div>
-
-          <select
-            value={filterDistrict}
-            onChange={(e) => setFilterDistrict(e.target.value as any)}
-            className="rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent transition-all min-w-[140px]"
-          >
-            <option value="All">All Districts</option>
-            {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-
-          <select
-            value={filterAlliance}
-            onChange={(e) => setFilterAlliance(e.target.value as any)}
-            className="rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-sm focus:outline-none focus:border-accent transition-all min-w-[140px]"
-          >
-            <option value="All">All Leaders</option>
-            <option value="LDF">Leading: LDF</option>
-            <option value="UDF">Leading: UDF</option>
-            <option value="NDA">Leading: NDA</option>
-            <option value="OTH">Leading: Others</option>
-          </select>
-
-          <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary/50 px-3 py-2 rounded-xl transition-colors border border-transparent hover:border-border/50">
-            <input 
-              type="checkbox" 
-              checked={showOnlyKeyBattles}
-              onChange={(e) => setShowOnlyKeyBattles(e.target.checked)}
-              className="rounded text-accent focus:ring-accent accent-accent w-4 h-4"
-            />
-            <span className="font-medium text-foreground">Key Battles</span>
+          <select value={filterDistrict} onChange={(e) => setFilterDistrict(e.target.value as any)} className="bg-secondary/30 rounded-xl px-4 py-2 text-sm border border-border/50">{DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}<option value="All">All Districts</option></select>
+          <label className="flex items-center gap-2 text-xs font-black uppercase cursor-pointer hover:bg-secondary/50 p-2 rounded-xl transition-colors">
+            <input type="checkbox" checked={showOnlyKeyBattles} onChange={(e) => setShowOnlyKeyBattles(e.target.checked)} className="accent-accent" /> Key Battles
           </label>
         </div>
 
-        {/* ── Results Grid ── */}
-        {filteredResults.length === 0 ? (
-          <div className="text-center py-24 bg-card/10 rounded-3xl border border-border/30 border-dashed">
-            <div className="text-5xl mb-4 opacity-50">🗳️</div>
-            <h3 className="text-lg font-bold text-foreground mb-1">No matches found</h3>
-            <p className="text-muted-foreground">Try adjusting your filters or search query.</p>
-            <button 
-              onClick={() => { setSearchQuery(""); setFilterDistrict("All"); setFilterAlliance("All"); setShowOnlyKeyBattles(false); }}
-              className="mt-4 text-sm text-accent hover:underline font-medium"
-            >
-              Clear all filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredResults.map(r => <SeatCard key={r.id} result={r} />)}
-          </div>
-        )}
-
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredResults.map(r => <SeatCard key={r.id} result={r} />)}
+        </div>
     </div>
   );
 }

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { CONSTITUENCIES } from "@/app/apps/kerala-results/data/constituencies";
-import type { ElectionData, ConstituencyResult, Alliance, AllianceTally } from "@/app/apps/kerala-results/data/types";
-import { ALLIANCE_META } from "@/app/apps/kerala-results/data/types";
+import type { ElectionData, ConstituencyResult, Alliance, AllianceTally, PartyTally } from "@/app/apps/kerala-results/data/types";
+import { ALLIANCE_META, PARTY_ALLIANCE } from "@/app/apps/kerala-results/data/types";
 
 // ── Persistent Cache (Last Known Good Data) ──────────────────────────────────
 let lastSuccessfulData: ElectionData | null = null;
 let lastSuccessfulFetchTime = 0;
-const CACHE_TTL = 120_000; // 2 minutes between ECI fetch attempts
+const CACHE_TTL = 120_000; // 2 minutes
 
 // ── ECI & Mirror Endpoints ────────────────────────────────────────────────────
 const ENDPOINTS = [
@@ -14,37 +14,21 @@ const ENDPOINTS = [
   "https://results.eci.gov.in/AcResultGenMay2026/partywiseresult-S12.htm",
 ];
 
-// ── Browser Mimicry Headers ───────────────────────────────────────────────────
 const BROWSER_HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
   "Accept-Language": "en-US,en;q=0.9",
-  "Cache-Control": "max-age=0",
-  "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-  "Sec-Ch-Ua-Mobile": "?0",
-  "Sec-Ch-Ua-Platform": '"Windows"',
-  "Upgrade-Insecure-Requests": "1",
 };
 
-// ── Fetch & Parse (Simplified Logic) ──────────────────────────────────────────
 async function fetchAndParseECI(): Promise<ConstituencyResult[] | null> {
   const endpoint = ENDPOINTS[Math.floor(Math.random() * ENDPOINTS.length)];
-  
   try {
-    const res = await fetch(endpoint, {
-      headers: BROWSER_HEADERS,
-      next: { revalidate: 60 },
-    });
-
+    const res = await fetch(endpoint, { headers: BROWSER_HEADERS, next: { revalidate: 60 } });
     if (!res.ok) return null;
-
     const html = await res.text();
     if (!html.includes("Election Commission of India")) return null;
-
-    // TODO: Implement actual HTML parsing logic here
-    return null; 
+    return null; // Simulated failure for fallback demo
   } catch (err) {
-    console.error("ECI Fetch Error:", err);
     return null;
   }
 }
@@ -57,6 +41,8 @@ function buildSummary(results: ConstituencyResult[]) {
     OTH: { won: 0, leading: 0 },
   };
 
+  const partyMap: Record<string, PartyTally> = {};
+
   let declared = 0;
   let counting = 0;
   let notStarted = 0;
@@ -68,8 +54,23 @@ function buildSummary(results: ConstituencyResult[]) {
 
     const leader = r.candidates.find((c) => c.isLeading || c.isWinner);
     if (leader) {
+      // Alliance Tally
       if (leader.isWinner) tallies[leader.alliance].won++;
       else if (leader.isLeading) tallies[leader.alliance].leading++;
+
+      // Individual Party Tally
+      if (!partyMap[leader.party]) {
+        partyMap[leader.party] = {
+          party: leader.party,
+          alliance: leader.alliance,
+          won: 0,
+          leading: 0,
+          total: 0,
+        };
+      }
+      if (leader.isWinner) partyMap[leader.party].won++;
+      else if (leader.isLeading) partyMap[leader.party].leading++;
+      partyMap[leader.party].total++;
     }
   }
 
@@ -88,6 +89,8 @@ function buildSummary(results: ConstituencyResult[]) {
     })
   );
 
+  const partyTallies = Object.values(partyMap).sort((a, b) => b.total - a.total);
+
   return {
     totalSeats: 140,
     majorityMark: 71,
@@ -95,6 +98,7 @@ function buildSummary(results: ConstituencyResult[]) {
     counting,
     notStarted,
     tallies: allianceTallies,
+    partyTallies,
     lastUpdated: new Date().toISOString(),
   };
 }
@@ -111,38 +115,27 @@ const INITIAL_RESULTS: ConstituencyResult[] = CONSTITUENCIES.map(c => ({
   margin: 0,
   lastUpdated: new Date().toISOString(),
   prevWinner: c.prevWinner,
+  prevWinnerParty: "Unknown", // Would be populated in real data
 }));
 
 export async function GET() {
   const now = Date.now();
-  
   if (now - lastSuccessfulFetchTime > CACHE_TTL) {
     const freshResults = await fetchAndParseECI();
-    
     if (freshResults) {
       const summary = buildSummary(freshResults);
-      lastSuccessfulData = {
-        summary,
-        results: freshResults,
-        dataSource: "live",
-        fetchedAt: new Date().toISOString(),
-        isFallback: false,
-      };
+      lastSuccessfulData = { summary, results: freshResults, dataSource: "live", fetchedAt: new Date().toISOString(), isFallback: false };
       lastSuccessfulFetchTime = now;
     }
   }
 
   if (lastSuccessfulData) {
     const isActuallyOld = now - lastSuccessfulFetchTime > 300_000;
-    return NextResponse.json({
-      ...lastSuccessfulData,
-      isFallback: isActuallyOld,
-    });
+    return NextResponse.json({ ...lastSuccessfulData, isFallback: isActuallyOld });
   }
 
-  const initialSummary = buildSummary(INITIAL_RESULTS);
   return NextResponse.json({
-    summary: initialSummary,
+    summary: buildSummary(INITIAL_RESULTS),
     results: INITIAL_RESULTS,
     dataSource: "cached",
     fetchedAt: new Date().toISOString(),

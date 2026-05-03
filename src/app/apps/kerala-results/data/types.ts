@@ -26,6 +26,15 @@ export interface ConstituencyResult {
   lastUpdated: string;
   /** 2021 winner alliance for swing detection */
   prevWinner?: Alliance;
+  prevWinnerParty?: string;
+}
+
+export interface PartyTally {
+  party: string;
+  alliance: Alliance;
+  won: number;
+  leading: number;
+  total: number;
 }
 
 export interface AllianceTally {
@@ -48,6 +57,7 @@ export interface OverallSummary {
   counting: number;
   notStarted: number;
   tallies: AllianceTally[];
+  partyTallies: PartyTally[];
   lastUpdated: string;
 }
 
