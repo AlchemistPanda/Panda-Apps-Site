@@ -14,7 +14,6 @@ import {
   MapPin,
   Clock,
   AlertTriangle,
-  Info,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { ElectionData, ConstituencyResult, Alliance, District } from "../data/types";
@@ -39,6 +38,86 @@ function getStatusBadge(status: ConstituencyResult["status"]) {
 }
 
 // ── Components ────────────────────────────────────────────────────────────────
+
+function MajorityBar({ data }: { data: ElectionData }) {
+  const tallies = data.summary.tallies;
+  const ldf = tallies.find(t => t.alliance === "LDF")?.total || 0;
+  const udf = tallies.find(t => t.alliance === "UDF")?.total || 0;
+  const nda = tallies.find(t => t.alliance === "NDA")?.total || 0;
+  const others = tallies.find(t => t.alliance === "OTH")?.total || 0;
+  
+  const totalSeats = 140;
+  const majorityMark = 71;
+
+  return (
+    <div className="mb-10 bg-card/20 rounded-2xl p-6 border border-border/40 shadow-sm overflow-hidden">
+      <div className="flex justify-between items-end mb-4">
+        <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Majority Tracker</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-black">{ldf + udf + nda + others}</span>
+          <span className="text-xs text-muted-foreground uppercase font-medium">/ {totalSeats} Declared</span>
+        </div>
+      </div>
+
+      <div className="relative h-6 bg-secondary/50 rounded-full overflow-hidden flex shadow-inner">
+        {/* LDF Segment */}
+        <div 
+          className="h-full transition-all duration-1000 ease-out bg-red-500 relative group"
+          style={{ width: `${(ldf / totalSeats) * 100}%` }}
+        >
+          {ldf > 5 && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-sm">{ldf}</span>}
+        </div>
+        {/* UDF Segment */}
+        <div 
+          className="h-full transition-all duration-1000 ease-out bg-blue-500 relative group"
+          style={{ width: `${(udf / totalSeats) * 100}%` }}
+        >
+          {udf > 5 && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-sm">{udf}</span>}
+        </div>
+        {/* NDA Segment */}
+        <div 
+          className="h-full transition-all duration-1000 ease-out bg-amber-500 relative group"
+          style={{ width: `${(nda / totalSeats) * 100}%` }}
+        >
+          {nda > 5 && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-sm">{nda}</span>}
+        </div>
+        {/* Others Segment */}
+        <div 
+          className="h-full transition-all duration-1000 ease-out bg-gray-500 relative group"
+          style={{ width: `${(others / totalSeats) * 100}%` }}
+        >
+          {others > 5 && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow-sm">{others}</span>}
+        </div>
+
+        {/* Majority Marker (71) */}
+        <div 
+          className="absolute top-0 bottom-0 w-1 bg-white dark:bg-black z-10 shadow-[0_0_8px_rgba(0,0,0,0.5)] flex flex-col items-center"
+          style={{ left: `${(majorityMark / totalSeats) * 100}%` }}
+        >
+          <div className="absolute -top-6 bg-foreground text-background text-[10px] font-black px-1.5 py-0.5 rounded-sm">71</div>
+        </div>
+      </div>
+
+      <div className="flex justify-between mt-4">
+        <div className="flex gap-4">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-red-500" />
+            <span className="text-[10px] font-bold uppercase text-muted-foreground">LDF</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
+            <span className="text-[10px] font-bold uppercase text-muted-foreground">UDF</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-amber-500" />
+            <span className="text-[10px] font-bold uppercase text-muted-foreground">NDA</span>
+          </div>
+        </div>
+        <span className="text-[10px] font-black uppercase text-accent tracking-widest">Target: 71 to Win</span>
+      </div>
+    </div>
+  );
+}
 
 function SeatCard({ result }: { result: ConstituencyResult }) {
   const leader = result.candidates.find((c) => c.isLeading || c.isWinner);
@@ -260,6 +339,9 @@ export default function KeralaResultsClient() {
           </div>
         )}
 
+        {/* ── Majority Tracker (The Bar) ── */}
+        {data && <MajorityBar data={data} />}
+
         {/* ── Summary Cards ── */}
         {data && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
@@ -295,7 +377,7 @@ export default function KeralaResultsClient() {
                   <div 
                     className="h-full transition-all duration-1000 ease-out"
                     style={{ 
-                      width: `\${Math.min(100, (tally.total / 140) * 100)}%`,
+                      width: `${Math.min(100, (tally.total / 140) * 100)}%`,
                       backgroundColor: tally.color
                     }}
                   />
