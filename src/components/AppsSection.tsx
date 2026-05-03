@@ -2,11 +2,22 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus, Vote
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
 const apps = [
+  {
+    title: "Kerala Election Results 2026",
+    description:
+      "Live Kerala Assembly Election Results 2026. Real-time counting updates for all 140 constituencies. Alliance-wise tally, winners list, key battles, district-wise filtering.",
+    href: "/apps/kerala-results",
+    icon: Vote,
+    gradient: "from-amber-500 to-orange-600",
+    category: "News",
+    isNew: true,
+    isFeatured: true,
+  },
   {
     title: "AI Poster Maker",
     description:
