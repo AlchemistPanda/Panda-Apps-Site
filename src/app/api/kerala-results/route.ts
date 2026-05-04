@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import * as cheerio from "cheerio";
 import { CONSTITUENCIES } from "@/app/apps/kerala-results/data/constituencies";
 import type { ElectionData, ConstituencyResult, Alliance, AllianceTally, PartyTally, ResultStatus } from "@/app/apps/kerala-results/data/types";
 import { ALLIANCE_META, PARTY_ALLIANCE } from "@/app/apps/kerala-results/data/types";
@@ -16,35 +17,36 @@ const BROWSER_HEADERS = {
 
 function parseECIStatewise(html: string): ConstituencyResult[] {
   const results: ConstituencyResult[] = [];
-  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
-  const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
+  const $ = cheerio.load(html);
   
-  let match;
-  while ((match = rowRegex.exec(html)) !== null) {
-    const rowContent = match[1];
+  $('table.table tbody tr').each((_, row) => {
+    // Only get direct td children to avoid tooltip nested tables
     const cells: string[] = [];
-    let cellMatch;
-    while ((cellMatch = cellRegex.exec(rowContent)) !== null) {
-      // Remove tags and trim
-      cells.push(cellMatch[1].replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim());
-    }
-    
-    // ECI statewise table typically has 8-9 columns
-    // 0: Constituency, 1: Const. No, 2: Leading Candidate, 3: Leading Party, 4: Trailing Candidate, 5: Trailing Party, 6: Margin, 7: Status
-    if (cells.length >= 8 && cells[0] !== "Constituency" && cells[0] !== "") {
+    $(row).find('> td').each((_, cell) => {
+      // Extract text content directly, excluding script/style/nested tables
+      const cellText = $(cell).clone().children().remove().end().text().trim() || $(cell).text().replace(/\s+/g, ' ').trim();
+      cells.push(cellText);
+    });
+
+    // ECI statewise table typically has 9 columns
+    // 0: Constituency, 1: Const. No, 2: Leading Candidate, 3: Leading Party, 4: Trailing Candidate, 5: Trailing Party, 6: Margin, 7: Round, 8: Status
+    if (cells.length >= 8 && cells[0] && cells[0].toLowerCase() !== "constituency") {
       const constituencyName = cells[0];
       const leaderName = cells[2];
-      const leaderParty = cells[3];
-      const margin = parseInt(cells[6].replace(/,/g, '')) || 0;
-      const statusRaw = cells[7].toLowerCase();
+      // Clean up the party name (sometimes there's extra info like " - INC" or tooltip text that didn't get stripped)
+      const leaderParty = cells[3].split('-')[0].trim(); 
+      const marginRaw = cells[6] || "0";
+      const margin = parseInt(marginRaw.replace(/,/g, '')) || 0;
+      
+      const statusRaw = (cells[8] || cells[7] || "").toLowerCase();
       
       let status: ResultStatus = "not_started";
       if (statusRaw.includes("declared")) status = "result_declared";
-      else if (statusRaw.includes("counting")) status = "counting";
+      else if (statusRaw.includes("progress") || statusRaw.includes("counting") || leaderName) status = "counting";
       
       // Find alliance
       let alliance: Alliance = "OTH";
-      const partyUpper = leaderParty.toUpperCase();
+      const partyUpper = cells[3].toUpperCase(); // Use full cell text for matching to be safe
       for (const [party, a] of Object.entries(PARTY_ALLIANCE)) {
         if (partyUpper.includes(party.toUpperCase())) {
           alliance = a;
@@ -60,7 +62,7 @@ function parseECIStatewise(html: string): ConstituencyResult[] {
         margin,
         candidates: leaderName ? [{
           name: leaderName,
-          party: leaderParty,
+          party: leaderParty || cells[3],
           alliance,
           votes: 0,
           isLeading: status === "counting",
@@ -72,7 +74,8 @@ function parseECIStatewise(html: string): ConstituencyResult[] {
         lastUpdated: new Date().toISOString(),
       });
     }
-  }
+  });
+
   return results;
 }
 
