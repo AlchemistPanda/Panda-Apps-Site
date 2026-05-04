@@ -295,8 +295,8 @@ export default function KeralaResultsClient() {
 
         {data && <MajorityBar data={data} />}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-          <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             {data?.summary.tallies.map((tally) => (
               <div key={tally.alliance} className={`p-3 rounded-xl border flex flex-col justify-between ${tally.borderColor} ${tally.bgColor}`}>
                 <div className="flex justify-between items-start mb-2">
@@ -310,9 +310,7 @@ export default function KeralaResultsClient() {
               </div>
             ))}
           </div>
-          <div className="lg:col-span-1">
-             {data && <PartyTallyTable tallies={data.summary.partyTallies} />}
-          </div>
+          {data && <PartyTallyTable tallies={data.summary.partyTallies} />}
         </div>
 
         <div className="sticky top-4 z-40 flex flex-wrap gap-4 mb-8 bg-background/80 backdrop-blur-xl p-4 rounded-2xl border border-border/40 shadow-2xl">
