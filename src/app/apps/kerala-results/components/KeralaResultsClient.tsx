@@ -149,11 +149,6 @@ function SeatCard({ result }: { result: ConstituencyResult }) {
         </div>
         <div className="flex flex-col items-end gap-1">
           {getStatusBadge(result.status)}
-          {leader && leader.alliance !== result.prevWinner && result.status !== "not_started" && (
-            <span className="text-[10px] font-black text-amber-500 flex items-center gap-0.5 animate-bounce">
-              <TrendingUp className="h-3 w-3" /> SWING
-            </span>
-          )}
         </div>
       </div>
 
@@ -168,12 +163,14 @@ function SeatCard({ result }: { result: ConstituencyResult }) {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className={`font-bold text-sm ${isDeclared ? "text-emerald-500" : ALLIANCE_META[leader.alliance].textColor}`}>
+                  <span className={`font-bold text-sm ${ALLIANCE_META[leader.alliance].textColor}`}>
                     {leader.name}
                   </span>
-                  {isDeclared && <Trophy className="h-3.5 w-3.5 text-emerald-500" />}
+                  {isDeclared && <Trophy className={`h-3.5 w-3.5 ${ALLIANCE_META[leader.alliance].textColor}`} />}
                 </div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase">{leader.party} · {leader.alliance}</div>
+                <div className={`text-[10px] font-bold uppercase ${ALLIANCE_META[leader.alliance].textColor} opacity-80`}>
+                  {leader.party} · {leader.alliance}
+                </div>
               </div>
               <div className="text-right">
                 <div className="font-bold font-mono text-base tracking-tighter">{fmt(leader.votes)}</div>
