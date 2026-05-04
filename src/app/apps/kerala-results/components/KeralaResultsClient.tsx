@@ -299,16 +299,16 @@ export default function KeralaResultsClient() {
         {data && <MajorityBar data={data} />}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-          <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+          <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {data?.summary.tallies.map((tally) => (
-              <div key={tally.alliance} className={`p-4 rounded-2xl border ${tally.borderColor} ${tally.bgColor}`}>
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`text-xs font-black px-2 py-0.5 rounded bg-white/20 ${tally.textColor}`}>{tally.label}</span>
-                  {tally.total >= 71 && <Trophy className="h-4 w-4 text-emerald-500" />}
+              <div key={tally.alliance} className={`p-3 rounded-xl border flex flex-col justify-between ${tally.borderColor} ${tally.bgColor}`}>
+                <div className="flex justify-between items-start mb-2">
+                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded bg-white/20 ${tally.textColor}`}>{tally.label}</span>
+                  {tally.total >= 71 && <Trophy className="h-3.5 w-3.5 text-emerald-500" />}
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className={`text-4xl font-black ${tally.textColor}`}>{tally.total}</span>
-                  <span className="text-[10px] font-bold opacity-70 uppercase leading-none">{tally.won} Won · {tally.leading} Lead</span>
+                <div className="flex flex-col gap-1">
+                  <span className={`text-3xl font-black leading-none ${tally.textColor}`}>{tally.total}</span>
+                  <span className="text-[9px] font-bold opacity-70 uppercase leading-none tracking-wider">{tally.won} Won · {tally.leading} Lead</span>
                 </div>
               </div>
             ))}
