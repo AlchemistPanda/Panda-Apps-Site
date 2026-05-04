@@ -303,11 +303,14 @@ export async function GET() {
     } as ConstituencyResult;
   });
 
+  const summary = buildSummary(fallbackResults);
+  const isElectionOver = summary.declared === 140;
+
   return NextResponse.json({
-    summary: buildSummary(fallbackResults),
+    summary,
     results: fallbackResults,
-    dataSource: "cached",
+    dataSource: isElectionOver ? "final" : "cached",
     fetchedAt: seedResultsRaw.length > 0 ? (seedResultsRaw[0].lastUpdated || new Date().toISOString()) : new Date().toISOString(),
-    isFallback: true,
+    isFallback: !isElectionOver,
   });
 }
