@@ -129,6 +129,71 @@ function PartyTallyTable({ tallies }: { tallies: PartyTally[] }) {
   );
 }
 
+function ComparisonSection({ data }: { data: ElectionData }) {
+  const currentTallies = data.summary.tallies;
+  
+  // Calculate 2021 totals from the master constituency list
+  const prevTallies = data.results.reduce((acc, r) => {
+    const prev = r.prevWinner || "OTH";
+    acc[prev] = (acc[prev] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const alliances: Alliance[] = ["LDF", "UDF", "NDA", "OTH"];
+
+  return (
+    <div className="mb-10 bg-card/10 rounded-2xl p-6 border border-border/40 shadow-sm">
+      <div className="flex items-center gap-2 mb-6">
+        <TrendingUp className="h-5 w-5 text-accent" />
+        <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">2021 vs 2026 Comparison</h3>
+      </div>
+
+      <div className="space-y-6">
+        {alliances.map((all) => {
+          const current = currentTallies.find(t => t.alliance === all)?.total || 0;
+          const prev = prevTallies[all] || 0;
+          const diff = current - prev;
+          const meta = ALLIANCE_META[all];
+
+          return (
+            <div key={all} className="space-y-2">
+              <div className="flex justify-between items-end">
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-black px-2 py-0.5 rounded bg-white/10 ${meta.textColor}`}>{meta.label}</span>
+                  <span className={`text-[10px] font-bold ${diff > 0 ? "text-emerald-500" : diff < 0 ? "text-red-500" : "text-muted-foreground"}`}>
+                    {diff > 0 ? `+${diff}` : diff === 0 ? "No Change" : diff}
+                  </span>
+                </div>
+                <div className="flex gap-4 text-[10px] font-mono">
+                  <span className="text-muted-foreground">2021: <span className="font-bold text-foreground">{prev}</span></span>
+                  <span className="text-muted-foreground">2026: <span className="font-bold text-foreground">{current}</span></span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                <div className="relative h-2 bg-secondary/20 rounded-full overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-muted-foreground/30 transition-all duration-1000" 
+                    style={{ width: `${(prev / 140) * 100}%` }}
+                  />
+                  <div className="absolute inset-y-0 left-0 flex items-center px-2 text-[8px] font-bold text-muted-foreground uppercase opacity-50">2021</div>
+                </div>
+                <div className="relative h-3 bg-secondary/30 rounded-full overflow-hidden">
+                  <div 
+                    className={`absolute inset-y-0 left-0 transition-all duration-1000 bg-opacity-70`} 
+                    style={{ width: `${(current / 140) * 100}%`, backgroundColor: meta.color }}
+                  />
+                  <div className="absolute inset-y-0 left-0 flex items-center px-2 text-[8px] font-bold text-white uppercase shadow-sm">2026</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function SeatCard({ result }: { result: ConstituencyResult }) {
   const leader = result.candidates.find((c) => c.isLeading || c.isWinner);
   const trailing = result.candidates.filter(c => c !== leader).sort((a,b) => b.votes - a.votes)[0];
@@ -294,6 +359,7 @@ export default function KeralaResultsClient() {
         )}
 
         {data && <MajorityBar data={data} />}
+        {data && <ComparisonSection data={data} />}
 
         <div className="mb-10">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
