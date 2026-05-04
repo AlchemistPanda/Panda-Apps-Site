@@ -8,17 +8,6 @@ import AppCard from "@/components/AppCard";
 
 const apps = [
   {
-    title: "Kerala Election Results 2026",
-    description:
-      "Live Kerala Assembly Election Results 2026. Real-time counting updates for all 140 constituencies. Alliance-wise tally, winners list, key battles, district-wise filtering.",
-    href: "/apps/kerala-results",
-    icon: Vote,
-    gradient: "from-amber-500 to-orange-600",
-    category: "News",
-    isNew: true,
-    isFeatured: true,
-  },
-  {
     title: "AI Poster Maker",
     description:
       "Create stunning posters with AI-generated backgrounds, editable text layers, Malayalam/Manglish support, and a full canvas editor. 100% free, no sign-up.",
@@ -202,6 +191,17 @@ const apps = [
     icon: Users, // Using a different icon here later since I need to import it properly
     gradient: "from-blue-500 to-red-500",
     category: "Games",
+    isNew: true,
+    isFeatured: true,
+  },
+  {
+    title: "Kerala Election Results 2026",
+    description:
+      "Live Kerala Assembly Election Results 2026. Real-time counting updates for all 140 constituencies. Alliance-wise tally, winners list, key battles, district-wise filtering.",
+    href: "/apps/kerala-results",
+    icon: Vote,
+    gradient: "from-amber-500 to-orange-600",
+    category: "News",
     isNew: true,
     isFeatured: true,
   },
