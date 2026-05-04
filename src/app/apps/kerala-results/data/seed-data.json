@@ -1,0 +1,2662 @@
+[
+  {
+    "name": "ADOOR",
+    "status": "counting",
+    "margin": 9984,
+    "candidates": [
+      {
+        "name": "ADVOCATE C V SANTHAKUMAR",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.700Z"
+  },
+  {
+    "name": "ALAPPUZHA",
+    "status": "counting",
+    "margin": 18914,
+    "candidates": [
+      {
+        "name": "A.D THOMAS",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.705Z"
+  },
+  {
+    "name": "ALATHUR",
+    "status": "result_declared",
+    "margin": 8553,
+    "candidates": [
+      {
+        "name": "T M SASI",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.705Z"
+  },
+  {
+    "name": "ALUVA",
+    "status": "counting",
+    "margin": 22633,
+    "candidates": [
+      {
+        "name": "ANWAR SADATH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.706Z"
+  },
+  {
+    "name": "AMBALAPPUZHA",
+    "status": "counting",
+    "margin": 24270,
+    "candidates": [
+      {
+        "name": "G.SUDHAKARAN",
+        "party": "IndependentiParty Wise State TrendsLeading In:3Won In:1Trailing In:6",
+        "alliance": "OTH",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.706Z"
+  },
+  {
+    "name": "ANGAMALY",
+    "status": "counting",
+    "margin": 35347,
+    "candidates": [
+      {
+        "name": "ROJI M JOHN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.706Z"
+  },
+  {
+    "name": "ARANMULA",
+    "status": "counting",
+    "margin": 18985,
+    "candidates": [
+      {
+        "name": "ABIN VARKEY KODIYATTU",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.706Z"
+  },
+  {
+    "name": "AROOR",
+    "status": "counting",
+    "margin": 9324,
+    "candidates": [
+      {
+        "name": "ADV. SHANIMOL OSMAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.707Z"
+  },
+  {
+    "name": "ARUVIKKARA",
+    "status": "counting",
+    "margin": 3257,
+    "candidates": [
+      {
+        "name": "ADV. G. STEEPHEN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.707Z"
+  },
+  {
+    "name": "ATTINGAL",
+    "status": "result_declared",
+    "margin": 13375,
+    "candidates": [
+      {
+        "name": "O.S AMBIKA",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.707Z"
+  },
+  {
+    "name": "AZHIKODE",
+    "status": "counting",
+    "margin": 181,
+    "candidates": [
+      {
+        "name": "K. V. SUMESH",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.707Z"
+  },
+  {
+    "name": "BALUSSERI",
+    "status": "result_declared",
+    "margin": 16980,
+    "candidates": [
+      {
+        "name": "V.T. SOORAJ",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.707Z"
+  },
+  {
+    "name": "BEYPORE",
+    "status": "result_declared",
+    "margin": 7487,
+    "candidates": [
+      {
+        "name": "P.A MOHAMED RIYAS",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.708Z"
+  },
+  {
+    "name": "CHADAYAMANGALAM",
+    "status": "counting",
+    "margin": 6618,
+    "candidates": [
+      {
+        "name": "M. M. NASEER",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.708Z"
+  },
+  {
+    "name": "CHALAKUDY",
+    "status": "counting",
+    "margin": 20099,
+    "candidates": [
+      {
+        "name": "SANEESHKUMAR JOSEPH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.708Z"
+  },
+  {
+    "name": "CHANGANASSERY",
+    "status": "result_declared",
+    "margin": 8368,
+    "candidates": [
+      {
+        "name": "VINU JOB KUZHIMANNIL",
+        "party": "Kerala CongressiParty Wise State TrendsLeading In:3Won In:4Trailing In:1",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.708Z"
+  },
+  {
+    "name": "CHATHANNOOR",
+    "status": "counting",
+    "margin": 4242,
+    "candidates": [
+      {
+        "name": "B.B.GOPAKUMAR",
+        "party": "Bharatiya Janata PartyiParty Wise State TrendsLeading In:3Won In:0Trailing In:3",
+        "alliance": "NDA",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.708Z"
+  },
+  {
+    "name": "CHAVARA",
+    "status": "result_declared",
+    "margin": 18573,
+    "candidates": [
+      {
+        "name": "SHIBU BABY JOHN",
+        "party": "Revolutionary Socialist PartyiParty Wise State TrendsLeading In:0Won In:3Trailing In:0",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.708Z"
+  },
+  {
+    "name": "CHELAKKARA",
+    "status": "result_declared",
+    "margin": 29386,
+    "candidates": [
+      {
+        "name": "U R PRADEEP",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.709Z"
+  },
+  {
+    "name": "CHENGANNUR",
+    "status": "counting",
+    "margin": 10145,
+    "candidates": [
+      {
+        "name": "SAJI CHERIAN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.709Z"
+  },
+  {
+    "name": "CHERTHALA",
+    "status": "counting",
+    "margin": 13261,
+    "candidates": [
+      {
+        "name": "P. PRASAD",
+        "party": "Communist Party of IndiaiParty Wise State TrendsLeading In:4Won In:4Trailing In:8",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.793Z"
+  },
+  {
+    "name": "CHIRAYINKEEZHU",
+    "status": "counting",
+    "margin": 1422,
+    "candidates": [
+      {
+        "name": "RAMYA HARIDAS",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.793Z"
+  },
+  {
+    "name": "CHITTUR",
+    "status": "result_declared",
+    "margin": 6510,
+    "candidates": [
+      {
+        "name": "ADV. SUMESH ACHUTHAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.794Z"
+  },
+  {
+    "name": "DEVIKULAM",
+    "status": "counting",
+    "margin": 5233,
+    "candidates": [
+      {
+        "name": "F. RAJA",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.794Z"
+  },
+  {
+    "name": "DHARMADAM",
+    "status": "counting",
+    "margin": 12703,
+    "candidates": [
+      {
+        "name": "PINARAYI VIJAYAN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.794Z"
+  },
+  {
+    "name": "ELATHUR",
+    "status": "result_declared",
+    "margin": 12162,
+    "candidates": [
+      {
+        "name": "ADV.VIDYA BALAKRISHNAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.794Z"
+  },
+  {
+    "name": "ERANAKULAM",
+    "status": "result_declared",
+    "margin": 36163,
+    "candidates": [
+      {
+        "name": "T.J VINOD",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.794Z"
+  },
+  {
+    "name": "ERAVIPURAM",
+    "status": "result_declared",
+    "margin": 8803,
+    "candidates": [
+      {
+        "name": "ADV.VISHNU MOHAN",
+        "party": "Revolutionary Socialist PartyiParty Wise State TrendsLeading In:0Won In:3Trailing In:0",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.794Z"
+  },
+  {
+    "name": "ERNAD",
+    "status": "counting",
+    "margin": 41289,
+    "candidates": [
+      {
+        "name": "P.K.BASHEER",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.795Z"
+  },
+  {
+    "name": "ETTUMANOOR",
+    "status": "result_declared",
+    "margin": 19752,
+    "candidates": [
+      {
+        "name": "NATTAKOM SURESH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.795Z"
+  },
+  {
+    "name": "GURUVAYOOR",
+    "status": "result_declared",
+    "margin": 1998,
+    "candidates": [
+      {
+        "name": "N. K. AKBAR",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.795Z"
+  },
+  {
+    "name": "HARIPAD",
+    "status": "result_declared",
+    "margin": 23377,
+    "candidates": [
+      {
+        "name": "RAMESH CHENNITHALA",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.795Z"
+  },
+  {
+    "name": "IDUKKI",
+    "status": "result_declared",
+    "margin": 23822,
+    "candidates": [
+      {
+        "name": "ROY K PAULOSE",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.795Z"
+  },
+  {
+    "name": "IRIKKUR",
+    "status": "counting",
+    "margin": 42426,
+    "candidates": [
+      {
+        "name": "ADV. SAJEEV JOSEPH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.795Z"
+  },
+  {
+    "name": "IRINJALAKUDA",
+    "status": "result_declared",
+    "margin": 10212,
+    "candidates": [
+      {
+        "name": "ADV. THOMAS UNNIYADAN",
+        "party": "Kerala CongressiParty Wise State TrendsLeading In:3Won In:4Trailing In:1",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.795Z"
+  },
+  {
+    "name": "KADUTHURUTHY",
+    "status": "result_declared",
+    "margin": 31300,
+    "candidates": [
+      {
+        "name": "ADV.MONS JOSEPH",
+        "party": "Kerala CongressiParty Wise State TrendsLeading In:3Won In:4Trailing In:1",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.796Z"
+  },
+  {
+    "name": "KAIPAMANGALAM",
+    "status": "result_declared",
+    "margin": 9944,
+    "candidates": [
+      {
+        "name": "K.K. VALSARAJ",
+        "party": "Communist Party of IndiaiParty Wise State TrendsLeading In:4Won In:4Trailing In:8",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.796Z"
+  },
+  {
+    "name": "KALAMASSERY",
+    "status": "counting",
+    "margin": 16110,
+    "candidates": [
+      {
+        "name": "ADV. V E ABDUL GAFOOR",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.796Z"
+  },
+  {
+    "name": "KALLIASSERI",
+    "status": "result_declared",
+    "margin": 18433,
+    "candidates": [
+      {
+        "name": "M.VIJIN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.796Z"
+  },
+  {
+    "name": "KALPETTA",
+    "status": "result_declared",
+    "margin": 45031,
+    "candidates": [
+      {
+        "name": "ADV. T SIDDIQUE",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.796Z"
+  },
+  {
+    "name": "KANHANGAD",
+    "status": "counting",
+    "margin": 15316,
+    "candidates": [
+      {
+        "name": "ADV. GOVINDAN PALLIKAPPIL",
+        "party": "Communist Party of IndiaiParty Wise State TrendsLeading In:4Won In:4Trailing In:8",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.869Z"
+  },
+  {
+    "name": "KANJIRAPPALLY",
+    "status": "counting",
+    "margin": 5772,
+    "candidates": [
+      {
+        "name": "RONY K BABY",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.869Z"
+  },
+  {
+    "name": "KANNUR",
+    "status": "counting",
+    "margin": 18530,
+    "candidates": [
+      {
+        "name": "ADV.T.O. MOHANAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.869Z"
+  },
+  {
+    "name": "KARUNAGAPPALLY",
+    "status": "result_declared",
+    "margin": 26618,
+    "candidates": [
+      {
+        "name": "C.R. MAHESH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.870Z"
+  },
+  {
+    "name": "KASARAGOD",
+    "status": "result_declared",
+    "margin": 22698,
+    "candidates": [
+      {
+        "name": "KALLATRA MAHIN",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.870Z"
+  },
+  {
+    "name": "KATTAKKADA",
+    "status": "counting",
+    "margin": 7222,
+    "candidates": [
+      {
+        "name": "M. R. BAIJU",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.870Z"
+  },
+  {
+    "name": "KAYAMKULAM",
+    "status": "counting",
+    "margin": 15057,
+    "candidates": [
+      {
+        "name": "ADV.M.LIJU",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.870Z"
+  },
+  {
+    "name": "KAZHAKOOTTAM",
+    "status": "counting",
+    "margin": 265,
+    "candidates": [
+      {
+        "name": "V. MURALEEDHARAN",
+        "party": "Bharatiya Janata PartyiParty Wise State TrendsLeading In:3Won In:0Trailing In:3",
+        "alliance": "NDA",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.870Z"
+  },
+  {
+    "name": "KOCHI",
+    "status": "counting",
+    "margin": 8090,
+    "candidates": [
+      {
+        "name": "MOHAMMED SHIYAS",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.870Z"
+  },
+  {
+    "name": "KODUNGALLUR",
+    "status": "result_declared",
+    "margin": 8308,
+    "candidates": [
+      {
+        "name": "ADV. O J JANEESH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.871Z"
+  },
+  {
+    "name": "KODUVALLY",
+    "status": "result_declared",
+    "margin": 36682,
+    "candidates": [
+      {
+        "name": "P K FIROS",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.871Z"
+  },
+  {
+    "name": "KOLLAM",
+    "status": "result_declared",
+    "margin": 16830,
+    "candidates": [
+      {
+        "name": "ADV. BINDHU KRISHNA",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.871Z"
+  },
+  {
+    "name": "KONDOTTY",
+    "status": "counting",
+    "margin": 53525,
+    "candidates": [
+      {
+        "name": "T.P. ASHRAFALI",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.871Z"
+  },
+  {
+    "name": "KONGAD",
+    "status": "result_declared",
+    "margin": 3706,
+    "candidates": [
+      {
+        "name": "THULASI TEACHER",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.871Z"
+  },
+  {
+    "name": "KONNI",
+    "status": "counting",
+    "margin": 105,
+    "candidates": [
+      {
+        "name": "PROF SATHEESH KOCHUPARAMBIL",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.871Z"
+  },
+  {
+    "name": "KOTHAMANGALAM",
+    "status": "result_declared",
+    "margin": 16859,
+    "candidates": [
+      {
+        "name": "SHIBU THECKUMPURAM",
+        "party": "Kerala CongressiParty Wise State TrendsLeading In:3Won In:4Trailing In:1",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.872Z"
+  },
+  {
+    "name": "KOTTAKKAL",
+    "status": "counting",
+    "margin": 43199,
+    "candidates": [
+      {
+        "name": "PROF. ABID HUSSAIN THANGAL",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.872Z"
+  },
+  {
+    "name": "KOTTARAKKARA",
+    "status": "counting",
+    "margin": 1072,
+    "candidates": [
+      {
+        "name": "K.N. BALAGOPAL",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.872Z"
+  },
+  {
+    "name": "KOTTAYAM",
+    "status": "counting",
+    "margin": 35873,
+    "candidates": [
+      {
+        "name": "THIRUVANCHOOR RADHAKRISHNAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.872Z"
+  },
+  {
+    "name": "KOVALAM",
+    "status": "counting",
+    "margin": 32709,
+    "candidates": [
+      {
+        "name": "ADV. M.VINCENT",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.872Z"
+  },
+  {
+    "name": "KOZHIKODE NORTH",
+    "status": "counting",
+    "margin": 1478,
+    "candidates": [
+      {
+        "name": "ADV.K JAYANTH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.947Z"
+  },
+  {
+    "name": "KOZHIKODE SOUTH",
+    "status": "result_declared",
+    "margin": 10795,
+    "candidates": [
+      {
+        "name": "ADV. FYZAL BABU",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.947Z"
+  },
+  {
+    "name": "KUNDARA",
+    "status": "counting",
+    "margin": 31771,
+    "candidates": [
+      {
+        "name": "P. C. VISHNUNADH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.947Z"
+  },
+  {
+    "name": "KUNNAMANGALAM",
+    "status": "result_declared",
+    "margin": 13313,
+    "candidates": [
+      {
+        "name": "M.A. RAZAK MASTER",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.948Z"
+  },
+  {
+    "name": "KUNNAMKULAM",
+    "status": "result_declared",
+    "margin": 4563,
+    "candidates": [
+      {
+        "name": "A C MOIDEEN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.948Z"
+  },
+  {
+    "name": "KUNNATHUNAD",
+    "status": "counting",
+    "margin": 21283,
+    "candidates": [
+      {
+        "name": "V. P. SAJEENDRAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.948Z"
+  },
+  {
+    "name": "KUNNATHUR",
+    "status": "result_declared",
+    "margin": 25314,
+    "candidates": [
+      {
+        "name": "ULLAS KOVUR",
+        "party": "Revolutionary Socialist PartyiParty Wise State TrendsLeading In:0Won In:3Trailing In:0",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.948Z"
+  },
+  {
+    "name": "KUTHUPARAMBA",
+    "status": "counting",
+    "margin": 1286,
+    "candidates": [
+      {
+        "name": "P K PRAVEEN",
+        "party": "Rashtriya Janata DaliParty Wise State TrendsLeading In:1Won In:0Trailing In:0",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.948Z"
+  },
+  {
+    "name": "KUTTANAD",
+    "status": "counting",
+    "margin": 20600,
+    "candidates": [
+      {
+        "name": "REJI CHERIYAN",
+        "party": "Kerala CongressiParty Wise State TrendsLeading In:3Won In:4Trailing In:1",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.949Z"
+  },
+  {
+    "name": "KUTTIADI",
+    "status": "result_declared",
+    "margin": 10922,
+    "candidates": [
+      {
+        "name": "PARAKKAL ABDULLA",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.949Z"
+  },
+  {
+    "name": "MALAMPUZHA",
+    "status": "result_declared",
+    "margin": 19721,
+    "candidates": [
+      {
+        "name": "A PRABHAKARAN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.949Z"
+  },
+  {
+    "name": "MALAPPURAM",
+    "status": "counting",
+    "margin": 69614,
+    "candidates": [
+      {
+        "name": "P.K KUNHALIKUTTY",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.949Z"
+  },
+  {
+    "name": "MANALUR",
+    "status": "counting",
+    "margin": 1578,
+    "candidates": [
+      {
+        "name": "PROF C RAVINDRANATH",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.950Z"
+  },
+  {
+    "name": "MANANTHAVADY",
+    "status": "counting",
+    "margin": 10543,
+    "candidates": [
+      {
+        "name": "USHA VIJAYAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.950Z"
+  },
+  {
+    "name": "MANJERI",
+    "status": "counting",
+    "margin": 57035,
+    "candidates": [
+      {
+        "name": "ADV. M. RAHMATHULLA",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.950Z"
+  },
+  {
+    "name": "MANJESHWAR",
+    "status": "counting",
+    "margin": 32149,
+    "candidates": [
+      {
+        "name": "A K M ASHRAF",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.950Z"
+  },
+  {
+    "name": "MANKADA",
+    "status": "counting",
+    "margin": 45412,
+    "candidates": [
+      {
+        "name": "MANJALAMKUZHI ALI",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.950Z"
+  },
+  {
+    "name": "MANNARKKAD",
+    "status": "result_declared",
+    "margin": 25903,
+    "candidates": [
+      {
+        "name": "ADV. N. SAMSUDHEEN",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.951Z"
+  },
+  {
+    "name": "MATTANNUR",
+    "status": "counting",
+    "margin": 14414,
+    "candidates": [
+      {
+        "name": "V K SANOJ",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.951Z"
+  },
+  {
+    "name": "MAVELIKKARA",
+    "status": "counting",
+    "margin": 15736,
+    "candidates": [
+      {
+        "name": "M.S. ARUN KUMAR",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:15.951Z"
+  },
+  {
+    "name": "MUVATTUPUZHA",
+    "status": "result_declared",
+    "margin": 42829,
+    "candidates": [
+      {
+        "name": "DR. MATHEW KUZHALNADAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.030Z"
+  },
+  {
+    "name": "NADAPURAM",
+    "status": "counting",
+    "margin": 23528,
+    "candidates": [
+      {
+        "name": "K.M. ABHIJITH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.030Z"
+  },
+  {
+    "name": "NATTIKA",
+    "status": "result_declared",
+    "margin": 7093,
+    "candidates": [
+      {
+        "name": "GEETHAGOPI",
+        "party": "Communist Party of IndiaiParty Wise State TrendsLeading In:4Won In:4Trailing In:8",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.030Z"
+  },
+  {
+    "name": "NEDUMANGAD",
+    "status": "counting",
+    "margin": 18265,
+    "candidates": [
+      {
+        "name": "G R ANIL",
+        "party": "Communist Party of IndiaiParty Wise State TrendsLeading In:4Won In:4Trailing In:8",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.031Z"
+  },
+  {
+    "name": "NEMMARA",
+    "status": "result_declared",
+    "margin": 3305,
+    "candidates": [
+      {
+        "name": "K PREMAN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.031Z"
+  },
+  {
+    "name": "NEMOM",
+    "status": "counting",
+    "margin": 3086,
+    "candidates": [
+      {
+        "name": "RAJEEV CHANDRASEKHAR",
+        "party": "Bharatiya Janata PartyiParty Wise State TrendsLeading In:3Won In:0Trailing In:3",
+        "alliance": "NDA",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.031Z"
+  },
+  {
+    "name": "NEYYATTINKARA",
+    "status": "result_declared",
+    "margin": 6966,
+    "candidates": [
+      {
+        "name": "N. SHAKTHAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.032Z"
+  },
+  {
+    "name": "NILAMBUR",
+    "status": "result_declared",
+    "margin": 54851,
+    "candidates": [
+      {
+        "name": "ARYADAN SHOUKATH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.032Z"
+  },
+  {
+    "name": "OLLUR",
+    "status": "counting",
+    "margin": 5881,
+    "candidates": [
+      {
+        "name": "K RAJAN",
+        "party": "Communist Party of IndiaiParty Wise State TrendsLeading In:4Won In:4Trailing In:8",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.032Z"
+  },
+  {
+    "name": "OTTAPPALAM",
+    "status": "result_declared",
+    "margin": 26777,
+    "candidates": [
+      {
+        "name": "ADV. K. PREMKUMAR",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.033Z"
+  },
+  {
+    "name": "PALA",
+    "status": "counting",
+    "margin": 2991,
+    "candidates": [
+      {
+        "name": "MANI C KAPPEN",
+        "party": "IndependentiParty Wise State TrendsLeading In:3Won In:1Trailing In:6",
+        "alliance": "OTH",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.033Z"
+  },
+  {
+    "name": "PALAKKAD",
+    "status": "counting",
+    "margin": 13147,
+    "candidates": [
+      {
+        "name": "RAMESH PISHARODY",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.033Z"
+  },
+  {
+    "name": "PARASSALA",
+    "status": "counting",
+    "margin": 13802,
+    "candidates": [
+      {
+        "name": "C K HAREENDRAN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.033Z"
+  },
+  {
+    "name": "PARAVUR",
+    "status": "counting",
+    "margin": 20545,
+    "candidates": [
+      {
+        "name": "ADV.V.D.SATHEESAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.034Z"
+  },
+  {
+    "name": "PATHANAPURAM",
+    "status": "counting",
+    "margin": 8310,
+    "candidates": [
+      {
+        "name": "JYOTHI KUMAR CHAMAKKALA",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.034Z"
+  },
+  {
+    "name": "PATTAMBI",
+    "status": "result_declared",
+    "margin": 9442,
+    "candidates": [
+      {
+        "name": "MUHAMMED MUHASSIN",
+        "party": "Communist Party of IndiaiParty Wise State TrendsLeading In:4Won In:4Trailing In:8",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.034Z"
+  },
+  {
+    "name": "PAYYANNUR",
+    "status": "result_declared",
+    "margin": 7487,
+    "candidates": [
+      {
+        "name": "V. KUNHIKRISHNAN",
+        "party": "IndependentiParty Wise State TrendsLeading In:3Won In:1Trailing In:6",
+        "alliance": "OTH",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.035Z"
+  },
+  {
+    "name": "PEERUMADE",
+    "status": "result_declared",
+    "margin": 27634,
+    "candidates": [
+      {
+        "name": "ADV.CYRIAC THOMAS",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.035Z"
+  },
+  {
+    "name": "PERAMBRA",
+    "status": "counting",
+    "margin": 4842,
+    "candidates": [
+      {
+        "name": "ADV. FATHIMA THAHILIYA",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.035Z"
+  },
+  {
+    "name": "PERAVOOR",
+    "status": "counting",
+    "margin": 12422,
+    "candidates": [
+      {
+        "name": "ADV. SUNNY JOSEPH",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.035Z"
+  },
+  {
+    "name": "PERINTHALMANNA",
+    "status": "counting",
+    "margin": 32431,
+    "candidates": [
+      {
+        "name": "NAJEEB KANTHAPURAM",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.163Z"
+  },
+  {
+    "name": "PERUMBAVOOR",
+    "status": "result_declared",
+    "margin": 28434,
+    "candidates": [
+      {
+        "name": "MANOJ MOOTHEDAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.163Z"
+  },
+  {
+    "name": "PIRAVOM",
+    "status": "result_declared",
+    "margin": 44681,
+    "candidates": [
+      {
+        "name": "ANOOP JACOB",
+        "party": "Kerala Congress (Jacob)iParty Wise State TrendsLeading In:0Won In:1Trailing In:0",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.163Z"
+  },
+  {
+    "name": "PONNANI",
+    "status": "counting",
+    "margin": 13267,
+    "candidates": [
+      {
+        "name": "K.P NOUSHAD ALI",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.164Z"
+  },
+  {
+    "name": "POONJAR",
+    "status": "counting",
+    "margin": 6628,
+    "candidates": [
+      {
+        "name": "ADV.SEBASTIAN M.J",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.164Z"
+  },
+  {
+    "name": "PUDUKKAD",
+    "status": "result_declared",
+    "margin": 2853,
+    "candidates": [
+      {
+        "name": "K K RAMACHANDRAN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.165Z"
+  },
+  {
+    "name": "PUNALUR",
+    "status": "result_declared",
+    "margin": 21529,
+    "candidates": [
+      {
+        "name": "C. AJAYAPRASAD",
+        "party": "Communist Party of IndiaiParty Wise State TrendsLeading In:4Won In:4Trailing In:8",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.165Z"
+  },
+  {
+    "name": "PUTHUPPALLY",
+    "status": "result_declared",
+    "margin": 52907,
+    "candidates": [
+      {
+        "name": "ADV. CHANDY OOMMEN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.165Z"
+  },
+  {
+    "name": "QUILANDY",
+    "status": "counting",
+    "margin": 12070,
+    "candidates": [
+      {
+        "name": "ADV. K. PRAVEEN KUMAR",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.166Z"
+  },
+  {
+    "name": "RANNI",
+    "status": "counting",
+    "margin": 3237,
+    "candidates": [
+      {
+        "name": "ADV. PAZHAKULAM MADHU",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.166Z"
+  },
+  {
+    "name": "SHORNUR",
+    "status": "result_declared",
+    "margin": 16517,
+    "candidates": [
+      {
+        "name": "P.MAMMIKUTTY",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.166Z"
+  },
+  {
+    "name": "SULTHANBATHERY",
+    "status": "result_declared",
+    "margin": 16597,
+    "candidates": [
+      {
+        "name": "I C BALAKRISHNAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.167Z"
+  },
+  {
+    "name": "TALIPARAMBA",
+    "status": "counting",
+    "margin": 15863,
+    "candidates": [
+      {
+        "name": "T K GOVINDAN MASTER S/O KUNHIKKANNAN NAMBIAR",
+        "party": "IndependentiParty Wise State TrendsLeading In:3Won In:1Trailing In:6",
+        "alliance": "OTH",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.167Z"
+  },
+  {
+    "name": "TANUR",
+    "status": "counting",
+    "margin": 27131,
+    "candidates": [
+      {
+        "name": "P K NAVAS",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.168Z"
+  },
+  {
+    "name": "TARUR",
+    "status": "result_declared",
+    "margin": 11910,
+    "candidates": [
+      {
+        "name": "SUMOD",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.168Z"
+  },
+  {
+    "name": "THALASSERY",
+    "status": "counting",
+    "margin": 20523,
+    "candidates": [
+      {
+        "name": "KARAYI RAJAN",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.168Z"
+  },
+  {
+    "name": "THAVANUR",
+    "status": "result_declared",
+    "margin": 14647,
+    "candidates": [
+      {
+        "name": "ADV. V S JOY",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:37Won In:27Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.169Z"
+  },
+  {
+    "name": "THIRUVALLA",
+    "status": "counting",
+    "margin": 10170,
+    "candidates": [
+      {
+        "name": "ADV.VARGHESE MAMMEN",
+        "party": "Kerala CongressiParty Wise State TrendsLeading In:3Won In:4Trailing In:1",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.169Z"
+  },
+  {
+    "name": "THIRUVAMBADI",
+    "status": "result_declared",
+    "margin": 6741,
+    "candidates": [
+      {
+        "name": "C K KASIM",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.169Z"
+  },
+  {
+    "name": "THIRUVANANTHAPURAM",
+    "status": "result_declared",
+    "margin": 9863,
+    "candidates": [
+      {
+        "name": "C P JOHN",
+        "party": "Communist Marxist Party Kerala State CommitteeiParty Wise State TrendsLeading In:0Won In:1Trailing In:0",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.170Z"
+  },
+  {
+    "name": "THODUPUZHA",
+    "status": "counting",
+    "margin": 44291,
+    "candidates": [
+      {
+        "name": "APU JOHN JOSEPH",
+        "party": "Kerala CongressiParty Wise State TrendsLeading In:3Won In:4Trailing In:1",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.386Z"
+  },
+  {
+    "name": "THRIKKAKARA",
+    "status": "result_declared",
+    "margin": 50211,
+    "candidates": [
+      {
+        "name": "UMA THOMAS",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.386Z"
+  },
+  {
+    "name": "THRIPUNITHURA",
+    "status": "counting",
+    "margin": 18456,
+    "candidates": [
+      {
+        "name": "DEEPAK JOY",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.387Z"
+  },
+  {
+    "name": "THRISSUR",
+    "status": "result_declared",
+    "margin": 26803,
+    "candidates": [
+      {
+        "name": "RAJAN. J. PALLAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.387Z"
+  },
+  {
+    "name": "THRITHALA",
+    "status": "result_declared",
+    "margin": 8385,
+    "candidates": [
+      {
+        "name": "V T BALRAM",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.387Z"
+  },
+  {
+    "name": "TIRUR",
+    "status": "counting",
+    "margin": 19976,
+    "candidates": [
+      {
+        "name": "KURUKKOLI MOIDEEN",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.387Z"
+  },
+  {
+    "name": "TIRURANGADI",
+    "status": "counting",
+    "margin": 55179,
+    "candidates": [
+      {
+        "name": "P M A SAMEER",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.387Z"
+  },
+  {
+    "name": "TRIKARIPUR",
+    "status": "counting",
+    "margin": 4431,
+    "candidates": [
+      {
+        "name": "SANDEEP VARIER",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.388Z"
+  },
+  {
+    "name": "UDMA",
+    "status": "counting",
+    "margin": 4864,
+    "candidates": [
+      {
+        "name": "NEELAKANDAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.388Z"
+  },
+  {
+    "name": "UDUMBANCHOLA",
+    "status": "result_declared",
+    "margin": 20021,
+    "candidates": [
+      {
+        "name": "ADV. SENAPATHY VENU",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.388Z"
+  },
+  {
+    "name": "VADAKARA",
+    "status": "result_declared",
+    "margin": 14862,
+    "candidates": [
+      {
+        "name": "K K REMA",
+        "party": "Revolutionary Marxist Party of IndiaiParty Wise State TrendsLeading In:0Won In:1Trailing In:0",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.389Z"
+  },
+  {
+    "name": "VAIKOM",
+    "status": "result_declared",
+    "margin": 1360,
+    "candidates": [
+      {
+        "name": "K BINIMON",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.389Z"
+  },
+  {
+    "name": "VALLIKUNNU",
+    "status": "counting",
+    "margin": 51289,
+    "candidates": [
+      {
+        "name": "T V IBRAHIM",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.389Z"
+  },
+  {
+    "name": "VAMANAPURAM",
+    "status": "result_declared",
+    "margin": 12185,
+    "candidates": [
+      {
+        "name": "MUHAMMED SUDHEERSHA S",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.389Z"
+  },
+  {
+    "name": "VARKALA",
+    "status": "counting",
+    "margin": 2050,
+    "candidates": [
+      {
+        "name": "ADV.V JOY",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.389Z"
+  },
+  {
+    "name": "VATTIYOORKAVU",
+    "status": "counting",
+    "margin": 4974,
+    "candidates": [
+      {
+        "name": "K. MURALEEDHARAN",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.390Z"
+  },
+  {
+    "name": "VENGARA",
+    "status": "counting",
+    "margin": 29906,
+    "candidates": [
+      {
+        "name": "K.M. SHAJI",
+        "party": "Indian Union Muslim LeagueiParty Wise State TrendsLeading In:15Won In:7Trailing In:2",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.390Z"
+  },
+  {
+    "name": "VYPEN",
+    "status": "result_declared",
+    "margin": 15648,
+    "candidates": [
+      {
+        "name": "TONY CHAMMANY",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.390Z"
+  },
+  {
+    "name": "WADAKKANCHERY",
+    "status": "result_declared",
+    "margin": 5690,
+    "candidates": [
+      {
+        "name": "XAVIER CHITTILAPPILLY",
+        "party": "Communist Party of India (Marxist)iParty Wise State TrendsLeading In:11Won In:14Trailing In:33",
+        "alliance": "LDF",
+        "votes": 0,
+        "isLeading": false,
+        "isWinner": true
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.390Z"
+  },
+  {
+    "name": "WANDOOR",
+    "status": "counting",
+    "margin": 47939,
+    "candidates": [
+      {
+        "name": "A.P ANILKUMAR",
+        "party": "Indian National CongressiParty Wise State TrendsLeading In:36Won In:28Trailing In:13",
+        "alliance": "UDF",
+        "votes": 0,
+        "isLeading": true,
+        "isWinner": false
+      }
+    ],
+    "totalVotes": 0,
+    "roundsCompleted": 0,
+    "totalRounds": 20,
+    "lastUpdated": "2026-05-04T10:22:16.391Z"
+  }
+]

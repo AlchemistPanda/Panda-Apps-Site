@@ -19,7 +19,7 @@ function parseECIStatewise(html: string): ConstituencyResult[] {
   const results: ConstituencyResult[] = [];
   const $ = cheerio.load(html);
   
-  $('table.table tbody tr').each((_, row) => {
+  $('table.table > tbody > tr').each((_, row) => {
     // Only get direct td children to avoid tooltip nested tables
     const cells: string[] = [];
     $(row).find('> td').each((_, cell) => {
@@ -252,12 +252,49 @@ export async function GET() {
     return NextResponse.json({ ...lastSuccessfulData, isFallback: isActuallyOld });
   }
 
-  // Final fallback to initial empty state if never successfully fetched
+  // Load seed data if fetch fails completely (Vercel IP blocking)
+  let seedResultsRaw: any[] = [];
+  try {
+    seedResultsRaw = require("@/app/apps/kerala-results/data/seed-data.json");
+  } catch (e) {
+    // Ignore if file doesn't exist yet
+  }
+
+  const fallbackResults = CONSTITUENCIES.map(c => {
+    const found = seedResultsRaw.find(r => 
+      r.name.toUpperCase() === c.name.toUpperCase() || 
+      r.name.toUpperCase().includes(c.name.toUpperCase()) ||
+      c.name.toUpperCase().includes(r.name.toUpperCase())
+    );
+    
+    if (found) {
+      return {
+        ...found,
+        id: c.id,
+        district: c.district,
+        prevWinner: c.prevWinner,
+      };
+    }
+    return {
+      id: c.id,
+      name: c.name,
+      district: c.district,
+      status: "not_started",
+      candidates: [],
+      totalVotes: 0,
+      roundsCompleted: 0,
+      totalRounds: 20,
+      margin: 0,
+      lastUpdated: new Date().toISOString(),
+      prevWinner: c.prevWinner,
+    } as ConstituencyResult;
+  });
+
   return NextResponse.json({
-    summary: buildSummary(INITIAL_RESULTS),
-    results: INITIAL_RESULTS,
+    summary: buildSummary(fallbackResults),
+    results: fallbackResults,
     dataSource: "cached",
-    fetchedAt: new Date().toISOString(),
+    fetchedAt: seedResultsRaw.length > 0 ? (seedResultsRaw[0].lastUpdated || new Date().toISOString()) : new Date().toISOString(),
     isFallback: true,
   });
 }
