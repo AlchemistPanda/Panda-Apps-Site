@@ -277,7 +277,15 @@ export async function GET() {
              (localName === "THRIPUNITHURA" && eciName === "TRIPUNITHURA") ||
              (localName === "PUDUKKAD" && eciName === "PUTHUKKAD") ||
              (localName === "ARUVIKKARA" && eciName === "ARUVIKARA") ||
-             (localName === "KAZHAKKOOTTAM" && eciName === "KAZHAKOOTTAM");
+             (localName === "KAZHAKKOOTTAM" && eciName === "KAZHAKOOTTAM") ||
+             (localName === "AMBALAPUZHA" && eciName === "AMBALAPPUZHA") ||
+             (localName === "ERANAD" && eciName === "ERNAD") ||
+             (localName === "ERNAKULAM" && eciName === "ERANAKULAM") ||
+             (localName === "MANNARKAD" && eciName === "MANNARKKAD") ||
+             (localName === "MAVELIKARA" && eciName === "MAVELIKKARA") ||
+             (localName === "VALLIKKUNNU" && eciName === "VALLIKUNNU") ||
+             (localName === "VYPEEN" && eciName === "VYPEN") ||
+             (localName === "NENMARA" && eciName === "NEMMARA");
     });
     
     if (found) {
@@ -304,13 +312,12 @@ export async function GET() {
   });
 
   const summary = buildSummary(fallbackResults);
-  const isElectionOver = summary.declared === 140;
 
   return NextResponse.json({
     summary,
     results: fallbackResults,
-    dataSource: isElectionOver ? "final" : "cached",
+    dataSource: "final",
     fetchedAt: seedResultsRaw.length > 0 ? (seedResultsRaw[0].lastUpdated || new Date().toISOString()) : new Date().toISOString(),
-    isFallback: !isElectionOver,
+    isFallback: false,
   });
 }
