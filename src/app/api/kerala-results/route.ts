@@ -261,11 +261,24 @@ export async function GET() {
   }
 
   const fallbackResults = CONSTITUENCIES.map(c => {
-    const found = seedResultsRaw.find(r => 
-      r.name.toUpperCase() === c.name.toUpperCase() || 
-      r.name.toUpperCase().includes(c.name.toUpperCase()) ||
-      c.name.toUpperCase().includes(r.name.toUpperCase())
-    );
+    // Exact or partial match, and handle spelling differences (e.g. CHATHANNOOR vs Chathannur)
+    const found = seedResultsRaw.find(r => {
+      const eciName = r.name.toUpperCase();
+      const localName = c.name.toUpperCase();
+      
+      return eciName === localName || 
+             eciName.includes(localName) ||
+             localName.includes(eciName) ||
+             // Specific ECI spelling variations
+             (localName === "CHATHANNUR" && eciName === "CHATHANNOOR") ||
+             (localName === "CHALAKKUDY" && eciName === "CHALAKUDY") ||
+             (localName === "SULTHANBATHERY" && eciName === "SULTHAN BATHERY") ||
+             (localName === "KUTHUPARAMBA" && eciName === "KOOTHUPARAMBA") ||
+             (localName === "THRIPUNITHURA" && eciName === "TRIPUNITHURA") ||
+             (localName === "PUDUKKAD" && eciName === "PUTHUKKAD") ||
+             (localName === "ARUVIKKARA" && eciName === "ARUVIKARA") ||
+             (localName === "KAZHAKKOOTTAM" && eciName === "KAZHAKOOTTAM");
+    });
     
     if (found) {
       return {
