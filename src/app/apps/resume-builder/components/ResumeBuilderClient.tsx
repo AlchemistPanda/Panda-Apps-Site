@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import {
   ChevronLeft, Download, FileJson, FileText, Eye, Edit3, Palette, LayoutTemplate,
-  Sparkles, Trash2, Upload, RotateCcw, Check, FileType,
+  Sparkles, Trash2, Upload, RotateCcw, Check, FileType, Wand2,
 } from "lucide-react";
 import ResumeEditor from "./ResumeEditor";
 import { ResumePreview } from "./ResumeTemplates";
@@ -34,6 +34,8 @@ export default function ResumeBuilderClient() {
   const [showDownload, setShowDownload]   = useState(false);
   const [saving, setSaving]       = useState(false);
   const [loaded, setLoaded]       = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const magicInputRef             = useRef<HTMLInputElement>(null);
   const previewRef                = useRef<HTMLDivElement>(null);
 
   // Load from localStorage on mount
@@ -69,6 +71,76 @@ export default function ResumeBuilderClient() {
     if (!confirm("Clear all resume data?")) return;
     setData(EMPTY_RESUME);
     localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
+  const handleMagicImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File is too large (max 10MB)");
+      return;
+    }
+
+    setIsParsing(true);
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(",")[1];
+          resolve(base64);
+        };
+      });
+      reader.readAsDataURL(file);
+      const base64Data = await base64Promise;
+
+      const response = await fetch("/api/resume/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileData: base64Data,
+          fileName: file.name,
+          fileType: file.type,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Failed to parse resume");
+      }
+
+      const parsedData = await response.json();
+      
+      // Merge parsed data with current structure to ensure IDs and defaults
+      const newData: ResumeData = {
+        ...EMPTY_RESUME,
+        ...parsedData,
+        personal: { ...EMPTY_RESUME.personal, ...parsedData.personal },
+        // Ensure visibility is on for sections that have content
+        sections: {
+          ...EMPTY_RESUME.sections,
+          summary: !!parsedData.personal?.summary,
+          experience: (parsedData.experience?.length || 0) > 0,
+          education: (parsedData.education?.length || 0) > 0,
+          skills: (parsedData.skills?.length || 0) > 0,
+          projects: (parsedData.projects?.length || 0) > 0,
+          certifications: (parsedData.certifications?.length || 0) > 0,
+          volunteer: (parsedData.volunteer?.length || 0) > 0,
+          interests: (parsedData.interests?.length || 0) > 0,
+        }
+      };
+
+      setData(newData);
+      alert("Resume successfully imported and parsed!");
+    } catch (error) {
+      console.error("Magic Import error:", error);
+      alert(error instanceof Error ? error.message : "Failed to import resume. Please try a different file.");
+    } finally {
+      setIsParsing(false);
+      if (magicInputRef.current) magicInputRef.current.value = "";
+    }
   }, []);
 
   const exportJSON = useCallback(() => {
@@ -174,9 +246,17 @@ export default function ResumeBuilderClient() {
 
           {/* More actions */}
           <div className="hidden sm:flex items-center gap-1 ml-1">
+            <button onClick={() => magicInputRef.current?.click()} title="Magic Import (AI PDF)" disabled={isParsing}
+              className={`p-1.5 rounded-lg transition ${isParsing ? "animate-pulse text-indigo-500" : "text-gray-400 dark:text-zinc-500 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"}`}>
+              <Wand2 className={`h-4 w-4 ${isParsing ? "animate-spin" : ""}`} />
+            </button>
             <button onClick={importJSON} title="Import JSON"
               className="p-1.5 text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition">
               <Upload className="h-4 w-4" />
+            </button>
+            <button onClick={() => magicInputRef.current?.click()} title="Magic Import (AI)" disabled={isParsing}
+              className={`p-1.5 rounded-lg transition ${isParsing ? "animate-pulse text-blue-500" : "text-gray-400 dark:text-zinc-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"}`}>
+              <Wand2 className="h-4 w-4" />
             </button>
             <button onClick={loadSample} title="Load sample resume"
               className="p-1.5 text-gray-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition">
@@ -235,10 +315,15 @@ export default function ResumeBuilderClient() {
                 <Sparkles className="h-4 w-4 text-amber-500" /> Quick Start
               </h3>
               <p className="text-xs text-gray-500 mt-1 mb-3">Load a sample resume to see how it works, or start from scratch.</p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => magicInputRef.current?.click()} disabled={isParsing}
+                  className="px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-1.5">
+                  {isParsing ? <RotateCcw className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                  {isParsing ? "Extracting..." : "Magic Import (AI PDF)"}
+                </button>
                 <button onClick={loadSample}
                   className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm">
-                  Load Sample Resume
+                  Load Sample
                 </button>
                 <button onClick={importJSON}
                   className="px-3 py-1.5 text-xs font-medium border border-gray-200 text-gray-600 rounded-lg hover:bg-white transition">
@@ -320,6 +405,7 @@ export default function ResumeBuilderClient() {
       {showTemplates && (
         <div className="fixed inset-0 z-40" onClick={() => setShowTemplates(false)} />
       )}
+      <input type="file" ref={magicInputRef} onChange={handleMagicImport} accept=".pdf,.doc,.docx" className="hidden" />
     </div>
   );
 }
