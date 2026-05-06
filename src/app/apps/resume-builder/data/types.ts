@@ -75,6 +75,26 @@ export interface Award {
   description: string;
 }
 
+export interface Volunteer {
+  id: string;
+  organization: string;
+  role: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string;
+}
+
+export interface Reference {
+  id: string;
+  name: string;
+  position: string;
+  company: string;
+  email: string;
+  phone: string;
+}
+
 export interface CustomSection {
   id: string;
   title: string;
@@ -91,6 +111,9 @@ export interface SectionVisibility {
   certifications: boolean;
   languages: boolean;
   awards: boolean;
+  volunteer: boolean;
+  interests: boolean;
+  references: boolean;
   custom: boolean;
 }
 
@@ -106,6 +129,10 @@ export interface ResumeData {
   certifications: Certification[];
   languages: Language[];
   awards: Award[];
+  volunteer: Volunteer[];
+  interests: string[];
+  references: Reference[];
+  referencesNote: string; // e.g. "Available upon request"
   customSections: CustomSection[];
   sections: SectionVisibility;
   template: TemplateName;
@@ -137,6 +164,10 @@ export const EMPTY_RESUME: ResumeData = {
   certifications: [],
   languages: [],
   awards: [],
+  volunteer: [],
+  interests: [],
+  references: [],
+  referencesNote: "Available upon request",
   customSections: [],
   sections: {
     summary: true,
@@ -147,6 +178,9 @@ export const EMPTY_RESUME: ResumeData = {
     certifications: false,
     languages: false,
     awards: false,
+    volunteer: false,
+    interests: false,
+    references: false,
     custom: false,
   },
   template: "modern",
@@ -238,6 +272,12 @@ export const SAMPLE_RESUME: ResumeData = {
   awards: [
     { id: "aw1", title: "Hackathon Winner", issuer: "TechCorp Annual Hack Week", date: "2023-11", description: "Built an AI-powered code review bot in 48 hours" },
   ],
+  volunteer: [
+    { id: "vol1", organization: "Code for Good", role: "Mentor", location: "San Francisco, CA", startDate: "2021-01", endDate: "", current: true, description: "Teach web development to underrepresented communities." },
+  ],
+  interests: ["Open Source", "Rock Climbing", "Photography", "Chess", "Travel"],
+  references: [],
+  referencesNote: "Available upon request",
   customSections: [],
   sections: {
     summary: true,
@@ -248,6 +288,9 @@ export const SAMPLE_RESUME: ResumeData = {
     certifications: true,
     languages: true,
     awards: true,
+    volunteer: true,
+    interests: true,
+    references: false,
     custom: false,
   },
   template: "modern",

@@ -4,6 +4,55 @@ import React from "react";
 import type { ResumeData } from "../data/types";
 import { Mail, Phone, MapPin, Globe, Linkedin, Github, ExternalLink } from "lucide-react";
 
+/* ─── Rich-text helper ──────────────────────────────────────────────── */
+/** Renders plain text with support for:
+ *  - Line breaks (newlines become <br/>)
+ *  - Bullet points (lines starting with "- ", "• ", or "* " render as <ul><li>)
+ */
+function RichText({ text, className }: { text: string; className?: string }) {
+  const lines = text.split("\n");
+  const elements: React.ReactNode[] = [];
+  let bulletBuffer: string[] = [];
+  let key = 0;
+
+  function flushBullets() {
+    if (bulletBuffer.length === 0) return;
+    elements.push(
+      <ul key={key++} className="list-disc list-outside ml-4 space-y-0.5">
+        {bulletBuffer.map((b, i) => (
+          <li key={i} className={className}>{b}</li>
+        ))}
+      </ul>
+    );
+    bulletBuffer = [];
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const bulletMatch = line.match(/^\s*[-•*]\s+(.*)/);
+    if (bulletMatch) {
+      bulletBuffer.push(bulletMatch[1]);
+    } else {
+      flushBullets();
+      if (line.trim() === "" && elements.length > 0) {
+        elements.push(<br key={key++} />);
+      } else if (line.trim()) {
+        if (elements.length > 0 && elements[elements.length - 1] !== null) {
+          // Add line break between consecutive text lines
+          const lastEl = elements[elements.length - 1];
+          if (React.isValidElement(lastEl) && lastEl.type === 'span') {
+            elements.push(<br key={key++} />);
+          }
+        }
+        elements.push(<span key={key++} className={className}>{line}</span>);
+      }
+    }
+  }
+  flushBullets();
+
+  return <div>{elements}</div>;
+}
+
 /* ─── Shared helpers ─────────────────────────────────────────────────── */
 function fmtDate(d: string) {
   if (!d) return "";
@@ -44,17 +93,20 @@ export function ModernTemplate({ data }: TemplateProps) {
     <div className="font-[system-ui] text-gray-800 text-[10.5px] leading-[1.5] bg-white">
       {/* Header */}
       <div className="px-8 pt-7 pb-4" style={{ borderBottom: `3px solid ${accent}` }}>
-        <h1 className="text-2xl font-bold tracking-tight" style={{ color: accent }}>
-          {p.fullName || "Your Name"}
-        </h1>
-        {p.jobTitle && <p className="text-sm text-gray-600 mt-0.5 font-medium">{p.jobTitle}</p>}
-        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[9.5px] text-gray-500">
-          {p.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{p.email}</span>}
-          {p.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{p.phone}</span>}
-          {p.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.location}</span>}
-          {p.website && <span className="flex items-center gap-1"><Globe className="h-3 w-3" />{p.website}</span>}
-          {p.linkedin && <span className="flex items-center gap-1"><Linkedin className="h-3 w-3" />{p.linkedin}</span>}
-          {p.github && <span className="flex items-center gap-1"><Github className="h-3 w-3" />{p.github}</span>}
+        <div className="flex items-start gap-4">
+          {p.photoUrl && <img src={p.photoUrl} alt="" className="w-16 h-16 rounded-full object-cover border-2 flex-shrink-0" style={{ borderColor: accent }} />}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: accent }}>{p.fullName || "Your Name"}</h1>
+            {p.jobTitle && <p className="text-sm text-gray-600 mt-0.5 font-medium">{p.jobTitle}</p>}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[9.5px] text-gray-500">
+              {p.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{p.email}</span>}
+              {p.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{p.phone}</span>}
+              {p.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.location}</span>}
+              {p.website && <span className="flex items-center gap-1"><Globe className="h-3 w-3" />{p.website}</span>}
+              {p.linkedin && <span className="flex items-center gap-1"><Linkedin className="h-3 w-3" />{p.linkedin}</span>}
+              {p.github && <span className="flex items-center gap-1"><Github className="h-3 w-3" />{p.github}</span>}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -63,7 +115,7 @@ export function ModernTemplate({ data }: TemplateProps) {
         {vis.summary && p.summary && (
           <>
             <SectionTitle>Professional Summary</SectionTitle>
-            <p className="text-gray-600">{p.summary}</p>
+            <RichText text={p.summary} className="text-gray-600" />
           </>
         )}
 
@@ -81,7 +133,7 @@ export function ModernTemplate({ data }: TemplateProps) {
                   <DateRange start={exp.startDate} end={exp.endDate} current={exp.current} />
                 </div>
                 {exp.location && <p className="text-[9px] text-gray-400">{exp.location}</p>}
-                {exp.description && <p className="text-gray-600 mt-0.5">{exp.description}</p>}
+                {exp.description && <div className="mt-0.5"><RichText text={exp.description} className="text-gray-600" /></div>}
                 {exp.highlights.filter(Boolean).length > 0 && (
                   <ul className="list-disc list-outside ml-4 mt-1 space-y-0.5">
                     {exp.highlights.filter(Boolean).map((h, i) => (
@@ -108,7 +160,7 @@ export function ModernTemplate({ data }: TemplateProps) {
                   <DateRange start={edu.startDate} end={edu.endDate} />
                 </div>
                 {edu.gpa && <p className="text-[9px] text-gray-400">GPA: {edu.gpa}</p>}
-                {edu.description && <p className="text-gray-600 mt-0.5">{edu.description}</p>}
+                {edu.description && <div className="mt-0.5"><RichText text={edu.description} className="text-gray-600" /></div>}
               </div>
             ))}
           </>
@@ -146,7 +198,7 @@ export function ModernTemplate({ data }: TemplateProps) {
                   </div>
                   <DateRange start={proj.startDate} end={proj.endDate} />
                 </div>
-                {proj.description && <p className="text-gray-600 mt-0.5">{proj.description}</p>}
+                {proj.description && <div className="mt-0.5"><RichText text={proj.description} className="text-gray-600" /></div>}
                 {proj.technologies.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {proj.technologies.map((t) => (
@@ -199,16 +251,60 @@ export function ModernTemplate({ data }: TemplateProps) {
                   <span className="font-medium text-gray-800">{a.title} <span className="text-gray-400 font-normal">· {a.issuer}</span></span>
                   <span className="text-[9px] text-gray-400">{fmtDate(a.date)}</span>
                 </div>
-                {a.description && <p className="text-gray-600">{a.description}</p>}
+                {a.description && <RichText text={a.description} className="text-gray-600" />}
               </div>
             ))}
           </>
         )}
+        {/* Volunteer */}
+        {vis.volunteer && (data.volunteer || []).length > 0 && (
+          <>
+            <SectionTitle>Volunteer Experience</SectionTitle>
+            {(data.volunteer || []).map((vol) => (
+              <div key={vol.id} className="mb-2.5">
+                <div className="flex justify-between items-baseline">
+                  <div><span className="font-semibold text-gray-900">{vol.role}</span>{vol.organization && <span className="text-gray-500"> · {vol.organization}</span>}</div>
+                  <DateRange start={vol.startDate} end={vol.endDate} current={vol.current} />
+                </div>
+                {vol.location && <p className="text-[9px] text-gray-400">{vol.location}</p>}
+                {vol.description && <div className="mt-0.5"><RichText text={vol.description} className="text-gray-600" /></div>}
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* Interests */}
+        {vis.interests && (data.interests || []).length > 0 && (
+          <>
+            <SectionTitle>Interests</SectionTitle>
+            <div className="flex flex-wrap gap-1.5">
+              {(data.interests || []).map((item, i) => (
+                <span key={i} className="rounded px-1.5 py-0.5 text-[9px] font-medium" style={{ backgroundColor: `${accent}15`, color: accent }}>{item}</span>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* References */}
+        {vis.references && (
+          <>
+            <SectionTitle>References</SectionTitle>
+            {data.referencesNote && <p className="text-gray-500 italic text-[10px] mb-1">{data.referencesNote}</p>}
+            {(data.references || []).filter(r => r.name).map((ref) => (
+              <div key={ref.id} className="mb-1.5">
+                <span className="font-medium text-gray-800">{ref.name}</span>
+                {ref.position && <span className="text-gray-500"> · {ref.position}{ref.company ? `, ${ref.company}` : ""}</span>}
+                <div className="text-[9px] text-gray-400">{[ref.email, ref.phone].filter(Boolean).join(" · ")}</div>
+              </div>
+            ))}
+          </>
+        )}
+
         {data.customSections.map((cs) => cs.items.some((i) => i.text) && (
           <React.Fragment key={cs.id}>
             <SectionTitle>{cs.title || "Custom Section"}</SectionTitle>
             {cs.items.filter((i) => i.text).map((item) => (
-              <p key={item.id} className="text-gray-600 mb-1">{item.text}</p>
+              <div key={item.id} className="mb-1"><RichText text={item.text} className="text-gray-600" /></div>
             ))}
           </React.Fragment>
         ))}
@@ -238,6 +334,7 @@ export function ClassicTemplate({ data }: TemplateProps) {
     <div className="font-serif text-gray-800 text-[10.5px] leading-[1.55] bg-white px-8 py-7">
       {/* Header */}
       <div className="text-center mb-3">
+        {p.photoUrl && <img src={p.photoUrl} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-gray-200 mx-auto mb-2" />}
         <h1 className="text-2xl font-bold tracking-wide text-gray-900">{p.fullName || "Your Name"}</h1>
         {p.jobTitle && <p className="text-sm text-gray-600 italic mt-0.5">{p.jobTitle}</p>}
         <div className="flex flex-wrap justify-center gap-x-3 gap-y-0.5 mt-2 text-[9px] text-gray-500">
@@ -250,7 +347,7 @@ export function ClassicTemplate({ data }: TemplateProps) {
         </div>
       </div>
 
-      {vis.summary && p.summary && (<><SectionTitle>Summary</SectionTitle><p className="text-gray-600">{p.summary}</p></>)}
+      {vis.summary && p.summary && (<><SectionTitle>Summary</SectionTitle><RichText text={p.summary} className="text-gray-600" /></>)}
 
       {vis.experience && data.experience.length > 0 && (
         <>
@@ -262,7 +359,7 @@ export function ClassicTemplate({ data }: TemplateProps) {
                 <DateRange start={exp.startDate} end={exp.endDate} current={exp.current} />
               </div>
               <p className="text-gray-500 italic text-[10px]">{exp.company}{exp.location ? `, ${exp.location}` : ""}</p>
-              {exp.description && <p className="text-gray-600 mt-0.5">{exp.description}</p>}
+              {exp.description && <div className="mt-0.5"><RichText text={exp.description} className="text-gray-600" /></div>}
               {exp.highlights.filter(Boolean).length > 0 && (
                 <ul className="list-disc ml-4 mt-1 space-y-0.5">
                   {exp.highlights.filter(Boolean).map((h, i) => <li key={i} className="text-gray-600">{h}</li>)}
@@ -283,7 +380,7 @@ export function ClassicTemplate({ data }: TemplateProps) {
                 <DateRange start={edu.startDate} end={edu.endDate} />
               </div>
               <p className="text-gray-500 italic text-[10px]">{edu.institution}{edu.gpa ? ` • GPA: ${edu.gpa}` : ""}</p>
-              {edu.description && <p className="text-gray-600 mt-0.5">{edu.description}</p>}
+              {edu.description && <div className="mt-0.5"><RichText text={edu.description} className="text-gray-600" /></div>}
             </div>
           ))}
         </>
@@ -311,7 +408,7 @@ export function ClassicTemplate({ data }: TemplateProps) {
                 <DateRange start={proj.startDate} end={proj.endDate} />
               </div>
               {proj.url && <p className="text-[9px] text-gray-400 italic">{proj.url}</p>}
-              {proj.description && <p className="text-gray-600 mt-0.5">{proj.description}</p>}
+              {proj.description && <div className="mt-0.5"><RichText text={proj.description} className="text-gray-600" /></div>}
               {proj.technologies.length > 0 && (
                 <p className="text-[9px] text-gray-500 mt-0.5">Technologies: {proj.technologies.join(", ")}</p>
               )}
@@ -344,16 +441,19 @@ export function ClassicTemplate({ data }: TemplateProps) {
           {data.awards.map((a) => (
             <div key={a.id} className="mb-1">
               <span className="font-bold">{a.title}</span> — {a.issuer} ({fmtDate(a.date)})
-              {a.description && <p className="text-gray-600">{a.description}</p>}
+              {a.description && <RichText text={a.description} className="text-gray-600" />}
             </div>
           ))}
         </>
       )}
+      {vis.volunteer && (data.volunteer || []).length > 0 && (<><SectionTitle>Volunteer</SectionTitle>{(data.volunteer || []).map((vol) => (<div key={vol.id} className="mb-2"><div className="flex justify-between items-baseline"><span className="font-bold text-gray-900">{vol.role}</span><DateRange start={vol.startDate} end={vol.endDate} current={vol.current} /></div><p className="text-gray-500 italic text-[10px]">{vol.organization}{vol.location ? `, ${vol.location}` : ""}</p>{vol.description && <div className="mt-0.5"><RichText text={vol.description} className="text-gray-600" /></div>}</div>))}</>)}
+      {vis.interests && (data.interests || []).length > 0 && (<><SectionTitle>Interests</SectionTitle><p className="text-gray-600">{(data.interests || []).join(" • ")}</p></>)}
+      {vis.references && (<><SectionTitle>References</SectionTitle>{data.referencesNote && <p className="text-gray-600 italic">{data.referencesNote}</p>}{(data.references || []).filter(r => r.name).map((ref) => (<p key={ref.id} className="mb-0.5"><span className="font-bold">{ref.name}</span> — {ref.position}{ref.company ? `, ${ref.company}` : ""}{ref.email ? ` · ${ref.email}` : ""}</p>))}</>)}
       {data.customSections.map((cs) => cs.items.some((i) => i.text) && (
         <React.Fragment key={cs.id}>
           <SectionTitle>{cs.title || "Custom Section"}</SectionTitle>
           {cs.items.filter((i) => i.text).map((item) => (
-            <p key={item.id} className="text-gray-700 mb-1">{item.text}</p>
+            <div key={item.id} className="mb-1"><RichText text={item.text} className="text-gray-700" /></div>
           ))}
         </React.Fragment>
       ))}
@@ -373,8 +473,13 @@ export function MinimalTemplate({ data }: TemplateProps) {
     <div className="font-[system-ui] text-gray-700 text-[10.5px] leading-[1.6] bg-white px-8 py-8">
       {/* Header */}
       <div className="mb-5">
-        <h1 className="text-3xl font-extralight tracking-tight text-gray-900">{p.fullName || "Your Name"}</h1>
-        {p.jobTitle && <p className="text-sm text-gray-400 mt-1 font-light">{p.jobTitle}</p>}
+        <div className="flex items-center gap-4">
+          {p.photoUrl && <img src={p.photoUrl} alt="" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />}
+          <div>
+            <h1 className="text-3xl font-extralight tracking-tight text-gray-900">{p.fullName || "Your Name"}</h1>
+            {p.jobTitle && <p className="text-sm text-gray-400 mt-1 font-light">{p.jobTitle}</p>}
+          </div>
+        </div>
         <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-3 text-[9px] text-gray-400">
           {p.email && <span>{p.email}</span>}
           {p.phone && <span>{p.phone}</span>}
@@ -387,7 +492,7 @@ export function MinimalTemplate({ data }: TemplateProps) {
 
       {vis.summary && p.summary && (
         <div className="mb-5">
-          <p className="text-gray-500 leading-relaxed">{p.summary}</p>
+          <RichText text={p.summary} className="text-gray-500 leading-relaxed" />
         </div>
       )}
 
@@ -401,7 +506,7 @@ export function MinimalTemplate({ data }: TemplateProps) {
                 <DateRange start={exp.startDate} end={exp.endDate} current={exp.current} />
               </div>
               <p className="text-[9.5px] text-gray-400">{exp.company}{exp.location ? ` · ${exp.location}` : ""}</p>
-              {exp.description && <p className="text-gray-500 mt-1">{exp.description}</p>}
+              {exp.description && <div className="mt-1"><RichText text={exp.description} className="text-gray-500" /></div>}
               {exp.highlights.filter(Boolean).length > 0 && (
                 <ul className="mt-1 space-y-0.5">
                   {exp.highlights.filter(Boolean).map((h, i) => (
@@ -424,7 +529,7 @@ export function MinimalTemplate({ data }: TemplateProps) {
                 <DateRange start={edu.startDate} end={edu.endDate} />
               </div>
               <p className="text-[9.5px] text-gray-400">{edu.institution}{edu.gpa ? ` · GPA: ${edu.gpa}` : ""}</p>
-              {edu.description && <p className="text-gray-500 mt-0.5">{edu.description}</p>}
+              {edu.description && <div className="mt-0.5"><RichText text={edu.description} className="text-gray-500" /></div>}
             </div>
           ))}
         </div>
@@ -450,7 +555,7 @@ export function MinimalTemplate({ data }: TemplateProps) {
             <div key={proj.id} className="mb-2.5">
               <span className="text-[11px] font-medium text-gray-800">{proj.name}</span>
               {proj.url && <span className="text-[9px] text-gray-400 ml-1.5">({proj.url})</span>}
-              {proj.description && <p className="text-gray-500 mt-0.5">{proj.description}</p>}
+              {proj.description && <div className="mt-0.5"><RichText text={proj.description} className="text-gray-500" /></div>}
               {proj.technologies.length > 0 && (
                 <p className="text-[9px] text-gray-400 mt-0.5">{proj.technologies.join(" · ")}</p>
               )}
@@ -483,16 +588,35 @@ export function MinimalTemplate({ data }: TemplateProps) {
           {data.awards.map((a) => (
             <div key={a.id} className="mb-1">
               <span className="font-medium text-gray-700">{a.title}</span> — {a.issuer} ({fmtDate(a.date)})
-              {a.description && <p className="text-gray-500">{a.description}</p>}
+              {a.description && <RichText text={a.description} className="text-gray-500" />}
             </div>
           ))}
+        </div>
+      )}
+      {vis.volunteer && (data.volunteer || []).length > 0 && (
+        <div className="mb-5">
+          <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] mb-3" style={{ color: accent }}>Volunteer</h3>
+          {(data.volunteer || []).map((vol) => (<div key={vol.id} className="mb-2.5"><span className="text-[11px] font-medium text-gray-800">{vol.role}</span><p className="text-[9.5px] text-gray-400">{vol.organization}{vol.location ? ` · ${vol.location}` : ""}</p>{vol.description && <div className="mt-0.5"><RichText text={vol.description} className="text-gray-500" /></div>}</div>))}
+        </div>
+      )}
+      {vis.interests && (data.interests || []).length > 0 && (
+        <div className="mb-5">
+          <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] mb-3" style={{ color: accent }}>Interests</h3>
+          <div className="flex flex-wrap gap-1.5">{(data.interests || []).map((item, i) => (<span key={i} className="rounded-full px-2.5 py-0.5 text-[9px] font-medium border border-gray-200 text-gray-600">{item}</span>))}</div>
+        </div>
+      )}
+      {vis.references && (
+        <div className="mb-5">
+          <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] mb-3" style={{ color: accent }}>References</h3>
+          {data.referencesNote && <p className="text-gray-500 mb-1">{data.referencesNote}</p>}
+          {(data.references || []).filter(r => r.name).map((ref) => (<div key={ref.id} className="mb-1"><span className="font-medium text-gray-700">{ref.name}</span> — {ref.position}{ref.company ? `, ${ref.company}` : ""}</div>))}
         </div>
       )}
       {data.customSections.map((cs) => cs.items.some((i) => i.text) && (
         <div key={cs.id} className="mb-5">
           <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] mb-3" style={{ color: accent }}>{cs.title || "Custom Section"}</h3>
           {cs.items.filter((i) => i.text).map((item) => (
-            <p key={item.id} className="text-gray-600 mb-1">{item.text}</p>
+            <div key={item.id} className="mb-1"><RichText text={item.text} className="text-gray-600" /></div>
           ))}
         </div>
       ))}
@@ -521,6 +645,8 @@ export function CreativeTemplate({ data }: TemplateProps) {
     <div className="font-[system-ui] text-[10.5px] leading-[1.5] bg-white flex min-h-full">
       {/* ── Left sidebar ── */}
       <div className="w-[32%] text-white px-5 py-7 flex-shrink-0" style={{ backgroundColor: accent }}>
+        {/* Photo */}
+        {p.photoUrl && <img src={p.photoUrl} alt="" className="w-20 h-20 rounded-full object-cover border-3 border-white/30 mx-auto mb-3" />}
         {/* Name */}
         <h1 className="text-xl font-bold tracking-tight leading-tight">{p.fullName || "Your Name"}</h1>
         {p.jobTitle && <p className="text-[10px] mt-1 font-medium opacity-80">{p.jobTitle}</p>}
@@ -584,7 +710,7 @@ export function CreativeTemplate({ data }: TemplateProps) {
         {vis.summary && p.summary && (
           <>
             <SectionTitle>About Me</SectionTitle>
-            <p className="text-gray-600">{p.summary}</p>
+            <RichText text={p.summary} className="text-gray-600" />
           </>
         )}
 
@@ -598,7 +724,7 @@ export function CreativeTemplate({ data }: TemplateProps) {
                   <DateRange start={exp.startDate} end={exp.endDate} current={exp.current} />
                 </div>
                 <p className="text-[9.5px] text-gray-400">{exp.company}{exp.location ? ` · ${exp.location}` : ""}</p>
-                {exp.description && <p className="text-gray-600 mt-0.5">{exp.description}</p>}
+                {exp.description && <div className="mt-0.5"><RichText text={exp.description} className="text-gray-600" /></div>}
                 {exp.highlights.filter(Boolean).length > 0 && (
                   <ul className="list-disc ml-4 mt-1 space-y-0.5">
                     {exp.highlights.filter(Boolean).map((h, i) => <li key={i} className="text-gray-600">{h}</li>)}
@@ -619,7 +745,7 @@ export function CreativeTemplate({ data }: TemplateProps) {
                   <DateRange start={edu.startDate} end={edu.endDate} />
                 </div>
                 <p className="text-[9.5px] text-gray-400">{edu.institution}{edu.gpa ? ` · GPA: ${edu.gpa}` : ""}</p>
-                {edu.description && <p className="text-gray-600 mt-0.5">{edu.description}</p>}
+                {edu.description && <div className="mt-0.5"><RichText text={edu.description} className="text-gray-600" /></div>}
               </div>
             ))}
           </>
@@ -634,7 +760,7 @@ export function CreativeTemplate({ data }: TemplateProps) {
                   <span className="font-semibold text-gray-900">{proj.name}</span>
                   {proj.url && <span className="text-[8.5px] text-gray-400">({proj.url})</span>}
                 </div>
-                {proj.description && <p className="text-gray-600 mt-0.5">{proj.description}</p>}
+                {proj.description && <div className="mt-0.5"><RichText text={proj.description} className="text-gray-600" /></div>}
                 {proj.technologies.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {proj.technologies.map((t) => (
@@ -654,16 +780,19 @@ export function CreativeTemplate({ data }: TemplateProps) {
               <div key={a.id} className="mb-1.5">
                 <span className="font-medium text-gray-800">{a.title}</span>
                 <span className="text-gray-400"> · {a.issuer} · {fmtDate(a.date)}</span>
-                {a.description && <p className="text-gray-500 mt-0.5">{a.description}</p>}
+                {a.description && <div className="mt-0.5"><RichText text={a.description} className="text-gray-500" /></div>}
               </div>
             ))}
           </>
         )}
+        {vis.volunteer && (data.volunteer || []).length > 0 && (<><SectionTitle>Volunteer</SectionTitle>{(data.volunteer || []).map((vol) => (<div key={vol.id} className="mb-2.5 pl-3 border-l-2" style={{ borderColor: `${accent}40` }}><div className="flex justify-between items-baseline"><span className="font-semibold text-gray-900">{vol.role}</span><DateRange start={vol.startDate} end={vol.endDate} current={vol.current} /></div><p className="text-[9.5px] text-gray-400">{vol.organization}{vol.location ? ` · ${vol.location}` : ""}</p>{vol.description && <div className="mt-0.5"><RichText text={vol.description} className="text-gray-600" /></div>}</div>))}</>)}
+        {vis.interests && (data.interests || []).length > 0 && (<><SectionTitle>Interests</SectionTitle><div className="flex flex-wrap gap-1.5">{(data.interests || []).map((item, i) => (<span key={i} className="rounded px-1.5 py-0.5 text-[8px] font-medium border border-gray-200 text-gray-600">{item}</span>))}</div></>)}
+        {vis.references && (<><SectionTitle>References</SectionTitle>{data.referencesNote && <p className="text-gray-500 italic text-[10px] mb-1">{data.referencesNote}</p>}{(data.references || []).filter(r => r.name).map((ref) => (<div key={ref.id} className="mb-1.5"><span className="font-medium text-gray-800">{ref.name}</span><span className="text-gray-400"> · {ref.position}{ref.company ? `, ${ref.company}` : ""}</span></div>))}</>)}
         {data.customSections.map((cs) => cs.items.some((i) => i.text) && (
           <React.Fragment key={cs.id}>
             <SectionTitle>{cs.title || "Custom Section"}</SectionTitle>
             {cs.items.filter((i) => i.text).map((item) => (
-              <p key={item.id} className="text-gray-600 mb-1">{item.text}</p>
+              <div key={item.id} className="mb-1"><RichText text={item.text} className="text-gray-600" /></div>
             ))}
           </React.Fragment>
         ))}

@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   User, Briefcase, GraduationCap, Wrench, FolderOpen, Award, Globe,
   Trophy, Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Eye, EyeOff, LayoutList,
+  Camera, Heart, Users, X,
 } from "lucide-react";
 import type {
   ResumeData, Experience, Education, Skill, Project,
-  Certification, Language, Award as AwardT, CustomSection,
+  Certification, Language, Award as AwardT, CustomSection, Volunteer, Reference,
 } from "../data/types";
 import { uid } from "../data/types";
 
@@ -26,9 +27,9 @@ function Input({ label, value, onChange, placeholder, type = "text", className =
   );
 }
 
-function Textarea({ label, value, onChange, placeholder, rows = 3 }: {
+function Textarea({ label, value, onChange, placeholder, rows = 3, showHint = false }: {
   label: string; value: string; onChange: (v: string) => void;
-  placeholder?: string; rows?: number;
+  placeholder?: string; rows?: number; showHint?: boolean;
 }) {
   return (
     <div>
@@ -36,6 +37,11 @@ function Textarea({ label, value, onChange, placeholder, rows = 3 }: {
       <textarea value={value} onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder} rows={rows}
         className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition resize-none" />
+      {showHint && (
+        <p className="text-[10px] text-gray-400 mt-1 leading-tight">
+          Press <span className="font-medium text-gray-500">Enter</span> for new line · Start a line with <span className="font-medium text-gray-500">- </span> for bullet points
+        </p>
+      )}
     </div>
   );
 }
@@ -186,6 +192,51 @@ export default function ResumeEditor({ data, onChange }: Props) {
     onChange({ ...data, sections: { ...data.sections, [key]: !data.sections[key] } });
   }
 
+  // Photo upload
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert("Photo must be under 2MB"); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => setPersonal("photoUrl", ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+  function removePhoto() { setPersonal("photoUrl", ""); }
+
+  // Volunteer
+  function setVolunteer(idx: number, v: Volunteer) {
+    const a = [...(data.volunteer || [])]; a[idx] = v;
+    onChange({ ...data, volunteer: a });
+  }
+  function addVolunteer() {
+    const v: Volunteer = { id: uid(), organization: "", role: "", location: "", startDate: "", endDate: "", current: false, description: "" };
+    onChange({ ...data, volunteer: [...(data.volunteer || []), v] });
+    setOpenSections((p) => new Set(p).add("volunteer"));
+  }
+  function removeVolunteer(idx: number) {
+    onChange({ ...data, volunteer: (data.volunteer || []).filter((_, i) => i !== idx) });
+  }
+
+  // Interests
+  function setInterests(val: string) {
+    onChange({ ...data, interests: val.split(",").map((s) => s.trim()).filter(Boolean) });
+  }
+
+  // References
+  function setReference(idx: number, r: Reference) {
+    const a = [...(data.references || [])]; a[idx] = r;
+    onChange({ ...data, references: a });
+  }
+  function addReference() {
+    const r: Reference = { id: uid(), name: "", position: "", company: "", email: "", phone: "" };
+    onChange({ ...data, references: [...(data.references || []), r] });
+    setOpenSections((p) => new Set(p).add("references"));
+  }
+  function removeReference(idx: number) {
+    onChange({ ...data, references: (data.references || []).filter((_, i) => i !== idx) });
+  }
+
   function addCustomSection() {
     const newSection: CustomSection = { id: uid(), title: "Custom Section", items: [{ id: uid(), text: "" }] };
     onChange({ ...data, customSections: [...data.customSections, newSection] });
@@ -216,6 +267,33 @@ export default function ResumeEditor({ data, onChange }: Props) {
         <SectionHeader icon={User} title="Personal Information" open={open("personal")} toggle={() => toggle("personal")} />
         {open("personal") && (
           <div className="space-y-3 pt-2">
+            {/* Photo upload */}
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                {p.photoUrl ? (
+                  <div className="relative">
+                    <img src={p.photoUrl} alt="Photo" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
+                    <button onClick={removePhoto} title="Remove photo"
+                      className="absolute -top-1 -right-1 p-0.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition shadow">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => photoInputRef.current?.click()}
+                    className="w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-500 transition">
+                    <Camera className="h-5 w-5" />
+                  </button>
+                )}
+                <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-gray-500">Profile Photo <span className="text-gray-400">(optional)</span></p>
+                <p className="text-[10px] text-gray-400 mt-0.5">Max 2MB · Shown in resume preview</p>
+                {!p.photoUrl && (
+                  <button onClick={() => photoInputRef.current?.click()} className="text-[10px] text-blue-500 hover:underline mt-1">Upload photo</button>
+                )}
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <Input label="Full Name" value={p.fullName} onChange={(v) => setPersonal("fullName", v)} placeholder="Alex Johnson" />
               <Input label="Job Title" value={p.jobTitle} onChange={(v) => setPersonal("jobTitle", v)} placeholder="Software Engineer" />
@@ -231,7 +309,7 @@ export default function ResumeEditor({ data, onChange }: Props) {
             </div>
             <Input label="GitHub" value={p.github} onChange={(v) => setPersonal("github", v)} placeholder="github.com/you" />
             <Textarea label="Professional Summary" value={p.summary} onChange={(v) => setPersonal("summary", v)}
-              placeholder="Results-driven engineer with 5+ years of experience…" rows={4} />
+              placeholder="Results-driven engineer with 5+ years of experience…" rows={4} showHint />
           </div>
         )}
       </div>
@@ -268,7 +346,7 @@ export default function ResumeEditor({ data, onChange }: Props) {
                   </label>
                 </div>
               </div>
-              <Textarea label="Description" value={exp.description} onChange={(v) => setExperience(i, { ...exp, description: v })} placeholder="Brief role overview…" rows={2} />
+              <Textarea label="Description" value={exp.description} onChange={(v) => setExperience(i, { ...exp, description: v })} placeholder="Brief role overview…" rows={2} showHint />
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Key Achievements</label>
                 {exp.highlights.map((h, hi) => (
@@ -326,7 +404,7 @@ export default function ResumeEditor({ data, onChange }: Props) {
                 <Input label="End Date" value={edu.endDate} onChange={(v) => setEducation(i, { ...edu, endDate: v })} placeholder="2019-05" />
                 <Input label="GPA" value={edu.gpa} onChange={(v) => setEducation(i, { ...edu, gpa: v })} placeholder="3.8/4.0" />
               </div>
-              <Textarea label="Additional Info" value={edu.description} onChange={(v) => setEducation(i, { ...edu, description: v })} placeholder="Dean's List, clubs…" rows={2} />
+              <Textarea label="Additional Info" value={edu.description} onChange={(v) => setEducation(i, { ...edu, description: v })} placeholder="Dean's List, clubs…" rows={2} showHint />
             </div>
           </ItemCard>
         ))}
@@ -392,7 +470,7 @@ export default function ResumeEditor({ data, onChange }: Props) {
                 <Input label="Project Name" value={proj.name} onChange={(v) => setProject(i, { ...proj, name: v })} placeholder="My App" />
                 <Input label="URL" value={proj.url} onChange={(v) => setProject(i, { ...proj, url: v })} placeholder="github.com/…" />
               </div>
-              <Textarea label="Description" value={proj.description} onChange={(v) => setProject(i, { ...proj, description: v })} placeholder="What the project does…" rows={2} />
+              <Textarea label="Description" value={proj.description} onChange={(v) => setProject(i, { ...proj, description: v })} placeholder="What the project does…" rows={2} showHint />
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Technologies (comma-separated)</label>
                 <input value={proj.technologies.join(", ")} onChange={(e) => setProject(i, { ...proj, technologies: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
@@ -505,7 +583,7 @@ export default function ResumeEditor({ data, onChange }: Props) {
                 <Input label="Issuer" value={a.issuer} onChange={(v) => setAward(i, { ...a, issuer: v })} placeholder="Company Hack Week" />
                 <Input label="Date" value={a.date} onChange={(v) => setAward(i, { ...a, date: v })} placeholder="2023-11" />
               </div>
-              <Textarea label="Description" value={a.description} onChange={(v) => setAward(i, { ...a, description: v })} placeholder="Brief description…" rows={2} />
+              <Textarea label="Description" value={a.description} onChange={(v) => setAward(i, { ...a, description: v })} placeholder="Brief description…" rows={2} showHint />
             </div>
           </ItemCard>
         ))}
@@ -513,6 +591,115 @@ export default function ResumeEditor({ data, onChange }: Props) {
           <button onClick={addAward} className="w-full rounded-lg border-2 border-dashed border-gray-200 py-4 text-sm text-gray-400 hover:border-blue-300 hover:text-blue-500 transition">
             + Add Award
           </button>
+        )}
+      </div>
+
+      {/* ─ Volunteer ─ */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3 shadow-sm">
+        <div className="flex items-center">
+          <div className="flex-1">
+            <SectionHeader icon={Heart} title="Volunteer Experience" open={open("volunteer")} toggle={() => toggle("volunteer")} onAdd={addVolunteer} />
+          </div>
+          <button onClick={() => toggleSection("volunteer")} title={data.sections.volunteer ? "Hide section" : "Show section"}
+            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition font-medium ${
+              data.sections.volunteer ? "text-blue-600 bg-blue-50 hover:bg-blue-100" : "text-gray-400 bg-gray-100 hover:bg-gray-200"
+            }`}>
+            {data.sections.volunteer ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            {data.sections.volunteer ? "Visible" : "Hidden"}
+          </button>
+        </div>
+        {open("volunteer") && (data.volunteer || []).map((vol, i) => (
+          <ItemCard key={vol.id} onDelete={() => removeVolunteer(i)}>
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <Input label="Organization" value={vol.organization} onChange={(v) => setVolunteer(i, { ...vol, organization: v })} placeholder="Code for Good" />
+                <Input label="Role" value={vol.role} onChange={(v) => setVolunteer(i, { ...vol, role: v })} placeholder="Mentor" />
+              </div>
+              <Input label="Location" value={vol.location} onChange={(v) => setVolunteer(i, { ...vol, location: v })} placeholder="San Francisco, CA" />
+              <div className="grid grid-cols-2 gap-2">
+                <Input label="Start Date" value={vol.startDate} onChange={(v) => setVolunteer(i, { ...vol, startDate: v })} placeholder="2021-01" />
+                <div>
+                  <Input label="End Date" value={vol.current ? "" : vol.endDate} onChange={(v) => setVolunteer(i, { ...vol, endDate: v })} placeholder="Present" />
+                  <label className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                    <input type="checkbox" checked={vol.current} onChange={() => setVolunteer(i, { ...vol, current: !vol.current })} className="accent-blue-500" />
+                    Currently active
+                  </label>
+                </div>
+              </div>
+              <Textarea label="Description" value={vol.description} onChange={(v) => setVolunteer(i, { ...vol, description: v })} placeholder="What you do…" rows={2} showHint />
+            </div>
+          </ItemCard>
+        ))}
+        {open("volunteer") && (data.volunteer || []).length === 0 && (
+          <button onClick={addVolunteer} className="w-full rounded-lg border-2 border-dashed border-gray-200 py-4 text-sm text-gray-400 hover:border-blue-300 hover:text-blue-500 transition">
+            + Add Volunteer Experience
+          </button>
+        )}
+      </div>
+
+      {/* ─ Interests ─ */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3 shadow-sm">
+        <div className="flex items-center">
+          <div className="flex-1">
+            <SectionHeader icon={Heart} title="Interests & Hobbies" open={open("interests")} toggle={() => toggle("interests")} />
+          </div>
+          <button onClick={() => toggleSection("interests")} title={data.sections.interests ? "Hide section" : "Show section"}
+            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition font-medium ${
+              data.sections.interests ? "text-blue-600 bg-blue-50 hover:bg-blue-100" : "text-gray-400 bg-gray-100 hover:bg-gray-200"
+            }`}>
+            {data.sections.interests ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            {data.sections.interests ? "Visible" : "Hidden"}
+          </button>
+        </div>
+        {open("interests") && (
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Interests (comma-separated)</label>
+            <input value={(data.interests || []).join(", ")} onChange={(e) => setInterests(e.target.value)}
+              placeholder="Open Source, Photography, Travel, Chess"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition" />
+          </div>
+        )}
+      </div>
+
+      {/* ─ References ─ */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3 shadow-sm">
+        <div className="flex items-center">
+          <div className="flex-1">
+            <SectionHeader icon={Users} title="References" open={open("references")} toggle={() => toggle("references")} onAdd={addReference} />
+          </div>
+          <button onClick={() => toggleSection("references")} title={data.sections.references ? "Hide section" : "Show section"}
+            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition font-medium ${
+              data.sections.references ? "text-blue-600 bg-blue-50 hover:bg-blue-100" : "text-gray-400 bg-gray-100 hover:bg-gray-200"
+            }`}>
+            {data.sections.references ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            {data.sections.references ? "Visible" : "Hidden"}
+          </button>
+        </div>
+        {open("references") && (
+          <div className="space-y-2">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Quick Note</label>
+              <input value={data.referencesNote || "Available upon request"} onChange={(e) => onChange({ ...data, referencesNote: e.target.value })}
+                placeholder="Available upon request"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition" />
+              <p className="text-[10px] text-gray-400 mt-1">Leave blank and add contacts below for detailed references</p>
+            </div>
+            {(data.references || []).map((ref, i) => (
+              <ItemCard key={ref.id} onDelete={() => removeReference(i)}>
+                <div className="space-y-2">
+                  <Input label="Name" value={ref.name} onChange={(v) => setReference(i, { ...ref, name: v })} placeholder="Jane Smith" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input label="Position" value={ref.position} onChange={(v) => setReference(i, { ...ref, position: v })} placeholder="CTO" />
+                    <Input label="Company" value={ref.company} onChange={(v) => setReference(i, { ...ref, company: v })} placeholder="TechCorp" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input label="Email" value={ref.email} onChange={(v) => setReference(i, { ...ref, email: v })} placeholder="jane@company.com" />
+                    <Input label="Phone" value={ref.phone} onChange={(v) => setReference(i, { ...ref, phone: v })} placeholder="+1 555-0100" />
+                  </div>
+                </div>
+              </ItemCard>
+            ))}
+          </div>
         )}
       </div>
 

@@ -33,6 +33,25 @@ function bullet(text: string, opts?: Partial<IParagraphOptions>): Paragraph {
   });
 }
 
+/** Splits text by newlines, detecting bullet lines (- , • , * ) */
+function richTextParagraphs(text: string, color = "444444"): Paragraph[] {
+  const result: Paragraph[] = [];
+  for (const line of text.split("\n")) {
+    const bulletMatch = line.match(/^\s*[-•*]\s+(.*)/);
+    if (bulletMatch) {
+      result.push(bullet(bulletMatch[1]));
+    } else if (line.trim()) {
+      result.push(
+        new Paragraph({
+          spacing: { after: 40 },
+          children: [new TextRun({ text: line, size: 20, font: "Calibri", color })],
+        })
+      );
+    }
+  }
+  return result;
+}
+
 function sectionHeading(title: string, color: string): Paragraph {
   return new Paragraph({
     spacing: { before: 240, after: 80 },
@@ -100,12 +119,7 @@ export async function generateDocx(data: ResumeData): Promise<Blob> {
   /* ─── Summary ─── */
   if (vis.summary && p.summary) {
     paragraphs.push(sectionHeading("Professional Summary", accent));
-    paragraphs.push(
-      new Paragraph({
-        spacing: { after: 120 },
-        children: [new TextRun({ text: p.summary, size: 20, font: "Calibri", color: "444444" })],
-      })
-    );
+    paragraphs.push(...richTextParagraphs(p.summary));
   }
 
   /* ─── Experience ─── */
@@ -134,12 +148,7 @@ export async function generateDocx(data: ResumeData): Promise<Blob> {
         );
       }
       if (exp.description) {
-        paragraphs.push(
-          new Paragraph({
-            spacing: { after: 40 },
-            children: [new TextRun({ text: exp.description, size: 20, font: "Calibri", color: "444444" })],
-          })
-        );
+        paragraphs.push(...richTextParagraphs(exp.description));
       }
       for (const h of exp.highlights.filter(Boolean)) {
         paragraphs.push(bullet(h));
