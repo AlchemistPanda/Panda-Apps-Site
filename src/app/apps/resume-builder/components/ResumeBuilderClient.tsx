@@ -399,31 +399,10 @@ export default function ResumeBuilderClient() {
               <div className="text-left"><div className="font-medium">Word (.docx)</div><div className="text-[10px] text-gray-400">Editable in MS Word / Google Docs</div></div>
             </button>
             <hr className="my-1 border-gray-100" />
-            <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</div>
-            <button onClick={() => { magicInputRef.current?.click(); setShowDownload(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-indigo-50 rounded-lg transition">
-              <Wand2 className="h-4 w-4 text-indigo-500" />
-              <div className="text-left"><div className="font-medium">Magic Import (AI)</div><div className="text-[10px] text-gray-400">Extract from PDF/Word</div></div>
-            </button>
-            <button onClick={() => { importJSON(); setShowDownload(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition">
-              <FileJson className="h-4 w-4 text-blue-500" />
-              <div className="text-left"><div className="font-medium">Import JSON</div><div className="text-[10px] text-gray-400">Load backup file</div></div>
-            </button>
-            <button onClick={() => { loadSample(); setShowDownload(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-amber-50 rounded-lg transition">
-              <Sparkles className="h-4 w-4 text-amber-500" />
-              <div className="text-left"><div className="font-medium">Load Sample</div><div className="text-[10px] text-gray-400">Fill with example data</div></div>
-            </button>
             <button onClick={() => { exportJSON(); setShowDownload(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-lg transition">
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-green-50 rounded-lg transition">
               <FileJson className="h-4 w-4 text-green-600" />
-              <div className="text-left"><div className="font-medium">Export JSON (Backup)</div><div className="text-[10px] text-gray-400">Save data to your device</div></div>
-            </button>
-            <button onClick={() => { clearAll(); setShowDownload(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
-              <Trash2 className="h-4 w-4" />
-              <div className="text-left"><div className="font-medium">Reset Everything</div><div className="text-[10px] text-red-400">Clear all resume data</div></div>
+              <div className="text-left"><div className="font-medium">Export JSON (Backup)</div><div className="text-[10px] text-gray-400">Save data to your device for later editing</div></div>
             </button>
             <div className="px-3 py-2 mt-1 rounded-lg bg-amber-50 border border-amber-100">
               <p className="text-[10px] text-amber-700 leading-relaxed">
