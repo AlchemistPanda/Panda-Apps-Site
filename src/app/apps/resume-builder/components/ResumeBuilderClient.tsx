@@ -245,7 +245,7 @@ export default function ResumeBuilderClient() {
           </div>
 
           {/* More actions */}
-          <div className="hidden sm:flex items-center gap-1 ml-1">
+          <div className="flex items-center gap-1 ml-1 shrink-0">
             <button onClick={() => magicInputRef.current?.click()} title="Magic Import (AI PDF) — Privacy focused: your file is processed in real-time and never stored." disabled={isParsing}
               className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition ${isParsing ? "animate-pulse text-indigo-500 bg-indigo-50/50" : "text-gray-500 dark:text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"}`}>
               <Wand2 className={`h-4 w-4 ${isParsing ? "animate-spin" : ""}`} />
@@ -305,9 +305,9 @@ export default function ResumeBuilderClient() {
       </nav>
 
       {/* ─ Main content ─ */}
-      <div className="flex-1 min-h-0 max-w-[1600px] w-full mx-auto flex gap-6 px-4 py-4">
+      <div className="flex-1 min-h-0 max-w-[1600px] w-full mx-auto flex flex-col lg:flex-row gap-6 px-4 py-4 overflow-hidden">
         {/* Left: Editor */}
-        <div className={`w-full lg:w-[420px] xl:w-[460px] shrink-0 overflow-y-auto pb-6 ${view === "preview" ? "hidden lg:block" : ""}`}>
+        <div className={`flex-1 lg:w-[420px] xl:w-[460px] lg:shrink-0 overflow-y-auto pb-6 ${view === "preview" ? "hidden lg:block" : "block"}`}>
           {/* Quick start */}
           {!data.personal.fullName && (
             <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-4 mb-4">
@@ -362,7 +362,7 @@ export default function ResumeBuilderClient() {
         </div>
 
         {/* Right: Preview */}
-        <div className={`flex-1 min-w-0 overflow-y-auto pb-6 ${view === "edit" ? "hidden lg:block" : ""}`}>
+        <div className={`flex-1 min-w-0 overflow-y-auto pb-6 ${view === "edit" ? "hidden lg:block" : "block"}`}>
           <div className="lg:sticky lg:top-4">
             <div className="rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
               {/* A4 preview container */}
@@ -396,10 +396,31 @@ export default function ResumeBuilderClient() {
               <div className="text-left"><div className="font-medium">Word (.docx)</div><div className="text-[10px] text-gray-400">Editable in MS Word / Google Docs</div></div>
             </button>
             <hr className="my-1 border-gray-100" />
+            <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</div>
+            <button onClick={() => { magicInputRef.current?.click(); setShowDownload(false); }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-indigo-50 rounded-lg transition">
+              <Wand2 className="h-4 w-4 text-indigo-500" />
+              <div className="text-left"><div className="font-medium">Magic Import (AI)</div><div className="text-[10px] text-gray-400">Extract from PDF/Word</div></div>
+            </button>
+            <button onClick={() => { importJSON(); setShowDownload(false); }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition">
+              <FileJson className="h-4 w-4 text-blue-500" />
+              <div className="text-left"><div className="font-medium">Import JSON</div><div className="text-[10px] text-gray-400">Load backup file</div></div>
+            </button>
+            <button onClick={() => { loadSample(); setShowDownload(false); }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-amber-50 rounded-lg transition">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              <div className="text-left"><div className="font-medium">Load Sample</div><div className="text-[10px] text-gray-400">Fill with example data</div></div>
+            </button>
             <button onClick={() => { exportJSON(); setShowDownload(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-green-50 rounded-lg transition">
-              <FileJson className="h-4 w-4 text-green-500" />
-              <div className="text-left"><div className="font-medium">JSON (Backup)</div><div className="text-[10px] text-gray-400">Save &amp; import later to edit again</div></div>
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-lg transition">
+              <FileJson className="h-4 w-4 text-green-600" />
+              <div className="text-left"><div className="font-medium">Export JSON (Backup)</div><div className="text-[10px] text-gray-400">Save data to your device</div></div>
+            </button>
+            <button onClick={() => { clearAll(); setShowDownload(false); }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
+              <Trash2 className="h-4 w-4" />
+              <div className="text-left"><div className="font-medium">Reset Everything</div><div className="text-[10px] text-red-400">Clear all resume data</div></div>
             </button>
             <div className="px-3 py-2 mt-1 rounded-lg bg-amber-50 border border-amber-100">
               <p className="text-[10px] text-amber-700 leading-relaxed">
