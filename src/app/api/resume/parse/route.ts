@@ -14,12 +14,14 @@ export async function POST(req: Request) {
       return Response.json({ error: "No file data provided" }, { status: 400 });
     }
 
-    // List of models to try in order of preference
+    // List of models to try in order of preference (2026 latest models first)
     const modelsToTry = [
+      "gemini-3-flash",
+      "gemini-3-pro",
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
       "gemini-1.5-flash",
-      "gemini-1.5-flash-latest",
-      "gemini-2.0-flash-exp",
-      "gemini-1.5-pro"
+      "gemini-1.5-flash-latest"
     ];
 
     let lastError: Error | null = null;
