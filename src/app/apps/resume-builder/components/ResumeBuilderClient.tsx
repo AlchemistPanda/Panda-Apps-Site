@@ -246,7 +246,7 @@ export default function ResumeBuilderClient() {
 
           {/* More actions */}
           <div className="hidden sm:flex items-center gap-1 ml-1">
-            <button onClick={() => magicInputRef.current?.click()} title="Magic Import (AI PDF)" disabled={isParsing}
+            <button onClick={() => magicInputRef.current?.click()} title="Magic Import (AI PDF) — Privacy focused: your file is processed in real-time and never stored." disabled={isParsing}
               className={`p-1.5 rounded-lg transition ${isParsing ? "animate-pulse text-indigo-500" : "text-gray-400 dark:text-zinc-500 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"}`}>
               <Wand2 className={`h-4 w-4 ${isParsing ? "animate-spin" : ""}`} />
             </button>
@@ -329,6 +329,15 @@ export default function ResumeBuilderClient() {
                   className="px-3 py-1.5 text-xs font-medium border border-gray-200 text-gray-600 rounded-lg hover:bg-white transition">
                   Import JSON
                 </button>
+              </div>
+              <div className="mt-4 pt-3 border-t border-indigo-100/50">
+                <p className="text-[10px] text-indigo-500 leading-relaxed flex gap-2">
+                  <span className="shrink-0">🔒</span>
+                  <span>
+                    <strong>Privacy Note:</strong> AI parses your file in real-time to extract data. 
+                    Your resume is <strong>never stored or shared</strong>. All data stays local to your browser.
+                  </span>
+                </p>
               </div>
             </div>
           )}
