@@ -249,22 +249,22 @@ export default function ResumeBuilderClient() {
             <button onClick={() => magicInputRef.current?.click()} title="Magic Import (AI PDF) — Privacy focused: your file is processed in real-time and never stored." disabled={isParsing}
               className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition ${isParsing ? "animate-pulse text-indigo-500 bg-indigo-50/50" : "text-gray-500 dark:text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"}`}>
               <Wand2 className={`h-4 w-4 ${isParsing ? "animate-spin" : ""}`} />
-              <span className="text-[10px] font-semibold hidden md:block">Magic Import (AI)</span>
+              <span className="text-[10px] font-semibold">Magic Import</span>
             </button>
             <button onClick={importJSON} title="Import JSON (.json file)"
               className="flex items-center gap-1.5 px-2 py-1.5 text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition">
               <FileJson className="h-4 w-4 text-blue-500" />
-              <span className="text-[10px] font-semibold hidden lg:block">Import JSON</span>
+              <span className="text-[10px] font-semibold">Import JSON</span>
             </button>
             <button onClick={loadSample} title="Load sample resume"
               className="flex items-center gap-1.5 px-2 py-1.5 text-gray-500 dark:text-zinc-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition">
               <Sparkles className="h-4 w-4 text-amber-500" />
-              <span className="text-[10px] font-semibold hidden lg:block">Sample</span>
+              <span className="text-[10px] font-semibold">Sample</span>
             </button>
             <button onClick={clearAll} title="Clear all"
               className="flex items-center gap-1.5 px-2 py-1.5 text-gray-500 dark:text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
               <Trash2 className="h-4 w-4 text-red-500" />
-              <span className="text-[10px] font-semibold hidden lg:block">Clear</span>
+              <span className="text-[10px] font-semibold">Clear</span>
             </button>
           </div>
           <ThemeToggle />
@@ -342,18 +342,21 @@ export default function ResumeBuilderClient() {
             </div>
           )}
 
-          {/* Mobile actions */}
-          <div className="flex sm:hidden items-center gap-1 mb-3">
-            <button onClick={loadSample}
-              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Sample
+          <div className="flex flex-wrap sm:hidden items-center gap-1.5 mb-3">
+            <button onClick={() => magicInputRef.current?.click()} disabled={isParsing}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-[10px] font-medium border border-gray-200 rounded-lg ${isParsing ? "text-indigo-500 animate-pulse bg-indigo-50" : "text-indigo-600 bg-white"}`}>
+              <Wand2 className={`h-3.5 w-3.5 ${isParsing ? "animate-spin" : ""}`} /> Magic
             </button>
             <button onClick={importJSON}
-              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-xs font-medium border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">
-              <Upload className="h-3.5 w-3.5" /> Import
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-[10px] font-medium border border-gray-200 rounded-lg text-gray-600 bg-white">
+              <FileJson className="h-3.5 w-3.5 text-blue-500" /> Import
+            </button>
+            <button onClick={loadSample}
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-[10px] font-medium border border-gray-200 rounded-lg text-gray-600 bg-white">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Sample
             </button>
             <button onClick={clearAll}
-              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-xs font-medium border border-gray-200 rounded-lg text-red-500 hover:bg-red-50">
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 text-[10px] font-medium border border-gray-200 rounded-lg text-red-500 bg-white">
               <RotateCcw className="h-3.5 w-3.5" /> Reset
             </button>
           </div>
