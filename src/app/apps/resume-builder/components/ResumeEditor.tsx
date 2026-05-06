@@ -269,12 +269,12 @@ export default function ResumeEditor({ data, onChange }: Props) {
           <div className="space-y-3 pt-2">
             {/* Photo upload */}
             <div className="flex items-center gap-3">
-              <div className="relative group">
+              <div className="relative">
                 {p.photoUrl ? (
                   <div className="relative">
                     <img src={p.photoUrl} alt="Photo" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
                     <button onClick={removePhoto} title="Remove photo"
-                      className="absolute -top-1 -right-1 p-0.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition shadow">
+                      className="absolute -top-1 -right-1 p-0.5 rounded-full bg-red-500 text-white shadow hover:bg-red-600 transition">
                       <X className="h-3 w-3" />
                     </button>
                   </div>
@@ -288,8 +288,14 @@ export default function ResumeEditor({ data, onChange }: Props) {
               </div>
               <div className="flex-1">
                 <p className="text-xs text-gray-500">Profile Photo <span className="text-gray-400">(optional)</span></p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Max 2MB · Shown in resume preview</p>
-                {!p.photoUrl && (
+                <p className="text-[10px] text-gray-400 mt-0.5">Max 2MB · Only shown if uploaded</p>
+                {p.photoUrl ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <button onClick={() => photoInputRef.current?.click()} className="text-[10px] text-blue-500 hover:underline">Change</button>
+                    <span className="text-gray-300">·</span>
+                    <button onClick={removePhoto} className="text-[10px] text-red-500 hover:underline">Remove</button>
+                  </div>
+                ) : (
                   <button onClick={() => photoInputRef.current?.click()} className="text-[10px] text-blue-500 hover:underline mt-1">Upload photo</button>
                 )}
               </div>
