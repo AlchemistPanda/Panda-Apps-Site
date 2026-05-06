@@ -247,8 +247,9 @@ export default function ResumeBuilderClient() {
           {/* More actions */}
           <div className="hidden sm:flex items-center gap-1 ml-1">
             <button onClick={() => magicInputRef.current?.click()} title="Magic Import (AI PDF) — Privacy focused: your file is processed in real-time and never stored." disabled={isParsing}
-              className={`p-1.5 rounded-lg transition ${isParsing ? "animate-pulse text-indigo-500" : "text-gray-400 dark:text-zinc-500 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"}`}>
+              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition ${isParsing ? "animate-pulse text-indigo-500 bg-indigo-50/50" : "text-gray-500 dark:text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"}`}>
               <Wand2 className={`h-4 w-4 ${isParsing ? "animate-spin" : ""}`} />
+              <span className="text-[10px] font-semibold hidden md:block">Magic Import (AI)</span>
             </button>
             <button onClick={importJSON} title="Import JSON"
               className="p-1.5 text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition">
