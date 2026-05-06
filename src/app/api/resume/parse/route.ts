@@ -14,80 +14,64 @@ export async function POST(req: Request) {
       return Response.json({ error: "No file data provided" }, { status: 400 });
     }
 
-    // Initialize Gemini model
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Initialize Gemini model - 1.5 flash is highly available and excellent for extraction
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        responseMimeType: "application/json",
+      }
+    });
 
     const prompt = `
-      You are an expert resume parser. Extract information from the attached resume file and format it EXACTLY as the JSON structure below.
+      You are an expert resume parser. Extract information from the attached resume file and format it as JSON.
       
       RULES:
       1. If a field is not found, use an empty string "" or an empty array [].
       2. Dates should be in YYYY-MM or YYYY format if possible.
-      3. For multi-line descriptions, use \\n for new lines.
-      4. Ensure all IDs are unique strings (you can generate them like "exp1", "edu1", etc.).
-      5. The output MUST be valid JSON.
-      6. "current" field in experience/volunteer should be true if the end date is "Present" or empty.
+      3. For multi-line descriptions, use \n for new lines.
+      4. Ensure all IDs are unique strings (e.g. "exp1", "edu1").
+      5. "current" field in experience/volunteer should be true if the end date is "Present" or empty.
       
-      JSON STRUCTURE:
+      JSON SCHEMA:
       {
         "personal": {
-          "fullName": "",
-          "jobTitle": "",
-          "email": "",
-          "phone": "",
-          "location": "",
-          "website": "",
-          "linkedin": "",
-          "github": "",
-          "summary": ""
+          "fullName": "string",
+          "jobTitle": "string",
+          "email": "string",
+          "phone": "string",
+          "location": "string",
+          "website": "string",
+          "linkedin": "string",
+          "github": "string",
+          "summary": "string"
         },
         "experience": [
-          {
-            "id": "exp1",
-            "company": "",
-            "position": "",
-            "location": "",
-            "startDate": "",
-            "endDate": "",
-            "current": false,
-            "description": "",
-            "highlights": [""]
-          }
+          { "id": "string", "company": "string", "position": "string", "location": "string", "startDate": "string", "endDate": "string", "current": "boolean", "description": "string", "highlights": ["string"] }
         ],
         "education": [
-          {
-            "id": "edu1",
-            "institution": "",
-            "degree": "",
-            "field": "",
-            "location": "",
-            "startDate": "",
-            "endDate": "",
-            "gpa": "",
-            "description": ""
-          }
+          { "id": "string", "institution": "string", "degree": "string", "field": "string", "location": "string", "startDate": "string", "endDate": "string", "gpa": "string", "description": "string" }
         ],
         "skills": [
-          { "id": "sk1", "category": "", "items": [""] }
+          { "id": "string", "category": "string", "items": ["string"] }
         ],
         "projects": [
-          { "id": "proj1", "name": "", "description": "", "technologies": [""], "url": "", "startDate": "", "endDate": "" }
+          { "id": "string", "name": "string", "description": "string", "technologies": ["string"], "url": "string", "startDate": "string", "endDate": "string" }
         ],
         "certifications": [
-          { "id": "cert1", "name": "", "issuer": "", "date": "", "url": "" }
+          { "id": "string", "name": "string", "issuer": "string", "date": "string", "url": "string" }
         ],
         "languages": [
-          { "id": "lang1", "name": "", "proficiency": "Intermediate" }
+          { "id": "string", "name": "string", "proficiency": "string" }
         ],
         "awards": [
-          { "id": "aw1", "title": "", "issuer": "", "date": "", "description": "" }
+          { "id": "string", "title": "string", "issuer": "string", "date": "string", "description": "string" }
         ],
         "volunteer": [
-          { "id": "vol1", "organization": "", "role": "", "location": "", "startDate": "", "endDate": "", "current": false, "description": "" }
+          { "id": "string", "organization": "string", "role": "string", "location": "string", "startDate": "string", "endDate": "string", "current": "boolean", "description": "string" }
         ],
-        "interests": [""],
+        "interests": ["string"],
         "references": [],
-        "referencesNote": "Available upon request"
+        "referencesNote": "string"
       }
     `;
 
@@ -95,8 +79,8 @@ export async function POST(req: Request) {
     const content = [
       {
         inlineData: {
-          mimeType: fileType, // e.g. "application/pdf"
-          data: fileData,     // base64 data
+          mimeType: fileType, 
+          data: fileData,     
         },
       },
       { text: prompt },
@@ -105,15 +89,13 @@ export async function POST(req: Request) {
     const result = await model.generateContent(content);
     const responseText = result.response.text();
     
-    // Extract JSON from response (handling potential markdown blocks)
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("Could not parse JSON from AI response");
+    try {
+      const parsedData = JSON.parse(responseText);
+      return Response.json(parsedData);
+    } catch (parseErr) {
+      console.error("JSON parse error:", responseText);
+      throw new Error("AI returned invalid JSON format. Please try again.");
     }
-    
-    const parsedData = JSON.parse(jsonMatch[0]);
-    
-    return Response.json(parsedData);
 
   } catch (error) {
     console.error("Resume Parser error:", error);
