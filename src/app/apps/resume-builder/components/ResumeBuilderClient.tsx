@@ -251,17 +251,20 @@ export default function ResumeBuilderClient() {
               <Wand2 className={`h-4 w-4 ${isParsing ? "animate-spin" : ""}`} />
               <span className="text-[10px] font-semibold hidden md:block">Magic Import (AI)</span>
             </button>
-            <button onClick={importJSON} title="Import JSON"
-              className="p-1.5 text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition">
-              <Upload className="h-4 w-4" />
+            <button onClick={importJSON} title="Import JSON (.json file)"
+              className="flex items-center gap-1.5 px-2 py-1.5 text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition">
+              <FileJson className="h-4 w-4 text-blue-500" />
+              <span className="text-[10px] font-semibold hidden lg:block">Import JSON</span>
             </button>
             <button onClick={loadSample} title="Load sample resume"
-              className="p-1.5 text-gray-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition">
-              <Sparkles className="h-4 w-4" />
+              className="flex items-center gap-1.5 px-2 py-1.5 text-gray-500 dark:text-zinc-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              <span className="text-[10px] font-semibold hidden lg:block">Sample</span>
             </button>
             <button onClick={clearAll} title="Clear all"
-              className="p-1.5 text-gray-400 dark:text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
-              <Trash2 className="h-4 w-4" />
+              className="flex items-center gap-1.5 px-2 py-1.5 text-gray-500 dark:text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
+              <Trash2 className="h-4 w-4 text-red-500" />
+              <span className="text-[10px] font-semibold hidden lg:block">Clear</span>
             </button>
           </div>
           <ThemeToggle />
