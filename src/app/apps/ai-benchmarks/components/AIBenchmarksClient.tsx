@@ -631,6 +631,7 @@ export default function AIBenchmarksClient({ models }: Props) {
   const [tab, setTab] = useState<TabFilter>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [radarModels, setRadarModels] = useState<string[]>([
+    "claude-opus-4-7",
     "claude-opus-4-6",
     "gemini-3-1-pro",
     "gpt-5-2",
