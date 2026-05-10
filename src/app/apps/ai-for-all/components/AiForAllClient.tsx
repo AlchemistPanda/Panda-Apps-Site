@@ -40,14 +40,14 @@ export default function AiForAllClient() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-white/70 backdrop-blur-xl border-b border-[var(--a-line)] shadow-[0_2px_24px_-12px_rgba(124,58,237,0.15)]"
+            ? "bg-[#030014]/60 backdrop-blur-xl border-b border-[var(--a-line)] shadow-[0_2px_24px_-12px_rgba(139,92,246,0.3)]"
             : "bg-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="group flex items-center gap-1.5 text-sm font-medium text-[var(--a-ink-soft)] hover:text-[var(--a-purple)] transition-colors"
+            className="group flex items-center gap-1.5 text-sm font-medium text-[var(--a-ink-soft)] hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
             <span className="hidden sm:inline">Panda Apps</span>
@@ -55,14 +55,14 @@ export default function AiForAllClient() {
 
           <Link href="/apps/ai-for-all" className="flex items-center gap-2 group">
             <div className="relative">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-500 via-pink-500 to-orange-400 flex items-center justify-center text-white shadow-lg shadow-pink-500/30 group-hover:rotate-6 transition-transform">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-600 via-pink-600 to-orange-500 flex items-center justify-center text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] group-hover:rotate-6 transition-transform">
                 <Sparkles className="h-4 w-4" />
               </div>
-              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-violet-400 to-pink-400 blur-md opacity-50 -z-10 group-hover:opacity-80 transition-opacity" />
+              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 blur-lg opacity-60 -z-10 group-hover:opacity-100 transition-opacity" />
             </div>
             <div className="hidden sm:block">
-              <p className="text-[15px] font-bold leading-tight ai4all-grad-text">AI for All</p>
-              <p className="text-[10px] tracking-wider uppercase text-[var(--a-muted)] leading-tight">
+              <p className="text-[15px] font-bold leading-tight text-white tracking-wide">AI <span className="ai4all-grad-text">for All</span></p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--a-pink)] leading-tight opacity-90">
                 Learn · Grow · Lead
               </p>
             </div>

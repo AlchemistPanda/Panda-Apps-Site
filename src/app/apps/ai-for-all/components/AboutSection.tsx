@@ -120,7 +120,7 @@ export default function AboutSection() {
           className="ai4all-card ai4all-rise relative p-10 overflow-hidden"
           style={{
             background:
-              "linear-gradient(135deg, rgba(251,191,36,0.10), rgba(249,115,22,0.10)), white",
+              "linear-gradient(135deg, rgba(251,191,36,0.15), rgba(249,115,22,0.15)), rgba(255,255,255,0.03)",
           }}
         >
           <div
@@ -152,7 +152,7 @@ export default function AboutSection() {
                     animationDelay: `${0.2 + i * 0.08}s`,
                     color: "var(--a-orange)",
                     borderColor: "rgba(249,115,22,0.30)",
-                    background: "rgba(255,255,255,0.85)",
+                    background: "rgba(249,115,22,0.10)",
                   }}
                 >
                   ✓ {n}

@@ -238,21 +238,20 @@ export default function VotingSection() {
                     </div>
                   </div>
 
-                  {/* Vote button */}
                   <button
                     onClick={(e) => vote(opt.id, e)}
                     disabled={!!votingId || opt.userVoted}
                     className={`w-full flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-bold transition-all ${
-                      opt.userVoted ? "cursor-default" : "active:scale-95 hover:shadow-md"
+                      opt.userVoted ? "cursor-default border border-transparent shadow-[0_0_15px_rgba(236,72,153,0.3)]" : "active:scale-95 hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] hover:border-[var(--a-purple)]"
                     }`}
                     style={
                       opt.userVoted
                         ? {
-                            background: "linear-gradient(135deg, #FCE7F3, #FED7AA)",
-                            color: "#9F1239",
+                            background: "linear-gradient(135deg, rgba(236,72,153,0.2), rgba(249,115,22,0.2))",
+                            color: "var(--a-pink)",
                           }
                         : {
-                            background: "white",
+                            background: "rgba(255,255,255,0.05)",
                             border: "1.5px solid var(--a-line-strong)",
                             color: "var(--a-ink)",
                           }
@@ -278,7 +277,7 @@ export default function VotingSection() {
               setShowSuggest((v) => !v);
               setSubmitted(false);
             }}
-            className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[var(--a-blush)] transition-colors group"
+            className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[rgba(255,255,255,0.02)] transition-colors group"
           >
             <div className="flex items-center gap-4">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 via-pink-500 to-orange-400 flex items-center justify-center text-white shadow-md group-hover:rotate-12 transition-transform">

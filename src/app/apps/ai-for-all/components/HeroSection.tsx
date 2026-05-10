@@ -46,11 +46,11 @@ export default function HeroSection({ sessions, loading }: Props) {
       ref={heroRef}
       className="relative min-h-screen flex flex-col items-center justify-center px-5 pt-24 pb-20 overflow-hidden"
     >
-      {/* Spotlight that follows the mouse */}
+      {/* Spotlight that follows the mouse - Dark mode enhanced */}
       <div
         className="pointer-events-none absolute inset-0 transition-opacity duration-700"
         style={{
-          background: `radial-gradient(600px circle at ${mouse.x}% ${mouse.y}%, rgba(236,72,153,0.10), transparent 50%)`,
+          background: `radial-gradient(800px circle at ${mouse.x}% ${mouse.y}%, rgba(139,92,246,0.15), transparent 40%)`,
         }}
       />
 
@@ -89,20 +89,20 @@ export default function HeroSection({ sessions, loading }: Props) {
       <div className="relative z-10 text-center max-w-4xl mx-auto">
         {/* Main heading with massive type */}
         <h1
-          className="ai4all-rise ai4all-d-1 font-black tracking-tight leading-[0.92] mb-6"
-          style={{ fontSize: "clamp(3rem, 11vw, 8rem)", letterSpacing: "-0.04em" }}
+          className="ai4all-rise ai4all-d-1 font-black tracking-tight leading-[0.92] mb-6 drop-shadow-2xl"
+          style={{ fontSize: "clamp(3.5rem, 12vw, 9rem)", letterSpacing: "-0.04em" }}
         >
-          <span className="block ai4all-grad-text">AI</span>
-          <span className="block text-[var(--a-ink)]">for Everyone.</span>
+          <span className="block text-white filter drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">AI</span>
+          <span className="block ai4all-grad-text">for Everyone.</span>
         </h1>
 
         {/* Subtitle */}
         <p
-          className="ai4all-rise ai4all-d-2 max-w-2xl mx-auto mb-10 leading-relaxed"
-          style={{ color: "var(--a-ink-soft)", fontSize: "clamp(1rem, 2vw, 1.25rem)" }}
+          className="ai4all-rise ai4all-d-2 max-w-2xl mx-auto mb-10 leading-relaxed font-medium"
+          style={{ color: "var(--a-ink-soft)", fontSize: "clamp(1.1rem, 2vw, 1.35rem)" }}
         >
-          Hands-on online sessions to upskill <em className="not-italic font-semibold text-[var(--a-ink)]">anyone</em> with AI tools — image creation,
-          poster design, video generation, and more. A small fee that goes <em className="not-italic font-semibold text-[var(--a-ink)]">entirely</em> to those in need.
+          Hands-on online sessions to upskill <em className="not-italic font-bold text-white">anyone</em> with AI tools — image creation,
+          poster design, video generation, and more. A small fee that goes <em className="not-italic font-bold text-white">entirely</em> to those in need.
         </p>
 
         {/* CTAs */}
@@ -136,11 +136,11 @@ export default function HeroSection({ sessions, loading }: Props) {
           ].map((t) => (
             <div
               key={t.label}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-sm border border-[var(--a-line)]"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-[var(--a-line-strong)] hover:border-[var(--a-pink)] hover:bg-white/10 transition-all duration-300 cursor-default"
               style={{ color: "var(--a-ink-soft)" }}
             >
-              <span>{t.icon}</span>
-              <span className="font-medium">{t.label}</span>
+              <span className="drop-shadow-lg">{t.icon}</span>
+              <span className="font-semibold text-[var(--a-ink)] tracking-wide">{t.label}</span>
             </div>
           ))}
         </div>

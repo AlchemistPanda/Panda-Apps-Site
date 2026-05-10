@@ -57,7 +57,7 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
       style={{
         animationDelay: `${index * 0.12}s`,
         background:
-          "radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(124,58,237,0.04), white 60%)",
+          "radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(139,92,246,0.15), rgba(20,15,45,0.4) 60%)",
       }}
     >
       {/* Top accent bar */}
@@ -76,13 +76,13 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
       <div className="flex items-center justify-between mb-4">
         {session.isRegistrationOpen ? (
           <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase"
-                style={{ background: "rgba(16,185,129,0.10)", color: "#047857" }}>
+                style={{ background: "rgba(16,185,129,0.15)", color: "var(--a-mint)", border: "1px solid rgba(16,185,129,0.3)" }}>
             <span className="ai4all-pulse" />
             Registration Open
           </span>
         ) : (
           <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
-                style={{ background: "rgba(107,91,142,0.08)", color: "var(--a-muted)" }}>
+                style={{ background: "rgba(255,255,255,0.05)", color: "var(--a-muted)", border: "1px solid var(--a-line-strong)" }}>
             <Lock className="h-3 w-3" />
             Closed
           </span>

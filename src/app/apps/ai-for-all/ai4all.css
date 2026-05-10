@@ -5,18 +5,18 @@
    ────────────────────────────────────────────────────────────────────────── */
 
 .ai4all {
-  /* Color tokens */
-  --a-bg: #FFFAF5;
-  --a-bg-2: #FFF1F6;
-  --a-surface: #FFFFFF;
-  --a-ink: #150A2E;
-  --a-ink-soft: #4B3E66;
-  --a-muted: #8A7BA8;
-  --a-line: #F0E6F5;
-  --a-line-strong: #E6D5EE;
+  /* Color tokens - Premium Dark Mode */
+  --a-bg: #030014;
+  --a-bg-2: #0F0A29;
+  --a-surface: rgba(20, 15, 45, 0.4);
+  --a-ink: #FFFFFF;
+  --a-ink-soft: #A396B8;
+  --a-muted: #6B5C82;
+  --a-line: rgba(255, 255, 255, 0.08);
+  --a-line-strong: rgba(255, 255, 255, 0.15);
 
-  --a-purple: #7C3AED;
-  --a-purple-deep: #5B21B6;
+  --a-purple: #8B5CF6;
+  --a-purple-deep: #4C1D95;
   --a-pink: #EC4899;
   --a-rose: #F43F5E;
   --a-orange: #F97316;
@@ -25,15 +25,15 @@
   --a-sky: #38BDF8;
 
   /* Gradient palettes */
-  --grad-aurora: linear-gradient(135deg, #C4B5FD 0%, #FDA4AF 35%, #FCD34D 70%, #F9A8D4 100%);
-  --grad-primary: linear-gradient(135deg, #7C3AED 0%, #EC4899 60%, #F97316 100%);
+  --grad-aurora: linear-gradient(135deg, #7C3AED 0%, #EC4899 35%, #F97316 70%, #FBBF24 100%);
+  --grad-primary: linear-gradient(135deg, #8B5CF6 0%, #EC4899 60%, #F43F5E 100%);
   --grad-cool: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
   --grad-warm: linear-gradient(135deg, #F97316 0%, #EC4899 50%, #8B5CF6 100%);
 
   /* Shadows */
-  --sh-soft: 0 1px 3px rgba(124,58,237,0.04), 0 4px 16px rgba(124,58,237,0.06);
-  --sh-lift: 0 8px 24px -8px rgba(124,58,237,0.18), 0 16px 48px -12px rgba(236,72,153,0.12);
-  --sh-glow: 0 0 0 1px rgba(124,58,237,0.10), 0 12px 36px -8px rgba(124,58,237,0.25), 0 0 80px -20px rgba(236,72,153,0.30);
+  --sh-soft: 0 4px 20px -2px rgba(0,0,0,0.5);
+  --sh-lift: 0 12px 30px -4px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  --sh-glow: 0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(236,72,153,0.2);
 
   background: var(--a-bg);
   color: var(--a-ink);
@@ -113,21 +113,35 @@
 /* ── Premium glass card ─────────────────────────────────────────────────── */
 .ai4all-card {
   position: relative;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--a-surface);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
   border: 1px solid var(--a-line);
   border-radius: 24px;
   box-shadow: var(--sh-soft);
   transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
 }
 .ai4all-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.ai4all-card::after {
   content: "";
   position: absolute;
   inset: -1px;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, transparent 30%, rgba(124,58,237,0.5), rgba(236,72,153,0.5), rgba(249,115,22,0.5), transparent 90%);
+  background: linear-gradient(135deg, transparent 30%, rgba(139,92,246,0.8), rgba(236,72,153,0.8), transparent 90%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -136,8 +150,8 @@
   transition: opacity 0.5s ease;
   pointer-events: none;
 }
-.ai4all-card:hover { transform: translateY(-6px); box-shadow: var(--sh-glow); }
-.ai4all-card:hover::before { opacity: 1; }
+.ai4all-card:hover { transform: translateY(-8px) scale(1.01); box-shadow: var(--sh-glow); }
+.ai4all-card:hover::after { opacity: 1; }
 
 /* ── Magnetic button base ───────────────────────────────────────────────── */
 .ai4all-btn {
@@ -148,48 +162,56 @@
   gap: 0.5rem;
   font-weight: 600;
   border-radius: 9999px;
-  padding: 14px 28px;
+  padding: 14px 32px;
   font-size: 15px;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   white-space: nowrap;
   overflow: hidden;
+  text-transform: uppercase;
 }
 .ai4all-btn-primary {
   color: white;
   background: var(--grad-primary);
   background-size: 200% 200%;
   background-position: 0% 50%;
-  box-shadow: 0 4px 16px rgba(124,58,237,0.30), 0 0 0 0 rgba(236,72,153,0);
+  box-shadow: 0 4px 20px rgba(139,92,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 .ai4all-btn-primary:hover {
   background-position: 100% 50%;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(124,58,237,0.40), 0 0 32px rgba(236,72,153,0.25);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(139,92,246,0.6), 0 0 40px rgba(236,72,153,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 .ai4all-btn-primary::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.4), transparent 50%);
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-20deg);
+  transition: none;
 }
-.ai4all-btn-primary:hover::after { opacity: 1; }
+.ai4all-btn-primary:hover::after {
+  animation: shine 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
 
 .ai4all-btn-glass {
-  background: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.05);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--a-line-strong);
   color: var(--a-ink);
 }
 .ai4all-btn-glass:hover {
-  background: rgba(255,255,255,0.95);
-  transform: translateY(-2px);
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-3px) scale(1.02);
   border-color: var(--a-purple);
-  box-shadow: 0 8px 24px rgba(124,58,237,0.18);
+  box-shadow: 0 8px 30px rgba(139,92,246,0.2);
 }
 
 /* ── Rainbow border (for active/voted states) ───────────────────────────── */
@@ -301,16 +323,17 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--a-line-strong);
   border-radius: 9999px;
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--a-purple-deep);
+  color: var(--a-pink);
+  box-shadow: 0 0 20px rgba(236,72,153,0.1);
 }
 
 /* ── Vote progress bar ──────────────────────────────────────────────────── */
@@ -337,19 +360,21 @@
 /* ── Form inputs (premium) ──────────────────────────────────────────────── */
 .ai4all-input {
   width: 100%;
-  background: white;
-  border: 1.5px solid var(--a-line);
-  border-radius: 14px;
-  padding: 12px 16px;
-  font-size: 15px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--a-line-strong);
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-size: 16px;
   color: var(--a-ink);
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 .ai4all-input::placeholder { color: var(--a-muted); }
 .ai4all-input:focus {
   outline: none;
-  border-color: var(--a-purple);
-  box-shadow: 0 0 0 4px rgba(124,58,237,0.10);
+  background: rgba(255,255,255,0.06);
+  border-color: var(--a-pink);
+  box-shadow: 0 0 0 4px rgba(236,72,153,0.15), 0 0 20px rgba(236,72,153,0.1);
 }
 
 /* ── Tilted decorative chip ─────────────────────────────────────────────── */
@@ -357,8 +382,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: white;
-  border: 1px solid var(--a-line);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--a-line-strong);
   border-radius: 9999px;
   padding: 6px 12px;
   font-size: 12px;
