@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { CheckCircle2, XCircle, Trash2, Loader2, RefreshCw } from "lucide-react";
+import { CheckCircle2, XCircle, Trash2, Loader2, RefreshCw, Plus, Send } from "lucide-react";
 
 interface VoteOptionAdmin {
   id: string;
@@ -19,10 +19,15 @@ interface Props {
   token: string;
 }
 
+const EMOJI_PICKS = ["🤖", "🖼️", "🎨", "📝", "🎥", "🔊", "💡", "🌟", "📊", "🗣️", "🧠", "✨"];
+
 export default function VotesManager({ token }: Props) {
   const [options, setOptions] = useState<VoteOptionAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [addForm, setAddForm] = useState({ label: "", description: "", emoji: "🤖" });
+  const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -61,6 +66,36 @@ export default function VotesManager({ token }: Props) {
     load();
   }
 
+  async function addOption() {
+    if (!addForm.label.trim() || adding) return;
+    setAdding(true);
+    try {
+      const res = await fetch("/api/ai-for-all/votes/options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          label: addForm.label,
+          description: addForm.description,
+          emoji: addForm.emoji,
+          submittedBy: "Admin",
+        }),
+      });
+      const created = await res.json();
+      if (created?.id) {
+        await fetch(`/api/ai-for-all/votes/options/${created.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ isApproved: true }),
+        });
+      }
+      setAddForm({ label: "", description: "", emoji: "🤖" });
+      setShowAdd(false);
+      load();
+    } finally {
+      setAdding(false);
+    }
+  }
+
   async function remove(id: string) {
     if (!confirm("Delete this option? All votes for it will also be deleted.")) return;
     setActioning(id);
@@ -88,10 +123,79 @@ export default function VotesManager({ token }: Props) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold">Votes</h2>
-        <button onClick={load} className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={load} className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors">
+            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          </button>
+          <button
+            onClick={() => setShowAdd((v) => !v)}
+            className="flex items-center gap-1.5 text-sm rounded-lg bg-violet-600/20 border border-violet-500/30 text-violet-400 hover:bg-violet-600/30 px-3 py-1.5 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" /> Add Option
+          </button>
+        </div>
       </div>
+
+      {/* Add new option form */}
+      {showAdd && (
+        <div className="mb-8 rounded-xl border border-violet-500/25 bg-violet-500/5 p-5">
+          <h3 className="font-semibold mb-4 text-violet-300">Add New Vote Option</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-muted mb-1">Emoji</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {EMOJI_PICKS.map((e) => (
+                  <button
+                    key={e}
+                    onClick={() => setAddForm((f) => ({ ...f, emoji: e }))}
+                    className={`text-xl rounded-lg px-2 py-1 transition-colors ${addForm.emoji === e ? "bg-violet-600/40 border border-violet-400" : "hover:bg-border/30"}`}
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-muted mb-1">Label *</label>
+              <input
+                type="text"
+                maxLength={120}
+                placeholder="e.g. AI for Social Media"
+                value={addForm.label}
+                onChange={(e) => setAddForm((f) => ({ ...f, label: e.target.value }))}
+                className="w-full rounded-lg bg-card border border-border px-3 py-2 text-sm focus:outline-none focus:border-violet-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-muted mb-1">Description (optional)</label>
+              <input
+                type="text"
+                maxLength={200}
+                placeholder="Brief description..."
+                value={addForm.description}
+                onChange={(e) => setAddForm((f) => ({ ...f, description: e.target.value }))}
+                className="w-full rounded-lg bg-card border border-border px-3 py-2 text-sm focus:outline-none focus:border-violet-500"
+              />
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={addOption}
+                disabled={!addForm.label.trim() || adding}
+                className="flex items-center gap-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2 text-sm font-medium transition-colors"
+              >
+                {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                Add & Approve
+              </button>
+              <button
+                onClick={() => setShowAdd(false)}
+                className="rounded-lg border border-border px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pending approvals */}
       {pending.length > 0 && (

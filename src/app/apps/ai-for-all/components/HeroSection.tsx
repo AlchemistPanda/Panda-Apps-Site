@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Calendar, Vote, Sparkles, ArrowRight, Zap } from "lucide-react";
+import { Calendar, Vote, ArrowRight, Zap } from "lucide-react";
 import type { Session } from "@/lib/ai4all";
 
 interface Props {
@@ -87,28 +87,14 @@ export default function HeroSection({ sessions, loading }: Props) {
 
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto">
-        {/* Eyebrow badge */}
-        <div className="ai4all-rise ai4all-eyebrow mb-8">
-          <Sparkles className="h-3 w-3" />
-          <span>Affordable AI Training · Open to Everyone</span>
-        </div>
-
         {/* Main heading with massive type */}
         <h1
           className="ai4all-rise ai4all-d-1 font-black tracking-tight leading-[0.92] mb-6"
           style={{ fontSize: "clamp(3rem, 11vw, 8rem)", letterSpacing: "-0.04em" }}
         >
-          <span className="block text-[var(--a-ink)]">Learn AI.</span>
-          <span className="block ai4all-grad-text">For Everyone.</span>
+          <span className="block ai4all-grad-text">AI</span>
+          <span className="block text-[var(--a-ink)]">for Everyone.</span>
         </h1>
-
-        {/* Malayalam tagline */}
-        <p
-          className="ai4all-rise ai4all-d-2 mb-3 font-medium tracking-wide"
-          style={{ color: "var(--a-purple-deep)", fontSize: "clamp(0.85rem, 2vw, 1rem)" }}
-        >
-          എല്ലാവർക്കും AI · No One Left Behind
-        </p>
 
         {/* Subtitle */}
         <p
