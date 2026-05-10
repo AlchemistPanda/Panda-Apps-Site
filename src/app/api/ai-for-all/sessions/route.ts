@@ -3,7 +3,9 @@ import { redisCmd, verifyAdminToken, getAdminToken, Session } from "@/lib/ai4all
 import crypto from "crypto";
 
 // GET /api/ai-for-all/sessions
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const isAdmin = verifyAdminToken(getAdminToken(req));
+
   const ids = (await redisCmd(["LRANGE", "ai4all:sessions", "0", "-1"])) as string[] | null;
   if (!ids || ids.length === 0) return NextResponse.json([]);
 
@@ -18,7 +20,8 @@ export async function GET() {
     if (!b.scheduledDate) return -1;
     return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
   });
-  return NextResponse.json(sessions.filter((s) => s.isPublished));
+  // Admin sees all sessions; public sees only published
+  return NextResponse.json(isAdmin ? sessions : sessions.filter((s) => s.isPublished));
 }
 
 // POST /api/ai-for-all/sessions  (admin only)
