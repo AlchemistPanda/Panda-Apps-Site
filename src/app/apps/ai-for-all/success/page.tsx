@@ -52,7 +52,7 @@ function SuccessContent() {
 
   useEffect(() => {
     if (!sessionId) return;
-    fetch(`/api/ai-for-all/sessions/${sessionId}`)
+    fetch(`/api/ai-for-all/sessions/${sessionId}`, { cache: "no-store" })
       .then((r) => r.json())
       .then(setSession)
       .catch(() => null);
@@ -166,7 +166,7 @@ function SuccessContent() {
             )}
 
             {/* Apps to download */}
-            {session.appsToDownload.length > 0 && (
+            {session.appsToDownload && session.appsToDownload.length > 0 && (
               <div>
                 <p className="text-xs font-bold mb-3 uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--a-purple-deep)" }}>
                   <Download className="h-3 w-3" />

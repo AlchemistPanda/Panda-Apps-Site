@@ -91,7 +91,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
   });
 
   useEffect(() => {
-    fetch(`/api/ai-for-all/sessions/${sessionId}`)
+    fetch(`/api/ai-for-all/sessions/${sessionId}`, { cache: "no-store" })
       .then((r) => { if (!r.ok) throw new Error("not found"); return r.json(); })
       .then((data) => {
         setSession(data);

@@ -51,9 +51,9 @@ function SessionForm({
   token: string;
 }) {
   const [form, setForm] = useState<FormState>(initial);
-  const [topicsInput, setTopicsInput] = useState(initial.topics.join(", "));
+  const [topicsInput, setTopicsInput] = useState((initial.topics || []).join(", "));
   const [appsInput, setAppsInput] = useState(
-    initial.appsToDownload.map((a) => `${a.name}|${a.url}`).join("\n")
+    (initial.appsToDownload || []).map((a) => `${a.name}|${a.url}`).join("\n")
   );
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
