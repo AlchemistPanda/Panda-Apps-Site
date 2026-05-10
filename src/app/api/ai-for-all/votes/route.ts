@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(results);
 }
 
-// POST /api/ai-for-all/votes  — cast a vote
+// POST /api/ai-for-all/votes  — cast or remove a vote
 export async function POST(req: NextRequest) {
   try {
     const { optionId, fingerprint } = await req.json();
@@ -52,9 +52,20 @@ export async function POST(req: NextRequest) {
     const opt: VoteOption = JSON.parse(raw as string);
     if (!opt.isApproved) return NextResponse.json({ error: "Option not approved" }, { status: 403 });
 
-    const added = (await redisCmd(["SADD", `ai4all:votes:${optionId}`, fingerprint])) as number;
-    const count = (await redisCmd(["SCARD", `ai4all:votes:${optionId}`])) as number;
-    return NextResponse.json({ added: added === 1, count });
+    const key = `ai4all:votes:${optionId}`;
+    const isVoted = await redisCmd(["SISMEMBER", key, fingerprint]);
+    
+    let action: "voted" | "unvoted";
+    if (isVoted === 1) {
+      await redisCmd(["SREM", key, fingerprint]);
+      action = "unvoted";
+    } else {
+      await redisCmd(["SADD", key, fingerprint]);
+      action = "voted";
+    }
+
+    const count = (await redisCmd(["SCARD", key])) as number;
+    return NextResponse.json({ action, count });
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

@@ -80,17 +80,24 @@ export default function VotingSection() {
   const vote = useCallback(
     async (optionId: string, e?: React.MouseEvent) => {
       if (votingId) return;
-      const alreadyVoted = options.find((o) => o.id === optionId)?.userVoted;
-      if (alreadyVoted) return;
+      const option = options.find((o) => o.id === optionId);
+      if (!option) return;
 
-      if (e) {
+      const wasVoted = option.userVoted;
+
+      // Only show burst when voting (not unvoting)
+      if (e && !wasVoted) {
         setBurst({ x: e.clientX, y: e.clientY, key: Date.now() });
         setTimeout(() => setBurst(null), 800);
       }
 
       setVotingId(optionId);
       setOptions((prev) =>
-        prev.map((o) => (o.id === optionId ? { ...o, userVoted: true, voteCount: o.voteCount + 1 } : o))
+        prev.map((o) =>
+          o.id === optionId
+            ? { ...o, userVoted: !wasVoted, voteCount: wasVoted ? o.voteCount - 1 : o.voteCount + 1 }
+            : o
+        )
       );
 
       try {
@@ -100,13 +107,21 @@ export default function VotingSection() {
           body: JSON.stringify({ optionId, fingerprint }),
         });
         if (!res.ok) {
-          setOptions((prev) =>
-            prev.map((o) => (o.id === optionId ? { ...o, userVoted: false, voteCount: o.voteCount - 1 } : o))
-          );
+          throw new Error();
         }
-      } catch {
+        const data = await res.json();
+        // Sync with actual server count just in case
         setOptions((prev) =>
-          prev.map((o) => (o.id === optionId ? { ...o, userVoted: false, voteCount: o.voteCount - 1 } : o))
+          prev.map((o) => (o.id === optionId ? { ...o, voteCount: data.count } : o))
+        );
+      } catch {
+        // Rollback
+        setOptions((prev) =>
+          prev.map((o) =>
+            o.id === optionId
+              ? { ...o, userVoted: wasVoted, voteCount: wasVoted ? o.voteCount : o.voteCount }
+            : o
+          )
         );
       } finally {
         setVotingId(null);
@@ -240,14 +255,16 @@ export default function VotingSection() {
 
                   <button
                     onClick={(e) => vote(opt.id, e)}
-                    disabled={!!votingId || opt.userVoted}
-                    className={`w-full flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-bold transition-all ${
-                      opt.userVoted ? "cursor-default border border-transparent shadow-[0_0_15px_rgba(236,72,153,0.3)]" : "active:scale-95 hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] hover:border-[var(--a-purple)]"
+                    disabled={!!votingId}
+                    className={`w-full flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-bold transition-all active:scale-95 ${
+                      opt.userVoted 
+                        ? "border border-pink-500/30 hover:border-pink-500/60 shadow-[0_0_15px_rgba(236,72,153,0.1)]" 
+                        : "hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] hover:border-[var(--a-purple)]"
                     }`}
                     style={
                       opt.userVoted
                         ? {
-                            background: "linear-gradient(135deg, rgba(236,72,153,0.2), rgba(249,115,22,0.2))",
+                            background: "linear-gradient(135deg, rgba(236,72,153,0.15), rgba(249,115,22,0.15))",
                             color: "var(--a-pink)",
                           }
                         : {
@@ -260,9 +277,9 @@ export default function VotingSection() {
                     {votingId === opt.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <ThumbsUp className={`h-4 w-4 ${opt.userVoted ? "fill-rose-700" : ""}`} />
+                      <ThumbsUp className={`h-4 w-4 ${opt.userVoted ? "fill-rose-500" : ""}`} />
                     )}
-                    {opt.userVoted ? "Thanks for voting!" : "Vote for this"}
+                    {opt.userVoted ? "Voted! (Click to undo)" : "Vote for this"}
                   </button>
                 </div>
               );
