@@ -233,13 +233,19 @@ export default function SessionsManager({ sessions, token, onRefresh }: Props) {
   async function createSession(data: FormState) {
     setSaving(true);
     try {
-      await fetch("/api/ai-for-all/sessions", {
+      const res = await fetch("/api/ai-for-all/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(data),
       });
+      const resData = await res.json();
+      if (!res.ok || resData.error) {
+        throw new Error(resData.error || `Failed to create session (${res.status})`);
+      }
       setShowForm(false);
       onRefresh();
+    } catch (e: any) {
+      alert(`Error creating session: ${e.message}`);
     } finally {
       setSaving(false);
     }

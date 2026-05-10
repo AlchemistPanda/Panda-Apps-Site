@@ -6,23 +6,31 @@ const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 export async function redisCmd(cmd: (string | number)[]): Promise<unknown> {
-  if (!REDIS_URL || !REDIS_TOKEN) return null;
-  try {
-    const res = await fetch(REDIS_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${REDIS_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(cmd),
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.result ?? null;
-  } catch {
-    return null;
+  if (!REDIS_URL || !REDIS_TOKEN) {
+    throw new Error("Missing UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN environment variables. Please check your .env.local file or Vercel environment settings.");
   }
+  
+  const res = await fetch(REDIS_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${REDIS_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(cmd),
+    cache: "no-store",
+  });
+  
+  if (!res.ok) {
+    const text = await res.text().catch(() => "Unknown error");
+    throw new Error(`Upstash Redis error (${res.status}): ${text}`);
+  }
+  
+  const data = await res.json();
+  if (data.error) {
+    throw new Error(`Upstash returned error: ${data.error}`);
+  }
+  
+  return data.result ?? null;
 }
 
 // ── Admin token ───────────────────────────────────────────────────────────────

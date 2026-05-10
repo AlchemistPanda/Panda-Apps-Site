@@ -172,6 +172,7 @@ export default function AdminClient() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("ai4all_admin_token");
@@ -181,6 +182,7 @@ export default function AdminClient() {
   const loadData = useCallback(
     async (tok: string) => {
       setDataLoading(true);
+      setApiError(null);
       try {
         const [sRes, rRes] = await Promise.all([
           fetch("/api/ai-for-all/sessions", { headers: { Authorization: `Bearer ${tok}` }, cache: "no-store" }),
@@ -191,10 +193,21 @@ export default function AdminClient() {
           setToken(null);
           return;
         }
+        
         const sData = await sRes.json();
         const rData = await rRes.json();
+        
+        if (sRes.status >= 400 || sData.error) {
+          throw new Error(sData.error || `Sessions API failed with status ${sRes.status}`);
+        }
+        if (rRes.status >= 400 || rData.error) {
+          throw new Error(rData.error || `Registrations API failed with status ${rRes.status}`);
+        }
+
         setSessions(Array.isArray(sData) ? sData : []);
         setRegistrations(Array.isArray(rData) ? rData : []);
+      } catch (err: any) {
+        setApiError(err.message || "An unknown error occurred while fetching data.");
       } finally {
         setDataLoading(false);
       }
@@ -261,6 +274,26 @@ export default function AdminClient() {
 
       {/* Content */}
       <main className="relative z-10 max-w-6xl mx-auto px-4 py-8">
+        {apiError && (
+          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-5">
+            <h3 className="font-bold text-red-400 mb-2 flex items-center gap-2">
+              ⚠️ Database Connection Error
+            </h3>
+            <p className="text-sm text-red-300 font-mono break-all bg-black/20 p-3 rounded-lg mb-3">
+              {apiError}
+            </p>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(apiError);
+                alert("Error log copied to clipboard!");
+              }}
+              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-sm font-medium rounded-lg transition-colors"
+            >
+              Copy Error Log
+            </button>
+          </div>
+        )}
+
         {dataLoading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
