@@ -193,15 +193,24 @@ export default function AdminClient() {
           setToken(null);
           return;
         }
+
+        const sText = await sRes.text();
+        const rText = await rRes.text();
         
-        const sData = await sRes.json();
-        const rData = await rRes.json();
+        let sData: any = null;
+        let rData: any = null;
+        try { sData = JSON.parse(sText); } catch { /* not JSON */ }
+        try { rData = JSON.parse(rText); } catch { /* not JSON */ }
         
-        if (sRes.status >= 400 || sData.error) {
-          throw new Error(sData.error || `Sessions API failed with status ${sRes.status}`);
+        if (!sRes.ok || sData?.error) {
+          throw new Error(
+            `Sessions API error:\nStatus: ${sRes.status}\nBody: ${sData?.error || sText.slice(0, 500) || "(empty)"}`
+          );
         }
-        if (rRes.status >= 400 || rData.error) {
-          throw new Error(rData.error || `Registrations API failed with status ${rRes.status}`);
+        if (!rRes.ok || rData?.error) {
+          throw new Error(
+            `Registrations API error:\nStatus: ${rRes.status}\nBody: ${rData?.error || rText.slice(0, 500) || "(empty)"}`
+          );
         }
 
         setSessions(Array.isArray(sData) ? sData : []);

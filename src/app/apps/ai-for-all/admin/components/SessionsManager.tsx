@@ -238,14 +238,20 @@ export default function SessionsManager({ sessions, token, onRefresh }: Props) {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(data),
       });
-      const resData = await res.json();
-      if (!res.ok || resData.error) {
-        throw new Error(resData.error || `Failed to create session (${res.status})`);
+      const text = await res.text();
+      let resData: any = null;
+      try { resData = JSON.parse(text); } catch { /* not JSON */ }
+
+      if (!res.ok || resData?.error) {
+        throw new Error(
+          resData?.error ||
+          `Server returned ${res.status}: ${text.slice(0, 300) || "(empty body)"}`
+        );
       }
       setShowForm(false);
       onRefresh();
     } catch (e: any) {
-      alert(`Error creating session: ${e.message}`);
+      alert(`Error creating session:\n\n${e.message}`);
     } finally {
       setSaving(false);
     }
@@ -254,13 +260,25 @@ export default function SessionsManager({ sessions, token, onRefresh }: Props) {
   async function updateSession(id: string, data: FormState) {
     setSaving(true);
     try {
-      await fetch(`/api/ai-for-all/sessions/${id}`, {
+      const res = await fetch(`/api/ai-for-all/sessions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(data),
       });
+      const text = await res.text();
+      let resData: any = null;
+      try { resData = JSON.parse(text); } catch { /* not JSON */ }
+
+      if (!res.ok || resData?.error) {
+        throw new Error(
+          resData?.error ||
+          `Server returned ${res.status}: ${text.slice(0, 300) || "(empty body)"}`
+        );
+      }
       setEditId(null);
       onRefresh();
+    } catch (e: any) {
+      alert(`Error updating session:\n\n${e.message}`);
     } finally {
       setSaving(false);
     }
