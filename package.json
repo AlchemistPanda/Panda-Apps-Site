@@ -27,6 +27,7 @@
     "qr-code-styling": "^1.9.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-easy-crop": "^5.5.7",
     "recharts": "^3.7.0"
   },
   "devDependencies": {

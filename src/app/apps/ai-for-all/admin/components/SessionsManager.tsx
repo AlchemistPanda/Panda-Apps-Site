@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar, Upload, ImageIcon } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar, Upload, ImageIcon, Crop } from "lucide-react";
+import Cropper, { Point, Area } from "react-easy-crop";
 import type { Session } from "@/lib/ai4all";
 
 interface Props {
@@ -57,6 +58,7 @@ function SessionForm({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [cropImage, setCropImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function uploadImage(file: File) {
@@ -86,14 +88,22 @@ function SessionForm({
 
   function handleFilePick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) uploadImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setCropImage(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   }
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) uploadImage(file);
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = () => setCropImage(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   }
 
   function submit() {
@@ -284,6 +294,17 @@ function SessionForm({
             <p className="text-red-400 text-xs mt-2">{uploadError}</p>
           )}
         </div>
+
+        {cropImage && (
+          <CropModal
+            image={cropImage}
+            onCancel={() => setCropImage(null)}
+            onCrop={(blob) => {
+              setCropImage(null);
+              uploadImage(new File([blob], "cover.jpg", { type: "image/jpeg" }));
+            }}
+          />
+        )}
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -502,6 +523,131 @@ export default function SessionsManager({ sessions, token, onRefresh }: Props) {
             )}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.addEventListener("load", () => resolve(img));
+    img.addEventListener("error", (error) => reject(error));
+    img.setAttribute("crossOrigin", "anonymous");
+    img.src = imageSrc;
+  });
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No 2d context");
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+    }, "image/jpeg", 0.9);
+  });
+}
+
+function CropModal({
+  image,
+  onCrop,
+  onCancel,
+}: {
+  image: string;
+  onCrop: (blob: Blob) => void;
+  onCancel: () => void;
+}) {
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+  const onCropComplete = useCallback((_: Area, b: Area) => {
+    setCroppedAreaPixels(b);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 text-white">
+      <div className="w-full max-w-2xl bg-[#030014] rounded-2xl border border-violet-500/30 overflow-hidden flex flex-col max-h-[90vh] shadow-2xl shadow-violet-500/20">
+        <div className="p-4 border-b border-border/30 flex items-center justify-between">
+          <h3 className="font-bold flex items-center gap-2">
+            <Crop className="h-4 w-4 text-violet-400" />
+            Adjust Image
+          </h3>
+          <button onClick={onCancel} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="relative flex-1 bg-black min-h-[400px]">
+          <Cropper
+            image={image}
+            crop={crop}
+            zoom={zoom}
+            aspect={16 / 9}
+            onCropChange={setCrop}
+            onCropComplete={onCropComplete}
+            onZoomChange={setZoom}
+          />
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="space-y-3">
+            <div className="flex justify-between text-xs text-muted font-medium">
+              <span>Zoom</span>
+              <span>{Math.round(zoom * 100)}%</span>
+            </div>
+            <input
+              type="range"
+              value={zoom}
+              min={1}
+              max={3}
+              step={0.1}
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="w-full h-1.5 bg-violet-500/20 rounded-lg appearance-none cursor-pointer accent-violet-500"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              className="flex-1 px-4 py-3 rounded-xl border border-border/50 hover:bg-white/5 transition-colors text-sm font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                if (croppedAreaPixels) {
+                  try {
+                    const blob = await getCroppedImg(image, croppedAreaPixels);
+                    onCrop(blob);
+                  } catch (e) {
+                    alert("Failed to crop image");
+                  }
+                }
+              }}
+              className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-sm font-bold shadow-lg shadow-violet-500/20 transition-all active:scale-95"
+            >
+              Apply Adjustment
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
