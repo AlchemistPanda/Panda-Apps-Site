@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./ai4all.css";
 
 export const metadata: Metadata = {
   title: "AI for All – Learn AI. For Everyone.",
@@ -7,12 +8,11 @@ export const metadata: Metadata = {
   keywords: ["AI training", "AI for everyone", "learn AI", "image generation", "AI tools", "Kerala"],
   openGraph: {
     title: "AI for All – Learn AI. For Everyone.",
-    description:
-      "Affordable AI training sessions open to all. Register, learn, grow.",
+    description: "Affordable AI training sessions open to all. Register, learn, grow.",
     type: "website",
   },
 };
 
 export default function AiForAllLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <div className="ai4all">{children}</div>;
 }

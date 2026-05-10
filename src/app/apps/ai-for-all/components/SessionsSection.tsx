@@ -1,6 +1,7 @@
 "use client";
 
-import { Calendar, Clock, Users, ChevronRight, Lock, Loader2 } from "lucide-react";
+import { useRef } from "react";
+import { Calendar, Clock, Users, ArrowRight, Lock, Loader2, Sparkles } from "lucide-react";
 import type { Session } from "@/lib/ai4all";
 
 interface Props {
@@ -27,20 +28,162 @@ function formatTime(dateStr: string | null) {
   });
 }
 
+function SessionCard({ session, index }: { session: Session; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  function tilt(e: React.MouseEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    el.style.transform = `perspective(1200px) rotateX(${-y * 5}deg) rotateY(${x * 5}deg) translateY(-6px)`;
+    el.style.setProperty("--mx", `${(x + 0.5) * 100}%`);
+    el.style.setProperty("--my", `${(y + 0.5) * 100}%`);
+  }
+
+  function reset() {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(1200px) rotateX(0) rotateY(0) translateY(0)";
+  }
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={tilt}
+      onMouseLeave={reset}
+      className="ai4all-card ai4all-rise p-7 sm:p-8 group cursor-default"
+      style={{
+        animationDelay: `${index * 0.12}s`,
+        background:
+          "radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(124,58,237,0.04), white 60%)",
+      }}
+    >
+      {/* Top accent bar */}
+      <div className={`absolute -top-px left-6 right-6 h-1 rounded-b-full bg-gradient-to-r ${session.coverGradient} opacity-90`} />
+
+      {/* Cover image */}
+      {session.coverImageUrl && (
+        <div className="mb-6 -mx-2 -mt-2 rounded-2xl overflow-hidden h-40 relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={session.coverImageUrl} alt={session.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent" />
+        </div>
+      )}
+
+      {/* Status badge */}
+      <div className="flex items-center justify-between mb-4">
+        {session.isRegistrationOpen ? (
+          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase"
+                style={{ background: "rgba(16,185,129,0.10)", color: "#047857" }}>
+            <span className="ai4all-pulse" />
+            Registration Open
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+                style={{ background: "rgba(107,91,142,0.08)", color: "var(--a-muted)" }}>
+            <Lock className="h-3 w-3" />
+            Closed
+          </span>
+        )}
+
+        {session.maxParticipants && (
+          <span className="text-xs font-medium text-[var(--a-muted)] flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            {session.maxParticipants} seats
+          </span>
+        )}
+      </div>
+
+      {/* Title */}
+      <h3 className="text-2xl sm:text-[28px] font-black mb-3 leading-tight tracking-tight" style={{ color: "var(--a-ink)" }}>
+        {session.title}
+      </h3>
+
+      {/* Description */}
+      {session.description && (
+        <p className="mb-5 leading-relaxed text-[15px]" style={{ color: "var(--a-ink-soft)" }}>
+          {session.description}
+        </p>
+      )}
+
+      {/* Meta row */}
+      <div className="flex flex-wrap gap-x-5 gap-y-2 mb-5 text-sm font-medium" style={{ color: "var(--a-ink-soft)" }}>
+        <div className="flex items-center gap-1.5">
+          <Calendar className="h-4 w-4" style={{ color: "var(--a-purple)" }} />
+          <span>{formatDate(session.scheduledDate)}</span>
+        </div>
+        {session.scheduledDate && (
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-4 w-4" style={{ color: "var(--a-pink)" }} />
+            <span>{formatTime(session.scheduledDate)} · {session.durationMinutes} min</span>
+          </div>
+        )}
+      </div>
+
+      {/* Topics */}
+      {session.topics.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {session.topics.map((t) => (
+            <span
+              key={t}
+              className="rounded-full px-3 py-1 text-xs font-semibold"
+              style={{
+                background: "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(236,72,153,0.08))",
+                color: "var(--a-purple-deep)",
+                border: "1px solid rgba(124,58,237,0.15)",
+              }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* CTA */}
+      {session.isRegistrationOpen ? (
+        <a
+          href={`/apps/ai-for-all/register/${session.id}`}
+          className="ai4all-btn ai4all-btn-primary w-full sm:w-auto"
+        >
+          <Sparkles className="h-4 w-4" />
+          Register Now
+          <ArrowRight className="h-4 w-4" />
+        </a>
+      ) : (
+        <button
+          disabled
+          className="ai4all-btn ai4all-btn-glass w-full sm:w-auto opacity-60 cursor-not-allowed"
+        >
+          <Lock className="h-3.5 w-3.5" />
+          Registration Closed
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function SessionsSection({ sessions, loading }: Props) {
   return (
-    <section id="sessions" className="py-24 px-4">
-      <div className="max-w-5xl mx-auto">
+    <section id="sessions" className="relative py-24 sm:py-32 px-5">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-xs font-medium text-violet-300 mb-6">
+        <div className="text-center mb-16">
+          <div className="ai4all-rise ai4all-eyebrow mb-6">
             <Calendar className="h-3 w-3" />
-            Upcoming Sessions
+            <span>Upcoming Sessions</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Join the Next Session
+          <h2
+            className="ai4all-rise ai4all-d-1 font-black tracking-tight leading-[0.95] mb-4"
+            style={{ fontSize: "clamp(2.25rem, 6vw, 4rem)", color: "var(--a-ink)", letterSpacing: "-0.03em" }}
+          >
+            Join the next <span className="ai4all-grad-text">live session</span>
           </h2>
-          <p className="text-muted max-w-xl mx-auto">
+          <p
+            className="ai4all-rise ai4all-d-2 max-w-xl mx-auto leading-relaxed"
+            style={{ color: "var(--a-ink-soft)", fontSize: "clamp(1rem, 1.5vw, 1.125rem)" }}
+          >
             Hands-on AI training open to everyone. Practical, simple, and impactful.
           </p>
         </div>
@@ -48,131 +191,37 @@ export default function SessionsSection({ sessions, loading }: Props) {
         {/* Loading */}
         {loading && (
           <div className="flex justify-center py-20">
-            <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
+            <Loader2 className="h-8 w-8 animate-spin" style={{ color: "var(--a-purple)" }} />
           </div>
         )}
 
         {/* Empty state */}
         {!loading && sessions.length === 0 && (
-          <div className="text-center py-20 rounded-2xl border border-border/50 bg-card/30 backdrop-blur">
-            <div className="text-5xl mb-4">🚀</div>
-            <h3 className="text-lg font-semibold mb-2">Sessions Coming Soon</h3>
-            <p className="text-muted text-sm max-w-sm mx-auto mb-6">
-              No sessions are scheduled yet. Vote on the topics you&apos;d love to learn below
-              and we&apos;ll plan sessions based on your interest!
+          <div className="ai4all-card ai4all-rise text-center py-20 px-6">
+            <div className="text-6xl mb-5 inline-block ai4all-float">🚀</div>
+            <h3 className="text-2xl font-black mb-3" style={{ color: "var(--a-ink)" }}>
+              Sessions launching soon
+            </h3>
+            <p className="max-w-md mx-auto mb-6 leading-relaxed" style={{ color: "var(--a-ink-soft)" }}>
+              No sessions scheduled yet. Vote on the topics you&apos;d love to learn — we&apos;ll
+              plan sessions based on community interest!
             </p>
-            <a
-              href="#vote"
-              className="inline-flex items-center gap-2 rounded-full bg-violet-600/20 border border-violet-500/40 text-violet-300 px-5 py-2.5 text-sm font-medium hover:bg-violet-600/30 transition-colors"
-            >
-              Vote on Topics →
+            <a href="#vote" className="ai4all-btn ai4all-btn-primary">
+              <Sparkles className="h-4 w-4" />
+              Vote on Topics
+              <ArrowRight className="h-4 w-4" />
             </a>
           </div>
         )}
 
-        {/* Session cards */}
-        <div className="grid gap-6">
-          {sessions.map((session, i) => (
-            <div
-              key={session.id}
-              className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur overflow-hidden hover:border-violet-500/40 transition-all hover:shadow-lg hover:shadow-violet-500/10 animate-fade-in-up"
-              style={{ animationDelay: `${i * 0.1}s`, opacity: 0, animationFillMode: "forwards" }}
-            >
-              {/* Gradient top bar */}
-              <div className={`h-1 w-full bg-gradient-to-r ${session.coverGradient}`} />
-
-              {/* Cover image */}
-              {session.coverImageUrl && (
-                <div className="relative h-40 overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={session.coverImageUrl}
-                    alt={session.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
-                </div>
-              )}
-
-              <div className="p-6">
-                {/* Header row */}
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-                  <div className="flex-1">
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
-                          session.isRegistrationOpen
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                            : "bg-muted/20 text-muted border border-border/50"
-                        }`}
-                      >
-                        {session.isRegistrationOpen ? (
-                          <><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />Registration Open</>
-                        ) : (
-                          <><Lock className="h-3 w-3" />Registration Closed</>
-                        )}
-                      </span>
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">{session.title}</h3>
-                    {session.description && (
-                      <p className="text-muted text-sm leading-relaxed">{session.description}</p>
-                    )}
-                  </div>
-
-                  {/* Register button */}
-                  {session.isRegistrationOpen ? (
-                    <a
-                      href={`/apps/ai-for-all/register/${session.id}`}
-                      className="shrink-0 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold px-5 py-2.5 text-sm transition-all hover:-translate-y-0.5 shadow-md shadow-violet-500/20"
-                    >
-                      Register Now <ChevronRight className="h-4 w-4" />
-                    </a>
-                  ) : (
-                    <span className="shrink-0 inline-flex items-center gap-2 rounded-full border border-border/50 text-muted px-5 py-2.5 text-sm">
-                      <Lock className="h-3.5 w-3.5" /> Closed
-                    </span>
-                  )}
-                </div>
-
-                {/* Meta row */}
-                <div className="flex flex-wrap gap-4 text-sm text-muted mb-4">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4" />
-                    <span>{formatDate(session.scheduledDate)}</span>
-                  </div>
-                  {session.scheduledDate && (
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        {formatTime(session.scheduledDate)} · {session.durationMinutes} min
-                      </span>
-                    </div>
-                  )}
-                  {session.maxParticipants && (
-                    <div className="flex items-center gap-1.5">
-                      <Users className="h-4 w-4" />
-                      <span>Max {session.maxParticipants} participants</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Topics */}
-                {session.topics.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {session.topics.map((t) => (
-                      <span
-                        key={t}
-                        className="rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 px-3 py-1 text-xs"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Sessions grid */}
+        {!loading && sessions.length > 0 && (
+          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
+            {sessions.map((s, i) => (
+              <SessionCard key={s.id} session={s} index={i} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
