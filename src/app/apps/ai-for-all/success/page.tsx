@@ -143,10 +143,10 @@ function SuccessContent() {
                     💬
                   </div>
                   <div>
-                    <p className="font-black text-[15px]" style={{ color: "var(--a-ink)" }}>
+                    <p className="font-black text-[15px]" style={{ color: "#030014" }}>
                       Join our WhatsApp Community
                     </p>
-                    <p className="text-xs leading-relaxed" style={{ color: "var(--a-ink-soft)" }}>
+                    <p className="text-xs leading-relaxed" style={{ color: "#4B5563" }}>
                       Members <strong>cannot</strong> see each other&apos;s phone numbers — your privacy is protected.
                     </p>
                   </div>
