@@ -102,14 +102,14 @@ export default function AiForAllClient() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 mt-12 border-t border-[var(--a-line)] bg-white/40 backdrop-blur-sm">
+      <footer className="relative z-10 mt-12 border-t border-[var(--a-line)] bg-[#030014]/60 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-5 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 via-pink-500 to-orange-400 flex items-center justify-center text-white text-xs">
               ✨
             </div>
             <div>
-              <p className="font-bold text-sm text-[var(--a-ink)]">AI for All</p>
+              <p className="font-bold text-sm text-white">AI for All</p>
               <p className="text-xs text-[var(--a-muted)]">An initiative of Panda Apps</p>
             </div>
           </div>

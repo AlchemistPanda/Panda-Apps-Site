@@ -146,19 +146,7 @@ export default function HeroSection({ sessions, loading }: Props) {
         </div>
       </div>
 
-      {/* Marquee of topics at bottom */}
-      <div className="absolute bottom-24 left-0 right-0 ai4all-rise ai4all-d-5">
-        <div className="ai4all-marquee">
-          <div className="ai4all-marquee-track">
-            {[...TOPICS, ...TOPICS, ...TOPICS].map((t, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm font-semibold text-[var(--a-muted)]">
-                <span className="text-2xl">·</span>
-                <span>{t}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+
 
       {/* Next session teaser bottom */}
       {!loading && nextSession && (
