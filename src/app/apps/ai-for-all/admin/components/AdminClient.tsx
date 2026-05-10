@@ -183,8 +183,8 @@ export default function AdminClient() {
       setDataLoading(true);
       try {
         const [sRes, rRes] = await Promise.all([
-          fetch("/api/ai-for-all/sessions", { headers: { Authorization: `Bearer ${tok}` } }),
-          fetch("/api/ai-for-all/registrations", { headers: { Authorization: `Bearer ${tok}` } }),
+          fetch("/api/ai-for-all/sessions", { headers: { Authorization: `Bearer ${tok}` }, cache: "no-store" }),
+          fetch("/api/ai-for-all/registrations", { headers: { Authorization: `Bearer ${tok}` }, cache: "no-store" }),
         ]);
         if (sRes.status === 401 || rRes.status === 401) {
           localStorage.removeItem("ai4all_admin_token");

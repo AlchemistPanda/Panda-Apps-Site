@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { redisCmd, verifyAdminToken, getAdminToken, Session } from "@/lib/ai4all";
 import crypto from "crypto";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/ai-for-all/sessions
 export async function GET(req: NextRequest) {
   const isAdmin = verifyAdminToken(getAdminToken(req));

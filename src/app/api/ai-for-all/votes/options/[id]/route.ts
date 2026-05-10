@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redisCmd, verifyAdminToken, getAdminToken, VoteOption } from "@/lib/ai4all";
 
+export const dynamic = "force-dynamic";
+
 // PUT /api/ai-for-all/votes/options/[id]  (admin — approve/reject/update)
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!verifyAdminToken(getAdminToken(req))) {

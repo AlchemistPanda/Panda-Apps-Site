@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { redisCmd, verifyAdminToken, getAdminToken, VoteOption } from "@/lib/ai4all";
 import crypto from "crypto";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/ai-for-all/votes/options  (admin — includes unapproved)
 export async function GET(req: NextRequest) {
   if (!verifyAdminToken(getAdminToken(req))) {

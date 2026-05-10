@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { redisCmd, DEFAULT_VOTE_OPTIONS, VoteOption } from "@/lib/ai4all";
 import crypto from "crypto";
 
+export const dynamic = "force-dynamic";
+
 async function ensureSeeded() {
   const ids = await redisCmd(["LRANGE", "ai4all:vote_options", "0", "-1"]);
   if (ids && (ids as string[]).length > 0) return;

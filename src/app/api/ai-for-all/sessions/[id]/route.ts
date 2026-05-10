@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redisCmd, verifyAdminToken, getAdminToken, Session } from "@/lib/ai4all";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/ai-for-all/sessions/[id]
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
