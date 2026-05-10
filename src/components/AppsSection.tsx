@@ -2,11 +2,22 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus, Vote
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus, Vote, GraduationCap
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
 const apps = [
+  {
+    title: "AI for All",
+    description:
+      "Affordable AI training sessions for teachers — learn image generation, poster design, video tools & more. Hands-on, practical, and a small fee donated entirely to NGOs.",
+    href: "/apps/ai-for-all",
+    icon: GraduationCap,
+    gradient: "from-violet-500 to-fuchsia-600",
+    category: "AI",
+    isNew: true,
+    isFeatured: true,
+  },
   {
     title: "AI Poster Maker",
     description:
