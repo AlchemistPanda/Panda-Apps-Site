@@ -78,7 +78,7 @@ function SessionForm({
           <label className="block text-xs text-muted mb-1">Session Title *</label>
           <input
             className={input}
-            placeholder="e.g. AI Image Generation for Teachers"
+            placeholder="e.g. AI Image Generation for Everyone"
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           />

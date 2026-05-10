@@ -7,7 +7,7 @@ const PILLARS = [
     icon: Globe,
     emoji: "🌍",
     title: "No One Left Behind",
-    body: "AI is reshaping every profession. Our mission is to ensure every teacher—regardless of location or background—has access to AI skills.",
+    body: "AI is reshaping every profession. Our mission is to ensure everyone—regardless of location, background, or profession—has access to AI skills.",
   },
   {
     icon: Heart,
@@ -19,7 +19,7 @@ const PILLARS = [
     icon: BookOpen,
     emoji: "📚",
     title: "Practical & Simple",
-    body: "Sessions are designed for teachers with zero technical background. If you can use WhatsApp, you can use AI tools.",
+    body: "Sessions are designed for anyone with zero technical background. If you can use WhatsApp, you can use AI tools.",
   },
   {
     icon: Zap,
@@ -43,7 +43,7 @@ export default function AboutSection() {
             Why AI for All?
           </h2>
           <p className="text-muted max-w-2xl mx-auto text-lg leading-relaxed">
-            The goal is simple: <strong className="text-foreground">no teacher should be left behind</strong> in the
+            The goal is simple: <strong className="text-foreground">no one should be left behind</strong> in the
             AI revolution. Knowledge should not be a privilege — it should be accessible to everyone.
           </p>
         </div>
@@ -52,7 +52,7 @@ export default function AboutSection() {
         <div className="rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5 p-8 mb-12 text-center animate-fade-in-up">
           <div className="text-4xl mb-4">🎯</div>
           <blockquote className="text-xl sm:text-2xl font-semibold text-foreground/90 italic leading-relaxed mb-4">
-            &ldquo;AI competency is not a luxury. It&apos;s the next basic skill — and every teacher
+            &ldquo;AI competency is not a luxury. It&apos;s the next basic skill — and everyone
             deserves it.&rdquo;
           </blockquote>
           <p className="text-muted text-sm">— The AI for All Initiative</p>

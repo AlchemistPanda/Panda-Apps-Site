@@ -45,7 +45,7 @@ export default function HeroSection({ sessions, loading }: Props) {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-xs font-medium text-violet-300 mb-8">
           <Sparkles className="h-3 w-3" />
-          Free & Affordable AI Training for Educators
+          Free & Affordable AI Training — Open to Everyone
         </div>
 
         {/* Heading */}
@@ -59,11 +59,11 @@ export default function HeroSection({ sessions, loading }: Props) {
         </h1>
 
         <p className="text-sm text-violet-400/70 font-medium mb-2 tracking-wider uppercase">
-          എല്ലാ ടീച്ചറും AI-ൽ · Every Teacher in AI
+          എല്ലാവർക്കും AI · AI for Everyone
         </p>
 
         <p className="text-lg sm:text-xl text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-          Hands-on online sessions to upskill teachers with AI tools —
+          Hands-on online sessions to upskill everyone with AI tools —
           image creation, poster design, video generation, and more.
           A small fee that goes entirely to those in need.
         </p>
@@ -99,7 +99,7 @@ export default function HeroSection({ sessions, loading }: Props) {
         {/* Stats row */}
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted">
           {[
-            { icon: "🎓", label: "For Teachers & Educators" },
+            { icon: "🌍", label: "Open to Everyone" },
             { icon: "💝", label: "Fee donated to NGOs" },
             { icon: "📱", label: "Online & Flexible" },
           ].map((stat) => (

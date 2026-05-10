@@ -41,7 +41,7 @@ export default function SessionsSection({ sessions, loading }: Props) {
             Join the Next Session
           </h2>
           <p className="text-muted max-w-xl mx-auto">
-            Hands-on AI training designed for teachers. Practical, simple, and impactful.
+            Hands-on AI training open to everyone. Practical, simple, and impactful.
           </p>
         </div>
 

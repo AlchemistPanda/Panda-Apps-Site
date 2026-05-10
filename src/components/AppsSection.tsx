@@ -10,7 +10,7 @@ const apps = [
   {
     title: "AI for All",
     description:
-      "Affordable AI training sessions for teachers — learn image generation, poster design, video tools & more. Hands-on, practical, and a small fee donated entirely to NGOs.",
+      "Affordable AI training sessions open to everyone — learn image generation, poster design, video tools & more. Hands-on, practical, and a small fee donated entirely to NGOs.",
     href: "/apps/ai-for-all",
     icon: GraduationCap,
     gradient: "from-violet-500 to-fuchsia-600",

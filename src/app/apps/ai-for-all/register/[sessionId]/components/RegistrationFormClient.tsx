@@ -10,11 +10,31 @@ interface Props {
   sessionId: string;
 }
 
+const KERALA_DISTRICTS = [
+  "Thiruvananthapuram",
+  "Kollam",
+  "Pathanamthitta",
+  "Alappuzha",
+  "Kottayam",
+  "Idukki",
+  "Ernakulam",
+  "Thrissur",
+  "Palakkad",
+  "Malappuram",
+  "Kozhikode",
+  "Wayanad",
+  "Kannur",
+  "Kasaragod",
+];
+
 interface FormData {
   name: string;
   phone: string;
   whatsapp: string;
   sameAsPhone: boolean;
+  district: string;
+  locationOther: string;
+  institution: string;
   whyJoin: string;
   donationAmount: number | null;
   donationStatus: "donated" | "hardship" | "skipped";
@@ -93,6 +113,9 @@ export default function RegistrationFormClient({ sessionId }: Props) {
     phone: "",
     whatsapp: "",
     sameAsPhone: true,
+    district: "",
+    locationOther: "",
+    institution: "",
     whyJoin: "",
     donationAmount: null,
     donationStatus: "skipped",
@@ -155,6 +178,9 @@ export default function RegistrationFormClient({ sessionId }: Props) {
           name: form.name.trim(),
           phone: form.phone.trim(),
           whatsapp: form.sameAsPhone ? form.phone.trim() : form.whatsapp.trim(),
+          district: form.district || undefined,
+          locationOther: (form.district === "Other State" || form.district === "Outside India") ? form.locationOther.trim() : undefined,
+          institution: form.institution.trim() || undefined,
           whyJoin: form.whyJoin.trim(),
           donationStatus: status,
           donationAmount: status === "donated" ? form.donationAmount : undefined,
@@ -314,6 +340,51 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                 )}
                 {errors.whatsapp && <p className="text-red-400 text-xs mt-1">{errors.whatsapp}</p>}
               </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">
+                  District <span className="text-muted text-xs font-normal">(optional)</span>
+                </label>
+                <select
+                  value={form.district}
+                  onChange={(e) => { set("district", e.target.value); set("locationOther", ""); }}
+                  className="w-full rounded-xl border border-border/50 bg-card/60 px-4 py-3 text-sm focus:outline-none focus:border-violet-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="">— Select district (optional) —</option>
+                  <optgroup label="Kerala Districts">
+                    {KERALA_DISTRICTS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Other Location">
+                    <option value="Other State">Other State (India)</option>
+                    <option value="Outside India">Outside India / International</option>
+                  </optgroup>
+                </select>
+
+                {(form.district === "Other State" || form.district === "Outside India") && (
+                  <input
+                    type="text"
+                    placeholder={form.district === "Other State" ? "Enter your state name" : "Enter your country name"}
+                    value={form.locationOther}
+                    onChange={(e) => set("locationOther", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border/50 bg-card/60 px-4 py-3 text-sm focus:outline-none focus:border-violet-500/50 transition-all"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">
+                  School / College / Organization <span className="text-muted text-xs font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Govt. School, XYZ College, ABC Company..."
+                  value={form.institution}
+                  onChange={(e) => set("institution", e.target.value)}
+                  className="w-full rounded-xl border border-border/50 bg-card/60 px-4 py-3 text-sm focus:outline-none focus:border-violet-500/50 transition-all"
+                />
+              </div>
             </div>
           )}
 
@@ -327,7 +398,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
               <textarea
                 rows={6}
                 maxLength={500}
-                placeholder="I'm a teacher at... I want to learn... because..."
+                placeholder="I work as... I want to learn AI because..."
                 value={form.whyJoin}
                 onChange={(e) => set("whyJoin", e.target.value)}
                 className={`w-full rounded-xl border px-4 py-3 text-sm bg-card/60 text-foreground placeholder-muted focus:outline-none transition-all resize-none ${

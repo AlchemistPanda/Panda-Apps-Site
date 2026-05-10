@@ -11,9 +11,12 @@ interface Props {
 
 function exportCSV(rows: Registration[], sessions: Session[]) {
   const sessionMap = Object.fromEntries(sessions.map((s) => [s.id, s.title]));
-  const headers = ["Name", "Phone", "WhatsApp", "Session", "Why Join", "Donation Status", "Amount", "Financial Reason", "Date"];
+  const headers = ["Name", "Phone", "WhatsApp", "District", "Location", "Institution", "Session", "Why Join", "Donation Status", "Amount", "Financial Reason", "Date"];
   const data = rows.map((r) => [
     r.name, r.phone, r.whatsapp,
+    r.district ?? "",
+    r.locationOther ?? "",
+    r.institution ?? "",
     sessionMap[r.sessionId] ?? r.sessionId,
     r.whyJoin.replace(/\n/g, " "),
     r.donationStatus,
@@ -180,6 +183,18 @@ export default function RegistrantsTable({ registrations, sessions }: Props) {
                       <p className="text-xs text-muted mb-0.5">WhatsApp</p>
                       <p>{r.whatsapp}</p>
                     </div>
+                    {(r.district) && (
+                      <div>
+                        <p className="text-xs text-muted mb-0.5">Location</p>
+                        <p>{r.district}{r.locationOther ? ` — ${r.locationOther}` : ""}</p>
+                      </div>
+                    )}
+                    {r.institution && (
+                      <div>
+                        <p className="text-xs text-muted mb-0.5">Institution</p>
+                        <p>{r.institution}</p>
+                      </div>
+                    )}
                     <div className="sm:col-span-2">
                       <p className="text-xs text-muted mb-0.5">Why they want to join</p>
                       <p className="leading-relaxed">{r.whyJoin}</p>

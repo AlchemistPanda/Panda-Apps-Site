@@ -100,6 +100,9 @@ export interface Registration {
   name: string;
   phone: string;
   whatsapp: string;
+  district?: string;
+  locationOther?: string;
+  institution?: string;
   whyJoin: string;
   donationStatus: "donated" | "hardship" | "skipped";
   donationAmount?: number;

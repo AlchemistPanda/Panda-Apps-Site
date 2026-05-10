@@ -136,7 +136,7 @@ function SuccessContent() {
         <div className="rounded-2xl border border-border/50 bg-card/50 p-5 mb-6">
           <p className="font-semibold mb-1">Know someone who should join?</p>
           <p className="text-sm text-muted mb-4">
-            Share this program with your teacher colleagues — let&apos;s upskill everyone together!
+            Share this program with your colleagues and friends — let&apos;s upskill everyone together!
           </p>
           <button
             onClick={copyLink}
