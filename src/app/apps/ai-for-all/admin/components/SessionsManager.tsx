@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar } from "lucide-react";
+import { useState, useRef } from "react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar, Upload, ImageIcon } from "lucide-react";
 import type { Session } from "@/lib/ai4all";
 
 interface Props {
@@ -41,17 +41,60 @@ function SessionForm({
   onSave,
   onCancel,
   loading,
+  token,
 }: {
   initial: FormState;
   onSave: (data: FormState) => void;
   onCancel: () => void;
   loading: boolean;
+  token: string;
 }) {
   const [form, setForm] = useState<FormState>(initial);
   const [topicsInput, setTopicsInput] = useState(initial.topics.join(", "));
   const [appsInput, setAppsInput] = useState(
     initial.appsToDownload.map((a) => `${a.name}|${a.url}`).join("\n")
   );
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function uploadImage(file: File) {
+    setUploading(true);
+    setUploadError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/ai-for-all/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const text = await res.text();
+      let data: any = null;
+      try { data = JSON.parse(text); } catch { /* not JSON */ }
+      if (!res.ok || data?.error) {
+        throw new Error(data?.error || `Upload failed (${res.status})`);
+      }
+      setForm((f) => ({ ...f, coverImageUrl: data.url }));
+    } catch (e: any) {
+      setUploadError(e.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleFilePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) uploadImage(file);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) uploadImage(file);
+  }
 
   function submit() {
     const topics = topicsInput.split(",").map((t) => t.trim()).filter(Boolean);
@@ -174,13 +217,72 @@ function SessionForm({
           />
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-xs text-muted mb-1">Cover Image URL (optional)</label>
+          <label className="block text-xs text-muted mb-1">Cover Image</label>
           <input
-            className={input}
-            placeholder="https://example.com/image.jpg"
-            value={form.coverImageUrl}
-            onChange={(e) => setForm((f) => ({ ...f, coverImageUrl: e.target.value }))}
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFilePick}
+            className="hidden"
           />
+          
+          {form.coverImageUrl ? (
+            <div className="relative rounded-xl overflow-hidden border border-border/50">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={form.coverImageUrl}
+                alt="Cover preview"
+                className="w-full h-40 object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1.5 rounded-lg bg-white/20 backdrop-blur text-white text-xs font-medium hover:bg-white/30 transition-colors"
+                >
+                  Replace
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, coverImageUrl: "" }))}
+                  className="px-3 py-1.5 rounded-lg bg-red-500/40 backdrop-blur text-white text-xs font-medium hover:bg-red-500/60 transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              className={`rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all ${
+                dragOver
+                  ? "border-violet-400 bg-violet-500/10"
+                  : "border-border/50 hover:border-violet-500/30 hover:bg-violet-500/5"
+              }`}
+            >
+              {uploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
+                  <p className="text-sm text-muted">Uploading & compressing...</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                    <ImageIcon className="h-6 w-6 text-violet-400" />
+                  </div>
+                  <p className="text-sm font-medium">Drop an image here or click to browse</p>
+                  <p className="text-xs text-muted">JPG, PNG, WebP · Max 10MB · Auto-compressed</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {uploadError && (
+            <p className="text-red-400 text-xs mt-2">{uploadError}</p>
+          )}
         </div>
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -322,6 +424,7 @@ export default function SessionsManager({ sessions, token, onRefresh }: Props) {
           onSave={createSession}
           onCancel={() => setShowForm(false)}
           loading={saving}
+          token={token}
         />
       )}
 
@@ -394,6 +497,7 @@ export default function SessionsManager({ sessions, token, onRefresh }: Props) {
                 onSave={(data) => updateSession(s.id, data)}
                 onCancel={() => setEditId(null)}
                 loading={saving}
+                token={token}
               />
             )}
           </div>

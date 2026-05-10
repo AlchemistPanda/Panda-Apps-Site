@@ -68,7 +68,7 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
         <div className="mb-6 -mx-2 -mt-2 rounded-2xl overflow-hidden h-40 relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={session.coverImageUrl} alt={session.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0f0a2a]/90 via-transparent to-transparent" />
         </div>
       )}
 
