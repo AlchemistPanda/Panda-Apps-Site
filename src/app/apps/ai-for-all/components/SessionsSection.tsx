@@ -3,33 +3,35 @@
 import { useRef } from "react";
 import { Calendar, Clock, Users, ArrowRight, Lock, Loader2, Sparkles } from "lucide-react";
 import type { Session } from "@/lib/ai4all";
+import { useLang } from "../i18n";
 
 interface Props {
   sessions: Session[];
   loading: boolean;
 }
 
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return "Date TBA";
-  return new Date(dateStr).toLocaleDateString("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function formatTime(dateStr: string | null) {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
-
 function SessionCard({ session, index }: { session: Session; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
+  const { tr, lang } = useLang();
+
+  function formatDate(dateStr: string | null) {
+    if (!dateStr) return tr("sessions.dateTba");
+    return new Date(dateStr).toLocaleDateString(lang === "ml" ? "ml-IN" : "en-IN", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  function formatTime(dateStr: string | null) {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleTimeString(lang === "ml" ? "ml-IN" : "en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
 
   function tilt(e: React.MouseEvent<HTMLDivElement>) {
     const el = ref.current;
@@ -78,20 +80,20 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
           <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase"
                 style={{ background: "rgba(16,185,129,0.15)", color: "var(--a-mint)", border: "1px solid rgba(16,185,129,0.3)" }}>
             <span className="ai4all-pulse" />
-            Registration Open
+            {tr("sessions.regOpen")}
           </span>
         ) : (
           <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
                 style={{ background: "rgba(255,255,255,0.05)", color: "var(--a-muted)", border: "1px solid var(--a-line-strong)" }}>
             <Lock className="h-3 w-3" />
-            Closed
+            {tr("sessions.closed")}
           </span>
         )}
 
         {session.maxParticipants && (
           <span className="text-xs font-medium text-[var(--a-muted)] flex items-center gap-1">
             <Users className="h-3 w-3" />
-            {session.maxParticipants} seats
+            {session.maxParticipants} {tr("sessions.seats")}
           </span>
         )}
       </div>
@@ -117,7 +119,7 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
         {session.scheduledDate && (
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4" style={{ color: "var(--a-pink)" }} />
-            <span>{formatTime(session.scheduledDate)} · {session.durationMinutes} min</span>
+            <span>{formatTime(session.scheduledDate)} · {session.durationMinutes} {tr("sessions.min")}</span>
           </div>
         )}
       </div>
@@ -148,7 +150,7 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
           className="ai4all-btn ai4all-btn-primary w-full sm:w-auto"
         >
           <Sparkles className="h-4 w-4" />
-          Register Now
+          {tr("sessions.registerNow")}
           <ArrowRight className="h-4 w-4" />
         </a>
       ) : (
@@ -157,7 +159,7 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
           className="ai4all-btn ai4all-btn-glass w-full sm:w-auto opacity-60 cursor-not-allowed"
         >
           <Lock className="h-3.5 w-3.5" />
-          Registration Closed
+          {tr("sessions.regClosed")}
         </button>
       )}
     </div>
@@ -165,6 +167,8 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
 }
 
 export default function SessionsSection({ sessions, loading }: Props) {
+  const { tr } = useLang();
+
   return (
     <section id="sessions" className="relative py-24 sm:py-32 px-5">
       <div className="max-w-6xl mx-auto">
@@ -172,19 +176,20 @@ export default function SessionsSection({ sessions, loading }: Props) {
         <div className="text-center mb-16">
           <div className="ai4all-rise ai4all-eyebrow mb-6">
             <Calendar className="h-3 w-3" />
-            <span>Upcoming Sessions</span>
+            <span>{tr("sessions.eyebrow")}</span>
           </div>
           <h2
             className="ai4all-rise ai4all-d-1 font-black tracking-tight leading-[0.95] mb-4"
             style={{ fontSize: "clamp(2.25rem, 6vw, 4rem)", color: "var(--a-ink)", letterSpacing: "-0.03em" }}
           >
-            Join the next <span className="ai4all-grad-text">live session</span>
+            {tr("sessions.heading")} <span className="ai4all-grad-text">{tr("sessions.headingHighlight")}</span>
+            {tr("sessions.headingSuffix") && ` ${tr("sessions.headingSuffix")}`}
           </h2>
           <p
             className="ai4all-rise ai4all-d-2 max-w-xl mx-auto leading-relaxed"
             style={{ color: "var(--a-ink-soft)", fontSize: "clamp(1rem, 1.5vw, 1.125rem)" }}
           >
-            Hands-on AI training open to everyone. Practical, simple, and impactful.
+            {tr("sessions.subtitle")}
           </p>
         </div>
 
@@ -200,15 +205,14 @@ export default function SessionsSection({ sessions, loading }: Props) {
           <div className="ai4all-card ai4all-rise text-center py-20 px-6">
             <div className="text-6xl mb-5 inline-block ai4all-float">🚀</div>
             <h3 className="text-2xl font-black mb-3" style={{ color: "var(--a-ink)" }}>
-              Sessions launching soon
+              {tr("sessions.launchingSoon")}
             </h3>
             <p className="max-w-md mx-auto mb-6 leading-relaxed" style={{ color: "var(--a-ink-soft)" }}>
-              No sessions scheduled yet. Vote on the topics you&apos;d love to learn — we&apos;ll
-              plan sessions based on community interest!
+              {tr("sessions.noSessions")}
             </p>
             <a href="#vote" className="ai4all-btn ai4all-btn-primary">
               <Sparkles className="h-4 w-4" />
-              Vote on Topics
+              {tr("hero.voteTopics")}
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>

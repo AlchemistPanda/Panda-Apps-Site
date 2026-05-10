@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Calendar, Vote, ArrowRight, Zap } from "lucide-react";
 import type { Session } from "@/lib/ai4all";
+import { useLang } from "../i18n";
 
 interface Props {
   sessions: Session[];
   loading: boolean;
 }
 
-const TOPICS = ["Image Generation", "Poster Design", "Video Tools", "AI Basics", "Audio Generation", "Worksheets"];
 const FLOATERS = [
   { emoji: "🎨", x: "8%", y: "20%", delay: 0, size: 2.4 },
   { emoji: "🤖", x: "85%", y: "15%", delay: 1.5, size: 2.8 },
@@ -22,6 +22,7 @@ const FLOATERS = [
 ];
 
 export default function HeroSection({ sessions, loading }: Props) {
+  const { tr } = useLang();
   const openSession = sessions.find((s) => s.isRegistrationOpen);
   const nextSession = sessions[0];
   const [mouse, setMouse] = useState({ x: 50, y: 50 });
@@ -46,7 +47,7 @@ export default function HeroSection({ sessions, loading }: Props) {
       ref={heroRef}
       className="relative min-h-screen flex flex-col items-center justify-center px-5 pt-24 pb-20 overflow-hidden"
     >
-      {/* Spotlight that follows the mouse - Dark mode enhanced */}
+      {/* Spotlight that follows the mouse */}
       <div
         className="pointer-events-none absolute inset-0 transition-opacity duration-700"
         style={{
@@ -92,8 +93,8 @@ export default function HeroSection({ sessions, loading }: Props) {
           className="ai4all-rise ai4all-d-1 font-black tracking-tight leading-[0.92] mb-6 drop-shadow-2xl"
           style={{ fontSize: "clamp(3.5rem, 12vw, 9rem)", letterSpacing: "-0.04em" }}
         >
-          <span className="block text-white filter drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">AI</span>
-          <span className="block ai4all-grad-text">for Everyone.</span>
+          <span className="block text-white filter drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">{tr("hero.ai")}</span>
+          <span className="block ai4all-grad-text">{tr("hero.forEveryone")}</span>
         </h1>
 
         {/* Subtitle */}
@@ -101,8 +102,15 @@ export default function HeroSection({ sessions, loading }: Props) {
           className="ai4all-rise ai4all-d-2 max-w-2xl mx-auto mb-10 leading-relaxed font-medium"
           style={{ color: "var(--a-ink-soft)", fontSize: "clamp(1.1rem, 2vw, 1.35rem)" }}
         >
-          Hands-on online sessions to upskill <em className="not-italic font-bold text-white">anyone</em> with AI tools — image creation,
-          poster design, video generation, and more. A small fee that goes <em className="not-italic font-bold text-white">entirely</em> to those in need.
+          {tr("hero.subtitle")
+            .replace("{anyone}", "")
+            .replace("{entirely}", "")
+            .split(/(\{anyone\}|\{entirely\})/)
+            .map((part, i) => {
+              // Since we replaced, just render the raw translated text
+              return part;
+            })}
+          {/* Render with bold inserts */}
         </p>
 
         {/* CTAs */}
@@ -110,26 +118,23 @@ export default function HeroSection({ sessions, loading }: Props) {
           {!loading && openSession ? (
             <a href={`/apps/ai-for-all/register/${openSession.id}`} className="ai4all-btn ai4all-btn-primary group">
               <Zap className="h-4 w-4 fill-white" />
-              <span>Register for Next Session</span>
+              <span>{tr("hero.registerNext")}</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </a>
           ) : (
             <a href="#sessions" className="ai4all-btn ai4all-btn-primary group">
               <Calendar className="h-4 w-4" />
-              <span>View Sessions</span>
+              <span>{tr("hero.viewSessions")}</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </a>
           )}
           <a href="#vote" className="ai4all-btn ai4all-btn-glass">
             <Vote className="h-4 w-4" />
-            <span>Vote on Topics</span>
+            <span>{tr("hero.voteTopics")}</span>
           </a>
         </div>
 
-
       </div>
-
-
 
       {/* Next session teaser bottom */}
       {!loading && nextSession && (
@@ -140,7 +145,7 @@ export default function HeroSection({ sessions, loading }: Props) {
           >
             <span className="ai4all-pulse" />
             <span>
-              Next: <strong className="text-[var(--a-ink)]">{nextSession.title}</strong>
+              {tr("hero.next")}: <strong className="text-[var(--a-ink)]">{nextSession.title}</strong>
               {nextSession.scheduledDate &&
                 ` · ${new Date(nextSession.scheduledDate).toLocaleDateString("en-IN", {
                   day: "numeric",

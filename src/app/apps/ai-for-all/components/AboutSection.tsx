@@ -1,41 +1,44 @@
 "use client";
 
 import { Heart, Globe, BookOpen, Zap } from "lucide-react";
-
-const PILLARS = [
-  {
-    icon: Globe,
-    emoji: "🌍",
-    title: "No One Left Behind",
-    body: "AI is reshaping every profession. Our mission: ensure everyone—regardless of location, background, or profession—has access to AI skills.",
-    gradient: "from-violet-500 to-purple-600",
-  },
-  {
-    icon: Heart,
-    emoji: "💝",
-    title: "Fee Goes to the Needy",
-    body: "A small course fee is collected, but not a single rupee is kept by the instructor. Every payment is donated directly to verified NGOs.",
-    gradient: "from-pink-500 to-rose-600",
-  },
-  {
-    icon: BookOpen,
-    emoji: "📚",
-    title: "Practical & Simple",
-    body: "Sessions are designed for anyone with zero technical background. If you can use WhatsApp, you can use AI tools.",
-    gradient: "from-orange-500 to-amber-500",
-  },
-  {
-    icon: Zap,
-    emoji: "⚡",
-    title: "Hands-On Learning",
-    body: "No boring theory. Every session is practical—you create real outputs: images, posters, worksheets, or videos by the end.",
-    gradient: "from-emerald-500 to-teal-500",
-  },
-];
+import { useLang } from "../i18n";
 
 const NGOs = ["UNICEF India", "GiveIndia", "PM CARES Fund", "CRY"];
 
 export default function AboutSection() {
+  const { tr } = useLang();
+
+  const PILLARS = [
+    {
+      icon: Globe,
+      emoji: "🌍",
+      title: tr("about.pillar1Title"),
+      body: tr("about.pillar1Body"),
+      gradient: "from-violet-500 to-purple-600",
+    },
+    {
+      icon: Heart,
+      emoji: "💝",
+      title: tr("about.pillar2Title"),
+      body: tr("about.pillar2Body"),
+      gradient: "from-pink-500 to-rose-600",
+    },
+    {
+      icon: BookOpen,
+      emoji: "📚",
+      title: tr("about.pillar3Title"),
+      body: tr("about.pillar3Body"),
+      gradient: "from-orange-500 to-amber-500",
+    },
+    {
+      icon: Zap,
+      emoji: "⚡",
+      title: tr("about.pillar4Title"),
+      body: tr("about.pillar4Body"),
+      gradient: "from-emerald-500 to-teal-500",
+    },
+  ];
+
   return (
     <section id="about" className="relative py-24 sm:py-32 px-5">
       <div className="max-w-6xl mx-auto">
@@ -43,20 +46,20 @@ export default function AboutSection() {
         <div className="text-center mb-20">
           <div className="ai4all-rise ai4all-eyebrow mb-6">
             <Heart className="h-3 w-3" />
-            <span>Our Mission</span>
+            <span>{tr("about.eyebrow")}</span>
           </div>
           <h2
             className="ai4all-rise ai4all-d-1 font-black tracking-tight leading-[0.95] mb-6"
             style={{ fontSize: "clamp(2.25rem, 6vw, 4rem)", color: "var(--a-ink)", letterSpacing: "-0.03em" }}
           >
-            Why <span className="ai4all-grad-text">AI for All</span>?
+            {tr("about.heading")} <span className="ai4all-grad-text">AI for All</span>{tr("about.headingEnd")}
           </h2>
           <p
             className="ai4all-rise ai4all-d-2 max-w-2xl mx-auto leading-relaxed"
             style={{ color: "var(--a-ink-soft)", fontSize: "clamp(1rem, 1.7vw, 1.25rem)" }}
           >
-            Knowledge should not be a privilege —{" "}
-            <strong style={{ color: "var(--a-ink)" }}>it should be accessible to everyone.</strong>
+            {tr("about.subtitle").split("{highlight}")[0]}
+            <strong style={{ color: "var(--a-ink)" }}>{tr("about.subtitleHighlight")}</strong>
           </p>
         </div>
 
@@ -75,15 +78,15 @@ export default function AboutSection() {
               className="font-bold leading-[1.15] tracking-tight max-w-3xl mx-auto"
               style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)", color: "var(--a-ink)" }}
             >
-              AI competency is not a luxury.{" "}
-              <span className="ai4all-grad-text">It&apos;s the next basic skill</span> — and
-              everyone deserves it.
+              {tr("about.quote").split("{highlight}")[0]}
+              <span className="ai4all-grad-text">{tr("about.quoteHighlight")}</span>
+              {tr("about.quote").split("{highlight}")[1]}
             </blockquote>
             <p
               className="mt-8 text-sm font-bold uppercase tracking-widest"
               style={{ color: "var(--a-purple-deep)" }}
             >
-              — The AI for All Initiative
+              {tr("about.quoteAuthor")}
             </p>
           </div>
         </div>
@@ -133,15 +136,15 @@ export default function AboutSection() {
               className="font-black tracking-tight mb-4"
               style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", color: "var(--a-ink)", letterSpacing: "-0.02em" }}
             >
-              100% Transparent Donations
+              {tr("about.donationTitle")}
             </h3>
             <p
               className="max-w-2xl mx-auto mb-6 leading-relaxed"
               style={{ color: "var(--a-ink-soft)", fontSize: "clamp(0.95rem, 1.4vw, 1.05rem)" }}
             >
-              When you pay the course fee, you donate{" "}
-              <strong style={{ color: "var(--a-ink)" }}>directly</strong> to a verified NGO.
-              You receive the donation receipt. The instructor keeps nothing. Radical transparency.
+              {tr("about.donationBody").split("{directly}")[0]}
+              <strong style={{ color: "var(--a-ink)" }}>{tr("about.directly")}</strong>
+              {tr("about.donationBody").split("{directly}")[1]}
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {NGOs.map((n, i) => (

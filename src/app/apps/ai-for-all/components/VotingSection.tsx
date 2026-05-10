@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ThumbsUp, Plus, Send, Loader2, CheckCircle2, ChevronDown, Vote, Heart } from "lucide-react";
+import { useLang } from "../i18n";
 
 interface VoteOptionWithCount {
   id: string;
@@ -55,6 +56,7 @@ function HeartBurst({ x, y }: { x: number; y: number }) {
 }
 
 export default function VotingSection() {
+  const { tr } = useLang();
   const [options, setOptions] = useState<VoteOptionWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [votingId, setVotingId] = useState<string | null>(null);
@@ -161,20 +163,20 @@ export default function VotingSection() {
         <div className="text-center mb-16">
           <div className="ai4all-rise ai4all-eyebrow mb-6">
             <Vote className="h-3 w-3" />
-            <span>Community Vote</span>
+            <span>{tr("vote.eyebrow")}</span>
           </div>
           <h2
             className="ai4all-rise ai4all-d-1 font-black tracking-tight leading-[0.95] mb-4"
             style={{ fontSize: "clamp(2.25rem, 6vw, 4rem)", color: "var(--a-ink)", letterSpacing: "-0.03em" }}
           >
-            Shape what we <span className="ai4all-grad-text">teach next</span>
+            {tr("vote.heading")} <span className="ai4all-grad-text">{tr("vote.headingHighlight")}</span>
+            {tr("vote.headingSuffix") && ` ${tr("vote.headingSuffix")}`}
           </h2>
           <p
             className="ai4all-rise ai4all-d-2 max-w-xl mx-auto leading-relaxed"
             style={{ color: "var(--a-ink-soft)", fontSize: "clamp(1rem, 1.5vw, 1.125rem)" }}
           >
-            Vote for the topics you&apos;d love to see in upcoming sessions. Your votes directly
-            shape what we build.
+            {tr("vote.subtitle")}
           </p>
 
           {totalVotes > 0 && (
@@ -186,7 +188,7 @@ export default function VotingSection() {
               }}
             >
               <Heart className="h-3.5 w-3.5 fill-pink-500 text-pink-500" />
-              <span>{totalVotes.toLocaleString()} community votes cast</span>
+              <span>{totalVotes.toLocaleString()} {tr("vote.totalVotes")}</span>
             </div>
           )}
         </div>
@@ -244,7 +246,7 @@ export default function VotingSection() {
                   <div className="mb-4">
                     <div className="flex justify-between items-baseline mb-1.5 text-xs font-semibold" style={{ color: "var(--a-muted)" }}>
                       <span>
-                        <strong style={{ color: "var(--a-ink)" }}>{opt.voteCount}</strong> vote{opt.voteCount !== 1 ? "s" : ""}
+                        <strong style={{ color: "var(--a-ink)" }}>{opt.voteCount}</strong> {opt.voteCount !== 1 ? tr("vote.votes") : tr("vote.vote")}
                       </span>
                       <span>{pct}%</span>
                     </div>
@@ -279,7 +281,7 @@ export default function VotingSection() {
                     ) : (
                       <ThumbsUp className={`h-4 w-4 ${opt.userVoted ? "fill-rose-500" : ""}`} />
                     )}
-                    {opt.userVoted ? "Voted! (Click to undo)" : "Vote for this"}
+                    {opt.userVoted ? tr("vote.voted") : tr("vote.voteFor")}
                   </button>
                 </div>
               );
@@ -302,10 +304,10 @@ export default function VotingSection() {
               </div>
               <div>
                 <p className="font-bold text-[15px]" style={{ color: "var(--a-ink)" }}>
-                  Got an idea? Suggest a topic
+                  {tr("vote.suggestTitle")}
                 </p>
                 <p className="text-xs" style={{ color: "var(--a-muted)" }}>
-                  Submit your own — once approved, it joins the vote
+                  {tr("vote.suggestSub")}
                 </p>
               </div>
             </div>
@@ -324,22 +326,22 @@ export default function VotingSection() {
                     <CheckCircle2 className="h-8 w-8 text-white" />
                   </div>
                   <p className="font-bold text-lg mb-1" style={{ color: "var(--a-ink)" }}>
-                    Thank you! 💜
+                    {tr("vote.thankyou")}
                   </p>
                   <p className="text-sm max-w-sm mx-auto" style={{ color: "var(--a-ink-soft)" }}>
-                    Your idea is under review. Once approved, it will appear in the voting list above.
+                    {tr("vote.underReview")}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: "var(--a-purple-deep)" }}>
-                      Topic Name *
+                      {tr("vote.topicName")} *
                     </label>
                     <input
                       type="text"
                       maxLength={100}
-                      placeholder="e.g. AI for Malayalam Typing"
+                      placeholder={tr("vote.topicPlaceholder")}
                       value={form.label}
                       onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
                       className="ai4all-input"
@@ -347,12 +349,12 @@ export default function VotingSection() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: "var(--a-purple-deep)" }}>
-                      Description (optional)
+                      {tr("vote.description")}
                     </label>
                     <textarea
                       rows={2}
                       maxLength={300}
-                      placeholder="Briefly describe what you'd like to learn..."
+                      placeholder={tr("vote.descPlaceholder")}
                       value={form.description}
                       onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                       className="ai4all-input resize-none"
@@ -360,12 +362,12 @@ export default function VotingSection() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: "var(--a-purple-deep)" }}>
-                      Your Name (optional)
+                      {tr("vote.yourName")}
                     </label>
                     <input
                       type="text"
                       maxLength={50}
-                      placeholder="Anonymous"
+                      placeholder={tr("vote.namePlaceholder")}
                       value={form.name}
                       onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                       className="ai4all-input"
@@ -377,7 +379,7 @@ export default function VotingSection() {
                     className="ai4all-btn ai4all-btn-primary disabled:opacity-50"
                   >
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                    Submit Suggestion
+                    {tr("vote.submit")}
                   </button>
                 </div>
               )}
