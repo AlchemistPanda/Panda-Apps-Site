@@ -126,24 +126,7 @@ export default function HeroSection({ sessions, loading }: Props) {
           </a>
         </div>
 
-        {/* Trust indicators */}
-        <div className="ai4all-rise ai4all-d-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">
-          {[
-            { icon: "🌍", label: "Open to Everyone" },
-            { icon: "💝", label: "Fee donated to NGOs" },
-            { icon: "📱", label: "Online & Flexible" },
-            { icon: "🔒", label: "Privacy First" },
-          ].map((t) => (
-            <div
-              key={t.label}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-[var(--a-line-strong)] hover:border-[var(--a-pink)] hover:bg-white/10 transition-all duration-300 cursor-default"
-              style={{ color: "var(--a-ink-soft)" }}
-            >
-              <span className="drop-shadow-lg">{t.icon}</span>
-              <span className="font-semibold text-[var(--a-ink)] tracking-wide">{t.label}</span>
-            </div>
-          ))}
-        </div>
+
       </div>
 
 
