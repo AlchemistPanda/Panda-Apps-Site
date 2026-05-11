@@ -75,7 +75,11 @@ export default function ToolConvert({ t, settings }: ToolConvertProps) {
       const res = await fetch("/api/pdf-convert", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileData: base64, fileName: file.name }),
+        body: JSON.stringify({ 
+          fileData: base64, 
+          fileName: file.name,
+          targetLanguage: settings.translationEnabled ? settings.targetLanguage : "original"
+        }),
         signal: controller.signal,
       });
 

@@ -2,7 +2,7 @@
 
 import type { ConversionSettings, I18nStrings } from "../lib/types";
 import { FONT_OPTIONS } from "../lib/types";
-import { Settings, Type, AlignVerticalSpaceAround, Ruler, FileText, Table, List, Heading } from "lucide-react";
+import { Settings, Type, AlignVerticalSpaceAround, Ruler, FileText, Table, List, Heading, Sparkles } from "lucide-react";
 
 interface ConversionSettingsProps {
   settings: ConversionSettings;
@@ -139,7 +139,7 @@ export default function ConversionSettingsPanel({ settings, onChange, t }: Conve
             { key: "detectTables" as const, icon: Table, label: t.detectTables },
             { key: "detectLists" as const, icon: List, label: t.detectLists },
           ]).map(({ key, icon: Icon, label }) => (
-            <label key={key} className="flex items-center gap-3 cursor-pointer group">
+            <label key={key} className="flex items-center gap-3 cursor-pointer group" onClick={() => update(key, !settings[key])}>
               <div className={`
                 h-5 w-5 rounded-md border flex items-center justify-center transition-all
                 ${settings[key]
@@ -152,6 +152,38 @@ export default function ConversionSettingsPanel({ settings, onChange, t }: Conve
               <span className="text-sm">{label}</span>
             </label>
           ))}
+        </div>
+
+        {/* Translation Section */}
+        <div className="space-y-3 pt-4 border-t border-border/30">
+          <label className="flex items-center gap-3 cursor-pointer group" onClick={() => update("translationEnabled", !settings.translationEnabled)}>
+            <div className={`
+              h-5 w-5 rounded-md border flex items-center justify-center transition-all
+              ${settings.translationEnabled
+                ? "bg-accent border-accent text-black"
+                : "border-border/60 bg-background/40 group-hover:border-border"}
+            `}>
+              {settings.translationEnabled && <span className="text-xs font-bold">✓</span>}
+            </div>
+            <Sparkles className="h-3.5 w-3.5 text-accent animate-pulse" />
+            <span className="text-sm font-semibold">AI Translation</span>
+          </label>
+          
+          {settings.translationEnabled && (
+            <select
+              value={settings.targetLanguage}
+              onChange={(e) => update("targetLanguage", e.target.value)}
+              className="w-full rounded-lg border border-accent/40 bg-accent/5 px-3 py-2 text-sm focus:outline-none"
+            >
+              <option value="en">Translate to English</option>
+              <option value="ml">Translate to Malayalam</option>
+              <option value="hi">Translate to Hindi</option>
+              <option value="ar">Translate to Arabic</option>
+              <option value="ta">Translate to Tamil</option>
+              <option value="es">Translate to Spanish</option>
+              <option value="fr">Translate to French</option>
+            </select>
+          )}
         </div>
       </div>
     </div>

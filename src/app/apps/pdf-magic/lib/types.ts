@@ -105,6 +105,8 @@ export interface ConversionSettings {
   detectLists: boolean;
   detectHeadings: boolean;
   pageSize: "letter" | "a4";
+  translationEnabled: boolean;
+  targetLanguage: string;
 }
 
 /** Conversion progress */
@@ -129,6 +131,8 @@ export const DEFAULT_SETTINGS: ConversionSettings = {
   detectLists: true,
   detectHeadings: true,
   pageSize: "a4",
+  translationEnabled: false,
+  targetLanguage: "en",
 };
 
 /** Available fonts */

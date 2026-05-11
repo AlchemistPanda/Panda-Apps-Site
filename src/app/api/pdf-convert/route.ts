@@ -4,7 +4,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
-    const { fileData, fileName } = await req.json();
+    const { fileData, fileName, targetLanguage } = await req.json();
 
     if (!process.env.GOOGLE_API_KEY) {
       return Response.json({ error: "GOOGLE_API_KEY not configured" }, { status: 500 });
@@ -31,7 +31,12 @@ export async function POST(req: Request) {
           generationConfig: { responseMimeType: "application/json" },
         });
 
+        const translationInstruction = targetLanguage && targetLanguage !== "original" 
+          ? `TRANSLATE all text content to ${targetLanguage}. Maintain the same meaning and tone.`
+          : "";
+
         const prompt = `You are an expert document converter. Analyze this PDF document and extract ALL content with precise formatting and structure information.
+${translationInstruction}
 
 RULES:
 1. Preserve the reading order of the document exactly.
