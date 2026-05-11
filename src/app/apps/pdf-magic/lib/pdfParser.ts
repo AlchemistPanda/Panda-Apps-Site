@@ -172,16 +172,6 @@ export async function renderPageAsImage(
 }
 
 /**
- * Get total page count of a PDF file
- */
-export async function getPdfPageCount(file: File): Promise<number> {
-  const pdfjs = await getPdfjs();
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-  return pdf.numPages;
-}
-
-/**
  * Convert a File to base64 string
  */
 export function fileToBase64(file: File): Promise<string> {

@@ -99,11 +99,18 @@ export default function ToolConvert({ t, settings }: ToolConvertProps) {
       pdfType: "text",
     };
 
-    setParsedDoc(doc);
-    setProgress({ stage: "building", progress: 85, message: "Building Word document…" });
-    const blob = await buildDocx(doc, settings);
-    setDocxBlob(blob);
-    setProgress({ stage: "complete", progress: 100, message: "Done!" });
+      setParsedDoc(doc);
+      setProgress({ stage: "building", progress: 85, message: "Building Word document…" });
+      const blob = await buildDocx(doc, settings);
+      setDocxBlob(blob);
+      setProgress({ stage: "complete", progress: 100, message: "Done!" });
+    } catch (err) {
+      console.error("AI Conversion error:", err);
+      const message = err instanceof Error ? err.message : "AI conversion failed";
+      setProgress({ stage: "error", progress: 0, message });
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }, [settings]);
 
   const handleFileSelected = useCallback(async (file: File) => {

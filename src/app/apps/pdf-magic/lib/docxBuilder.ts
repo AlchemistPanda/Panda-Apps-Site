@@ -138,7 +138,7 @@ async function buildImage(el: DocElement): Promise<Paragraph | null> {
             width: el.imageOptions?.width || 400,
             height: el.imageOptions?.height || 300,
           },
-        }),
+        } as any),
       ],
     });
   } catch (err) {
