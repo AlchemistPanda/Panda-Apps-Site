@@ -12,6 +12,16 @@ async function getPdfjs() {
   return pdfjsLib;
 }
 
+/**
+ * Get total number of pages in a PDF
+ */
+export async function getPdfPageCount(file: File): Promise<number> {
+  const pdfjs = await getPdfjs();
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+  return pdf.numPages;
+}
+
 /** Raw text item with position info from pdf.js */
 export interface RawTextItem {
   text: string;

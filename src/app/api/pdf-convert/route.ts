@@ -14,10 +14,12 @@ export async function POST(req: Request) {
     }
 
     const modelsToTry = [
+      "gemini-3-flash",
+      "gemini-3-pro",
       "gemini-2.5-flash",
       "gemini-2.0-flash",
       "gemini-1.5-flash",
-      "gemini-1.5-flash-latest",
+      "gemini-1.5-flash-latest"
     ];
 
     let lastError: Error | null = null;
@@ -100,8 +102,15 @@ Extract EVERY piece of text — do not skip any content.`;
       throw lastError || new Error("All AI models failed to process the PDF.");
     }
 
-    // Parse and normalize the response
-    const parsed = JSON.parse(responseText);
+    let parsed;
+    try {
+      // Remove potential markdown code blocks if the AI includes them
+      const cleanedJson = responseText.replace(/```json\n?|```/g, "").trim();
+      parsed = JSON.parse(cleanedJson);
+    } catch (parseErr) {
+      console.error("AI JSON parse error. Raw response:", responseText);
+      throw new Error("AI returned an invalid response format. Please try again.");
+    }
 
     // Normalize table rows: convert string[][] to {text: string}[][]
     if (parsed.pages) {

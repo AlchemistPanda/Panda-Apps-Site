@@ -12,7 +12,7 @@ import type {
   I18nStrings, ConversionMode, ConversionSettings, 
   ConversionProgress, ParsedDocument 
 } from "../lib/types";
-import { extractPdfContent, fileToBase64 } from "../lib/pdfParser";
+import { extractPdfContent, fileToBase64, getPdfPageCount } from "../lib/pdfParser";
 import { detectStructure } from "../lib/structureDetector";
 import { buildDocx } from "../lib/docxBuilder";
 
@@ -58,23 +58,36 @@ export default function ToolConvert({ t, settings }: ToolConvertProps) {
   }, [settings]);
 
   const convertAI = useCallback(async (file: File) => {
-    setProgress({ stage: "uploading", progress: 10, message: `Preparing ${file.name}…` });
+    setProgress({ stage: "uploading", progress: 5, message: `Preparing ${file.name}…` });
+    const pageCount = await getPdfPageCount(file);
     const base64 = await fileToBase64(file);
 
-    setProgress({ stage: "ai-processing", progress: 30, message: "AI is analyzing your document…" });
-    const res = await fetch("/api/pdf-convert", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fileData: base64, fileName: file.name }),
+    setProgress({ 
+      stage: "ai-processing", 
+      progress: 30, 
+      message: `AI is analyzing ${pageCount} pages (this may take 1-2 minutes)...` 
     });
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Unknown error" }));
-      throw new Error(err.error || `Server error: ${res.status}`);
-    }
+    try {
+      const res = await fetch("/api/pdf-convert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileData: base64, fileName: file.name }),
+        signal: controller.signal,
+      });
 
-    const aiResult = await res.json();
-    setProgress({ stage: "analyzing", progress: 70, message: "Processing AI results…" });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(err.error || `Server error: ${res.status}`);
+      }
+
+      const aiResult = await res.json();
+      setProgress({ stage: "analyzing", progress: 70, message: "Structuring document data..." });
 
     const doc: ParsedDocument = {
       language: aiResult.language,
