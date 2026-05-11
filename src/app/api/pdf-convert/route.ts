@@ -4,14 +4,20 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
-    const { fileData, fileName, targetLanguage } = await req.json();
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
+    const targetLanguage = formData.get("targetLanguage") as string;
+
+    if (!file) {
+      return Response.json({ error: "No file provided" }, { status: 400 });
+    }
 
     if (!process.env.GOOGLE_API_KEY) {
       return Response.json({ error: "GOOGLE_API_KEY not configured" }, { status: 500 });
     }
-    if (!fileData) {
-      return Response.json({ error: "No file data provided" }, { status: 400 });
-    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const fileBase64 = Buffer.from(arrayBuffer).toString("base64");
 
     const modelsToTry = [
       "gemini-3-flash",
@@ -95,7 +101,7 @@ For tables, rows is an array of arrays of strings. Ensure the number of columns 
 Extract EVERY piece of text — do not skip any content.`;
 
         const content = [
-          { inlineData: { mimeType: "application/pdf", data: fileData } },
+          { inlineData: { mimeType: "application/pdf", data: fileBase64 } },
           { text: prompt },
         ];
 

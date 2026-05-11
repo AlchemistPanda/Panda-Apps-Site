@@ -71,15 +71,15 @@ export default function ToolConvert({ t, settings }: ToolConvertProps) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
 
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", file.name);
+    formData.append("targetLanguage", settings.translationEnabled ? settings.targetLanguage : "original");
+
     try {
       const res = await fetch("/api/pdf-convert", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          fileData: base64, 
-          fileName: file.name,
-          targetLanguage: settings.translationEnabled ? settings.targetLanguage : "original"
-        }),
+        body: formData,
         signal: controller.signal,
       });
 
