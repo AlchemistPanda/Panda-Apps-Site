@@ -60,11 +60,16 @@ export interface DocElement {
     rows: TableCell[][];
     headerRow?: boolean;
   };
+  // Image data
+  imageData?: string; // base64 or URL
+  imageOptions?: {
+    width?: number;
+    height?: number;
+    alignment?: "left" | "center" | "right";
+  };
   /** List items */
   listItems?: string[];
   listType?: ListType;
-  /** Image data (base64) */
-  imageData?: string;
   imageMimeType?: string;
   imageWidth?: number;
   imageHeight?: number;

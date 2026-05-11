@@ -36,13 +36,14 @@ export async function POST(req: Request) {
 RULES:
 1. Preserve the reading order of the document exactly.
 2. Detect headings based on font size, boldness, and visual hierarchy.
-3. Detect tables and preserve their row/column structure.
+3. Detect tables and preserve their row/column structure perfectly. If a cell is empty, return an empty string.
 4. Detect bullet lists and numbered lists.
 5. Detect the primary language of the document.
 6. For each text element, note if it's bold, italic, or has special formatting.
 7. Group related text into paragraphs (don't split sentences).
 8. If the PDF is scanned/image-based, use OCR to extract all text.
 9. Support ALL languages including Malayalam, Hindi, Tamil, Arabic, CJK, etc.
+10. IMPORTANT: Detect images/logos/photos and return an element with type "image". Since you cannot return the image data itself, provide a brief description in the "content" field.
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -73,14 +74,19 @@ Return ONLY valid JSON with this exact structure:
           "type": "list",
           "listItems": ["Item 1", "Item 2", "Item 3"],
           "listType": "bullet"
+        },
+        {
+          "type": "image",
+          "content": "Description of the image/logo",
+          "imageOptions": { "width": 400, "height": 300, "alignment": "center" }
         }
       ]
     }
   ]
 }
 
-IMPORTANT: type must be one of: "heading", "paragraph", "table", "list"
-For tables, rows is an array of arrays of strings.
+IMPORTANT: type must be one of: "heading", "paragraph", "table", "list", "image"
+For tables, rows is an array of arrays of strings. Ensure the number of columns is consistent across rows.
 Extract EVERY piece of text — do not skip any content.`;
 
         const content = [

@@ -1,7 +1,8 @@
 /* ── DOCX Builder: structured doc → Word file ──────────────────────────── */
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
-  Table, TableRow, TableCell, WidthType, BorderStyle,
+  Table, TableRow, TableCell, WidthType, BorderStyle, ImageRun,
+  ExternalHyperlink,
   type IParagraphOptions,
 } from "docx";
 import type { ParsedDocument, ConversionSettings, DocElement } from "./types";
@@ -78,20 +79,27 @@ function buildTable(el: DocElement, settings: ConversionSettings): Table {
     return new Table({ rows: [new TableRow({ children: [new TableCell({ children: [new Paragraph("")] })] })] });
   }
   const colCount = Math.max(...data.rows.map((r) => r.length));
-  const colWidth = Math.floor(9000 / colCount);
-
+  
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 2, color: "000000" },
+      bottom: { style: BorderStyle.SINGLE, size: 2, color: "000000" },
+      left: { style: BorderStyle.SINGLE, size: 2, color: "000000" },
+      right: { style: BorderStyle.SINGLE, size: 2, color: "000000" },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "666666" },
+      insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "666666" },
+    },
     rows: data.rows.map((row, rowIdx) =>
       new TableRow({
         children: Array.from({ length: colCount }, (_, c) => {
           const cell = row[c];
           const isHeader = data.headerRow && rowIdx === 0;
           return new TableCell({
-            width: { size: colWidth, type: WidthType.DXA },
             children: [
               new Paragraph({
-                spacing: { after: 40 },
+                alignment: isHeader ? AlignmentType.CENTER : AlignmentType.LEFT,
+                spacing: { after: 40, before: 40 },
                 children: [
                   new TextRun({
                     text: cell?.text || "",
@@ -102,11 +110,41 @@ function buildTable(el: DocElement, settings: ConversionSettings): Table {
                 ],
               }),
             ],
+            shading: isHeader ? { fill: "F2F2F2", type: "clear", color: "auto" } : undefined,
           });
         }),
       })
     ),
   });
+}
+
+async function buildImage(el: DocElement): Promise<Paragraph | null> {
+  if (!el.imageData) return null;
+  
+  try {
+    // Check if it's base64
+    const isBase64 = el.imageData.startsWith("data:");
+    const buffer = isBase64 
+      ? Buffer.from(el.imageData.split(",")[1], "base64")
+      : await fetch(el.imageData).then(r => r.arrayBuffer()).then(ab => Buffer.from(ab));
+
+    return new Paragraph({
+      alignment: el.imageOptions?.alignment === "center" ? AlignmentType.CENTER : 
+                 el.imageOptions?.alignment === "right" ? AlignmentType.RIGHT : AlignmentType.LEFT,
+      children: [
+        new ImageRun({
+          data: buffer,
+          transformation: {
+            width: el.imageOptions?.width || 400,
+            height: el.imageOptions?.height || 300,
+          },
+        }),
+      ],
+    });
+  } catch (err) {
+    console.error("Failed to build image element", err);
+    return null;
+  }
 }
 
 /**
@@ -158,6 +196,12 @@ export async function buildDocx(doc: ParsedDocument, settings: ConversionSetting
                 })
               );
             }
+          }
+          break;
+        case "image":
+          if (settings.preserveImages) {
+            const imgPara = await buildImage(el);
+            if (imgPara) children.push(imgPara);
           }
           break;
         default:
