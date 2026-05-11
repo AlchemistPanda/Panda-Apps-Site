@@ -24,9 +24,12 @@
     "lucide-react": "^0.576.0",
     "marked": "^17.0.3",
     "next": "16.1.6",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.7.284",
     "qr-code-styling": "^1.9.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-dropzone": "^15.0.0",
     "react-easy-crop": "^5.5.7",
     "recharts": "^3.7.0"
   },

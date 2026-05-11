@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus, Vote, GraduationCap
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus, Vote, GraduationCap, FileUp
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
@@ -47,6 +47,17 @@ const apps = [
     href: "/apps/resume-builder",
     icon: FileUser,
     gradient: "from-blue-500 to-indigo-600",
+    category: "Productivity",
+    isNew: true,
+    isFeatured: true,
+  },
+  {
+    title: "PDF Magic",
+    description:
+      "The ultimate PDF tool suite. Convert to Word, merge files, delete/organize pages, compress, and edit PDFs. 100% free, privacy-focused, and AI-powered.",
+    href: "/apps/pdf-magic",
+    icon: Sparkles,
+    gradient: "from-red-500 to-blue-600",
     category: "Productivity",
     isNew: true,
     isFeatured: true,
