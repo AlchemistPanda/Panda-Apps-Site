@@ -9,6 +9,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const targetLanguage = formData.get("targetLanguage") as string;
+    const forceOcr = formData.get("forceOcr") === "true";
 
     if (!file) {
       return Response.json({ error: "No file provided" }, { status: 400 });
@@ -43,8 +44,13 @@ export async function POST(req: Request) {
           ? `TRANSLATE all text content to ${targetLanguage}. Maintain the same meaning and tone.`
           : "";
 
+        const ocrInstruction = forceOcr 
+          ? `CRITICAL INSTRUCTION: The embedded text layer in this PDF uses a broken or non-standard font encoding (e.g. ASCII instead of Unicode). DO NOT extract the raw embedded text. You MUST visually read (OCR) the document to extract the correct characters (especially for regional languages like Malayalam/Hindi).`
+          : "";
+
         const prompt = `You are an expert document converter. Analyze this PDF document and extract ALL content with precise formatting and structure information.
 ${translationInstruction}
+${ocrInstruction}
 
 RULES:
 1. Preserve the reading order of the document exactly.

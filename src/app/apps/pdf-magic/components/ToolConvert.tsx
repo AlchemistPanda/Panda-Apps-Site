@@ -75,6 +75,7 @@ export default function ToolConvert({ t, settings }: ToolConvertProps) {
     formData.append("file", file);
     formData.append("fileName", file.name);
     formData.append("targetLanguage", settings.translationEnabled ? settings.targetLanguage : "original");
+    formData.append("forceOcr", settings.forceOcr ? "true" : "false");
 
     try {
       const res = await fetch("/api/pdf-convert", {

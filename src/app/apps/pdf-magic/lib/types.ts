@@ -107,6 +107,7 @@ export interface ConversionSettings {
   pageSize: "letter" | "a4";
   translationEnabled: boolean;
   targetLanguage: string;
+  forceOcr: boolean;
 }
 
 /** Conversion progress */
@@ -133,6 +134,7 @@ export const DEFAULT_SETTINGS: ConversionSettings = {
   pageSize: "a4",
   translationEnabled: false,
   targetLanguage: "en",
+  forceOcr: false,
 };
 
 /** Available fonts */

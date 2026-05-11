@@ -2,7 +2,7 @@
 
 import type { ConversionSettings, I18nStrings } from "../lib/types";
 import { FONT_OPTIONS } from "../lib/types";
-import { Settings, Type, AlignVerticalSpaceAround, Ruler, FileText, Table, List, Heading, Sparkles } from "lucide-react";
+import { Settings, Type, AlignVerticalSpaceAround, Ruler, FileText, Table, List, Heading, Sparkles, Scan } from "lucide-react";
 
 interface ConversionSettingsProps {
   settings: ConversionSettings;
@@ -152,6 +152,25 @@ export default function ConversionSettingsPanel({ settings, onChange, t }: Conve
               <span className="text-sm">{label}</span>
             </label>
           ))}
+        </div>
+
+        {/* Deep OCR Section */}
+        <div className="space-y-3 pt-4 border-t border-border/30">
+          <label className="flex items-center gap-3 cursor-pointer group" onClick={() => update("forceOcr", !settings.forceOcr)}>
+            <div className={`
+              h-5 w-5 rounded-md border flex items-center justify-center transition-all
+              ${settings.forceOcr
+                ? "bg-accent border-accent text-black"
+                : "border-border/60 bg-background/40 group-hover:border-border"}
+            `}>
+              {settings.forceOcr && <span className="text-xs font-bold">✓</span>}
+            </div>
+            <Scan className="h-3.5 w-3.5 text-accent" />
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold">Deep Visual OCR</span>
+              <span className="text-[10px] text-muted/70 leading-tight mt-0.5">Force visual scanning. Best for broken fonts (Malayalam/Hindi).</span>
+            </div>
+          </label>
         </div>
 
         {/* Translation Section */}
