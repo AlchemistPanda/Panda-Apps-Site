@@ -15,11 +15,10 @@ export async function POST(req: Request) {
 
     const modelsToTry = [
       "gemini-3-flash",
-      "gemini-3-pro",
       "gemini-2.5-flash",
       "gemini-2.0-flash",
       "gemini-1.5-flash",
-      "gemini-1.5-flash-latest"
+      "gemini-3-pro", // Pro as fallback
     ];
 
     let lastError: Error | null = null;
