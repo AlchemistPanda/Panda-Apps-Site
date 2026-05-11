@@ -69,7 +69,7 @@ export default function ToolConvert({ t, settings }: ToolConvertProps) {
     });
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 180000); // 180s timeout
 
     const formData = new FormData();
     formData.append("file", file);
