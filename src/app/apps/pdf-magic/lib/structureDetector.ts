@@ -148,8 +148,19 @@ function processPage(page: ExtractedPage): ParsedPage {
   return { pageNumber: page.pageNumber, elements };
 }
 
+function detectLanguage(text: string): string {
+  if (/[\u0D00-\u0D7F]/.test(text)) return "ml";
+  if (/[\u0900-\u097F]/.test(text)) return "hi";
+  if (/[\u0600-\u06FF]/.test(text)) return "ar";
+  if (/[\u0B80-\u0BFF]/.test(text)) return "ta";
+  if (/[\u4E00-\u9FFF]/.test(text)) return "zh";
+  return "en";
+}
+
 export function detectStructure(pages: ExtractedPage[], pdfType: PdfType, totalPages: number): ParsedDocument {
+  const allText = pages.map(p => p.textItems.map(i => i.text).join(" ")).join(" ");
   return {
+    language: detectLanguage(allText),
     pages: pages.map(p => p.hasText ? processPage(p) : { pageNumber: p.pageNumber, elements: [] }),
     totalPages, pdfType,
   };

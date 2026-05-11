@@ -10,6 +10,14 @@ import type { ParsedDocument, ConversionSettings, DocElement } from "./types";
 const TWIPS_PER_INCH = 1440;
 const HALF_POINTS_PER_PT = 2;
 
+function getLanguageFont(lang: string | undefined, defaultFont: string): string {
+  if (lang === "ml") return "Noto Sans Malayalam, Arial";
+  if (lang === "hi") return "Noto Sans Devanagari, Arial";
+  if (lang === "ar") return "Arial, Times New Roman"; // Standard fonts usually have Arabic
+  if (lang === "ta") return "Noto Sans Tamil, Arial";
+  return defaultFont;
+}
+
 function ptToHalfPts(pt: number) { return Math.round(pt * HALF_POINTS_PER_PT); }
 
 function headingLevel(level: number): (typeof HeadingLevel)[keyof typeof HeadingLevel] {
@@ -20,7 +28,7 @@ function headingLevel(level: number): (typeof HeadingLevel)[keyof typeof Heading
   return map[level] || HeadingLevel.HEADING_3;
 }
 
-function buildParagraph(el: DocElement, settings: ConversionSettings): Paragraph {
+function buildParagraph(el: DocElement, settings: ConversionSettings, lang?: string): Paragraph {
   const text = el.content || "";
   const style = el.style || {};
   return new Paragraph({
@@ -28,7 +36,7 @@ function buildParagraph(el: DocElement, settings: ConversionSettings): Paragraph
     children: [
       new TextRun({
         text,
-        font: settings.fontFamily,
+        font: getLanguageFont(lang, settings.fontFamily),
         size: ptToHalfPts(settings.fontSize),
         bold: style.bold,
         italics: style.italic,
@@ -37,7 +45,7 @@ function buildParagraph(el: DocElement, settings: ConversionSettings): Paragraph
   });
 }
 
-function buildHeading(el: DocElement, settings: ConversionSettings): Paragraph {
+function buildHeading(el: DocElement, settings: ConversionSettings, lang?: string): Paragraph {
   const text = el.content || "";
   const level = el.level || 1;
   const sizes: Record<number, number> = { 1: 24, 2: 20, 3: 16, 4: 14, 5: 12, 6: 11 };
@@ -47,7 +55,7 @@ function buildHeading(el: DocElement, settings: ConversionSettings): Paragraph {
     children: [
       new TextRun({
         text,
-        font: settings.headingFont,
+        font: getLanguageFont(lang, settings.headingFont),
         size: ptToHalfPts(sizes[level] || settings.fontSize),
         bold: true,
       }),
@@ -55,7 +63,7 @@ function buildHeading(el: DocElement, settings: ConversionSettings): Paragraph {
   });
 }
 
-function buildList(el: DocElement, settings: ConversionSettings): Paragraph[] {
+function buildList(el: DocElement, settings: ConversionSettings, lang?: string): Paragraph[] {
   const items = el.listItems || [];
   return items.map(
     (item) =>
@@ -65,7 +73,7 @@ function buildList(el: DocElement, settings: ConversionSettings): Paragraph[] {
         children: [
           new TextRun({
             text: item,
-            font: settings.fontFamily,
+            font: getLanguageFont(lang, settings.fontFamily),
             size: ptToHalfPts(settings.fontSize),
           }),
         ],
@@ -73,7 +81,7 @@ function buildList(el: DocElement, settings: ConversionSettings): Paragraph[] {
   );
 }
 
-function buildTable(el: DocElement, settings: ConversionSettings): Table {
+function buildTable(el: DocElement, settings: ConversionSettings, lang?: string): Table {
   const data = el.tableData;
   if (!data || !data.rows.length) {
     return new Table({ rows: [new TableRow({ children: [new TableCell({ children: [new Paragraph("")] })] })] });
@@ -103,7 +111,7 @@ function buildTable(el: DocElement, settings: ConversionSettings): Table {
                 children: [
                   new TextRun({
                     text: cell?.text || "",
-                    font: settings.fontFamily,
+                    font: getLanguageFont(lang, settings.fontFamily),
                     size: ptToHalfPts(settings.fontSize),
                     bold: isHeader,
                   }),
@@ -164,21 +172,21 @@ export async function buildDocx(doc: ParsedDocument, settings: ConversionSetting
     for (const el of page.elements) {
       switch (el.type) {
         case "heading":
-          if (settings.detectHeadings) children.push(buildHeading(el, settings));
-          else children.push(buildParagraph(el, settings));
+          if (settings.detectHeadings) children.push(buildHeading(el, settings, doc.language));
+          else children.push(buildParagraph(el, settings, doc.language));
           break;
         case "paragraph":
-          children.push(buildParagraph(el, settings));
+          children.push(buildParagraph(el, settings, doc.language));
           break;
         case "list":
-          if (settings.detectLists) children.push(...buildList(el, settings));
+          if (settings.detectLists) children.push(...buildList(el, settings, doc.language));
           else {
             const items = el.listItems || [];
-            children.push(buildParagraph({ ...el, content: items.join("\n") }, settings));
+            children.push(buildParagraph({ ...el, content: items.join("\n") }, settings, doc.language));
           }
           break;
         case "table":
-          if (settings.detectTables) children.push(buildTable(el, settings));
+          if (settings.detectTables) children.push(buildTable(el, settings, doc.language));
           else {
             // Flatten table to paragraphs
             const rows = el.tableData?.rows || [];
@@ -189,7 +197,7 @@ export async function buildDocx(doc: ParsedDocument, settings: ConversionSetting
                   children: [
                     new TextRun({
                       text: row.map((c) => c.text).join("  |  "),
-                      font: settings.fontFamily,
+                      font: getLanguageFont(doc.language, settings.fontFamily),
                       size: ptToHalfPts(settings.fontSize),
                     }),
                   ],
