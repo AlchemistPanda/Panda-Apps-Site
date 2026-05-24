@@ -3,7 +3,7 @@
 import { Heart, Globe, BookOpen, Zap } from "lucide-react";
 import { useLang } from "../i18n";
 
-const NGOs = ["UNICEF India", "GiveIndia", "PM CARES Fund", "CRY"];
+
 
 export default function AboutSection() {
   const { tr } = useLang();
@@ -147,20 +147,38 @@ export default function AboutSection() {
               {tr("about.donationBody").split("{directly}")[1]}
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              {NGOs.map((n, i) => (
-                <span
-                  key={n}
-                  className="ai4all-chip ai4all-rise"
-                  style={{
-                    animationDelay: `${0.2 + i * 0.08}s`,
-                    color: "var(--a-orange)",
-                    borderColor: "rgba(249,115,22,0.30)",
-                    background: "rgba(249,115,22,0.10)",
-                  }}
-                >
-                  ✓ {n}
-                </span>
-              ))}
+              <span
+                className="ai4all-chip ai4all-rise"
+                style={{
+                  color: "var(--a-orange)",
+                  borderColor: "rgba(249,115,22,0.30)",
+                  background: "rgba(249,115,22,0.10)",
+                }}
+              >
+                ✓ 100% Direct Support
+              </span>
+              <span
+                className="ai4all-chip ai4all-rise"
+                style={{
+                  animationDelay: "0.1s",
+                  color: "var(--a-orange)",
+                  borderColor: "rgba(249,115,22,0.30)",
+                  background: "rgba(249,115,22,0.10)",
+                }}
+              >
+                ✓ Zero Middlemen / Platforms
+              </span>
+              <span
+                className="ai4all-chip ai4all-rise"
+                style={{
+                  animationDelay: "0.2s",
+                  color: "var(--a-orange)",
+                  borderColor: "rgba(249,115,22,0.30)",
+                  background: "rgba(249,115,22,0.10)",
+                }}
+              >
+                ✓ Real-time Verification Proofs
+              </span>
             </div>
           </div>
         </div>

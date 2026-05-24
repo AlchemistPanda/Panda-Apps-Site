@@ -32,16 +32,7 @@ interface FormData {
   screenshotUrl?: string;
 }
 
-const NGO_OPTIONS = [
-  { name: "UNICEF India", emoji: "🌍", description: "Children's health, education and protection",
-    url: "https://www.unicef.org/india/donate", gradient: "from-blue-500 to-cyan-500" },
-  { name: "GiveIndia", emoji: "🤝", description: "India's largest giving platform",
-    url: "https://give.do/", gradient: "from-emerald-500 to-teal-500" },
-  { name: "CRY (Child Rights & You)", emoji: "👶", description: "Brighter futures for children",
-    url: "https://www.cry.org/", gradient: "from-rose-500 to-pink-500" },
-];
 
-const AMOUNTS = [10, 20, 50, 100];
 
 function ProgressBar({ step }: { step: number }) {
   const steps = ["About You", "Why Join", "Support & Register"];

@@ -16,8 +16,8 @@ const t = {
   "hero.ai": { en: "AI", ml: "AI" },
   "hero.forEveryone": { en: "for Everyone.", ml: "എല്ലാവർക്കും." },
   "hero.subtitle": {
-    en: "Hands-on online sessions to upskill {anyone} with AI tools — image creation, poster design, video generation, and more. A small fee that goes {entirely} to those in need.",
-    ml: "AI ടൂളുകൾ ഉപയോഗിച്ച് {anyone} നെ നൈപുണ്യമുള്ളവരാക്കാനുള്ള പ്രായോഗിക ഓൺലൈൻ സെഷനുകൾ — ഇമേജ് ക്രിയേഷൻ, പോസ്റ്റർ ഡിസൈൻ, വീഡിയോ ജനറേഷൻ, മറ്റും. ഒരു ചെറിയ ഫീ {entirely} ആവശ്യക്കാർക്ക് പോകുന്നു.",
+    en: "Hands-on online sessions to upskill {anyone} with AI tools — image creation, poster design, video generation, and more. A small fee that goes {entirely} to help teachers & individuals undergoing critical medical treatment.",
+    ml: "AI ടൂളുകൾ ഉപയോഗിച്ച് {anyone} നെ നൈപുണ്യമുള്ളവരാക്കാനുള്ള പ്രായോഗിക ഓൺലൈൻ സെഷനുകൾ — ഇമേജ് ക്രിയേഷൻ, പോസ്റ്റർ ഡിസൈൻ, വീഡിയോ ജനറേഷൻ, മറ്റും. ഒരു ചെറിയ ഫീ {entirely} ഗുരുതരമായ അസുഖങ്ങൾ നേരിടുന്ന അധ്യാപകർക്കും വ്യക്തികൾക്കും ചികിത്സാ സഹായമായി പോകുന്നു.",
   },
   "hero.anyone": { en: "anyone", ml: "ആരെയും" },
   "hero.entirely": { en: "entirely", ml: "പൂർണ്ണമായും" },
@@ -110,8 +110,8 @@ const t = {
   },
   "about.pillar2Title": { en: "Fee Goes to the Needy", ml: "ഫീ ആവശ്യക്കാർക്ക്" },
   "about.pillar2Body": {
-    en: "A small course fee is collected, but not a single rupee is kept by the instructor. Every payment is donated directly to verified NGOs.",
-    ml: "ഒരു ചെറിയ കോഴ്സ് ഫീ ശേഖരിക്കുന്നു, പക്ഷേ ഒരു രൂപ പോലും അധ്യാപകൻ എടുക്കുന്നില്ല. ഓരോ പേയ്മെന്റും സ്ഥിരീകരിച്ച NGO-കൾക്ക് നേരിട്ട് സംഭാവന ചെയ്യുന്നു.",
+    en: "A small course fee is collected, but not a single rupee is kept by the instructor. Every payment goes directly to help teachers & individuals undergoing critical medical treatment.",
+    ml: "ഒരു ചെറിയ കോഴ്സ് ഫീ ശേഖരിക്കുന്നു, പക്ഷേ ഒരു രൂപ പോലും അധ്യാപകൻ എടുക്കുന്നില്ല. ഈ തുക മുഴുവനായും ഗുരുതരമായ ആരോഗ്യപ്രശ്നങ്ങൾ നേരിടുന്ന അധ്യാപകരുടെയോ വ്യക്തികളുടെയോ ചികിത്സയ്ക്കായി നേരിട്ട് നൽകുന്നു.",
   },
   "about.pillar3Title": { en: "Practical & Simple", ml: "പ്രായോഗികവും ലളിതവും" },
   "about.pillar3Body": {
@@ -123,10 +123,10 @@ const t = {
     en: "No boring theory. Every session is practical—you create real outputs: images, posters, worksheets, or videos by the end.",
     ml: "വിരസമായ തിയറി ഇല്ല. ഓരോ സെഷനും പ്രായോഗികം — അവസാനം നിങ്ങൾ യഥാർത്ഥ ഔട്ട്‌പുട്ടുകൾ സൃഷ്ടിക്കും: ഇമേജുകൾ, പോസ്റ്ററുകൾ, വർക്ക്‌ഷീറ്റുകൾ, അല്ലെങ്കിൽ വീഡിയോകൾ.",
   },
-  "about.donationTitle": { en: "100% Transparent Donations", ml: "100% സുതാര്യ സംഭാവനകൾ" },
+  "about.donationTitle": { en: "100% Direct Support", ml: "100% നേരിട്ടുള്ള ചികിത്സാ സഹായം" },
   "about.donationBody": {
-    en: "When you pay the course fee, you donate {directly} to a verified NGO. You receive the donation receipt. The instructor keeps nothing. Radical transparency.",
-    ml: "നിങ്ങൾ കോഴ്സ് ഫീ അടയ്ക്കുമ്പോൾ, ഒരു സ്ഥിരീകരിച്ച NGO-യ്ക്ക് {directly} സംഭാവന ചെയ്യുന്നു. സംഭാവന രസീത് നിങ്ങൾക്ക് ലഭിക്കും. അധ്യാപകൻ ഒന്നും എടുക്കുന്നില്ല. സമ്പൂർണ്ണ സുതാര്യത.",
+    en: "When you pay the course fee, you pay {directly} to the bank account of the teacher or person undergoing critical medical treatment. The instructor keeps absolutely nothing. Radical transparency.",
+    ml: "നിങ്ങൾ കോഴ്സ് ഫീ അടയ്ക്കുമ്പോൾ, ചികിത്സ ആവശ്യമുള്ള അധ്യാപകരുടെയോ വ്യക്തികളുടെയോ അക്കൗണ്ടിലേക്ക് {directly} അയക്കുകയാണ് ചെയ്യുന്നത്. അധ്യാപകൻ ഇതിൽ നിന്നും ഒന്നും സ്വീകരിക്കുന്നില്ല. സമ്പൂർണ്ണ സുതാര്യത.",
   },
   "about.directly": { en: "directly", ml: "നേരിട്ട്" },
 
