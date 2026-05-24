@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const folder = "ai4all/screenshots";
     
-    // Transformation: auto quality, auto format, resize to max 1200px wide
-    const eager = "c_limit,w_1200,q_auto,f_auto";
+    // Transformation: auto quality (economical), auto format, resize to max 800px wide for massive compression
+    const eager = "c_limit,w_800,q_auto:eco,f_auto";
 
     const paramsToSign = `eager=${eager}&folder=${folder}&timestamp=${timestamp}`;
     const signature = crypto
