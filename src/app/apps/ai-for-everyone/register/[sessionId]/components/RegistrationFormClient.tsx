@@ -748,22 +748,45 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                   </button>
                 </div>
                 {/* Content */}
-                <div className="overflow-y-auto pr-1 space-y-4 text-[14px] leading-relaxed font-medium" style={{ color: "var(--a-ink-soft)" }}>
-                  <p>
-                    തൃശ്ശൂർ ജില്ലയിലെ കിരാലൂർ PMLP സ്കൂളിൽ വർഷങ്ങളായി ജോലി ചെയ്ത് വരികയായിരുന്ന സിന്ധു ടീച്ചറെ സഹായിക്കാനായി വോളന്റീർ ചെയ്യുന്ന ഗ്രാസ്വേയുടെയും Outreach ന്റെയും പരിപാടികൾക്കിടയിലാണ് മനുരാജ് പരിചയപ്പെടുന്നത്.
-                  </p>
-                  <p className="bg-rose-950/20 p-4 rounded-2xl border border-rose-900/30 font-bold text-rose-200">
-                    പക്ഷാഘാതം (Stroke) ബാധിച്ച് കഠിനമായ പക്ഷാഘാതാനന്തര ശാരീരിക അവസ്ഥകളിലൂടെ കടന്നുപോകുന്ന ടീച്ചറുടെ പുനരധിവാസത്തിനും ചികിത്സയ്ക്കും അടിയന്തരമായി വൻ തുകകൾ ആവശ്യമുണ്ട്.
-                  </p>
-                  <p>
-                    &ldquo;അമ്പതോ നൂറോ രൂപയായാലും അതൊരു വലിയ സഹായമാകും..&rdquo; എന്ന ടീച്ചറുടെ എളിയ അഭ്യർത്ഥന മുൻനിർത്തിയാണ് നമ്മൾ ഈ crowdfunding ആരംഭിച്ചിരിക്കുന്നത്.
-                  </p>
-                  <p>
-                    ഈ പഠന ക്ലാസിൽ നിങ്ങൾ ക്ലാസ് ഫീസായി നൽകുന്ന തുക മുഴുവനായും സിന്ധു ടീച്ചറുടെ അക്കൗണ്ടിലേക്ക് നേരിട്ട് അയച്ചു നൽകാനാണ് ആഗ്രഹിക്കുന്നത്. <strong>ടീച്ചറുടെ നേരിട്ടുള്ള നമ്പറിലാണ് ഗൂഗിൾ പേ അക്കൗണ്ട് ഉള്ളത്: +91 9744616598</strong>.
-                  </p>
-                  <p className="text-xs italic pt-2 border-t border-[var(--a-line)]" style={{ color: "var(--a-muted)" }}>
-                    ഈ പ്രയാസഘട്ടത്തിൽ സിന്ധു ടീച്ചർക്കൊപ്പം നിന്ന് നമ്മളാൽ കഴിയുന്ന ചെറിയ സഹായം എത്തിച്ചുനൽകാം. സ്നേഹപൂർവ്വം, മനുരാജ്.
-                  </p>
+                <div className="overflow-y-auto pr-1 space-y-6 text-[14px] leading-relaxed font-medium" style={{ color: "var(--a-ink-soft)" }}>
+                  {/* Malayalam Story */}
+                  <div className="space-y-3">
+                    <span className="text-[10px] uppercase font-bold text-pink-400 tracking-wider block">മലയാളം</span>
+                    <p>
+                      തൃശ്ശൂർ ജില്ലയിലെ കിരാലൂർ PMLP സ്കൂളിൽ വർഷങ്ങളോളം കുട്ടികൾക്ക് അറിവിന്റെ വെളിച്ചം പകർന്ന അധ്യാപികയാണ് സിന്ധു സുധാകരൻ ടീച്ചർ. സ്നേഹം കൊണ്ടും കരുതൽ കൊണ്ടും വിദ്യാർത്ഥികളുടെയും സഹപ്രവർത്തകരുടെയും പ്രിയപ്പെട്ടവളായിരുന്നു അവർ.
+                    </p>
+                    <p className="bg-rose-950/20 p-4 rounded-2xl border border-rose-900/30 font-bold text-rose-200">
+                      ഇന്ന് ടീച്ചർ ജീവിതത്തിലെ ഏറ്റവും കഠിനമായ ഒരു ഘട്ടത്തിലൂടെ കടന്നുപോകുകയാണ്. ഒരു സ്ട്രോക്ക് ടീച്ചറുടെ ജീവിതം മാറ്റിമറിച്ചു — ദീർഘകാല ചികിത്സയും തെറാപ്പിയും ദൈനംദിന പരിചരണവും അനിവാര്യമായിരിക്കുന്നു.
+                    </p>
+                    <p>
+                      ഒരുകാലത്ത് ക്ലാസ്സ്മുറിയിൽ ആത്മവിശ്വാസത്തോടെ നിന്നിരുന്ന ടീച്ചർക്ക് ഇന്ന് നമ്മുടെ കൈകളുടെ താങ്ങ് വേണം. ചികിത്സയുടെ ദൂരവും ചെലവും വളരെ വലുതാണ്. പലരുടെ ചെറിയ സഹായങ്ങൾ ഒന്നിച്ചാൽ ഒറ്റയ്ക്ക് താങ്ങാനാകാത്ത ഭാരം ലഘൂകരിക്കാം.
+                    </p>
+                    <p className="font-bold text-[var(--a-ink)]">
+                      ₹50 രൂപയോ, ₹100 രൂപയോ, അതിലധികമോ — താങ്കളുടെ ഓരോ സഹായവും ടീച്ചറുടെ സൗഖ്യത്തിന്റെ വഴിയിൽ ഒപ്പമുണ്ടാകും.
+                    </p>
+                  </div>
+
+                  <div className="border-t border-[var(--a-line)] my-4" />
+
+                  {/* English Story */}
+                  <div className="space-y-3">
+                    <span className="text-[10px] uppercase font-bold text-pink-400 tracking-wider block">English</span>
+                    <p>
+                      Sindhu Sudhakaran spent years shaping young minds at Kiraloor PMLP School in Thrissur district. Known among her students and colleagues for her warmth and dedication, she was the kind of teacher whose presence brightened a classroom.
+                    </p>
+                    <p className="bg-violet-950/20 p-4 rounded-2xl border border-violet-900/30 font-bold text-violet-200">
+                      Today, she is facing one of life's hardest battles. A stroke has changed everything, leaving her dependent on long-term treatment, therapy, and daily care.
+                    </p>
+                    <p>
+                      The teacher who once stood confidently at the blackboard now needs our hands to hold hers. But the road to recovery is long, and the costs of care are unrelenting. Small contributions from many can lift a burden that feels impossible alone.
+                    </p>
+                    <p className="font-bold text-[var(--a-ink)]">
+                      Whether it's ₹50, ₹100, or more — your kindness travels with her through every step of healing.
+                    </p>
+                    <p className="text-xs italic" style={{ color: "var(--a-muted)" }}>
+                      Thank you for standing with Sindhu Teacher.
+                    </p>
+                  </div>
                 </div>
                 {/* Footer */}
                 <div className="mt-6 pt-4 border-t border-[var(--a-line)] flex justify-end">
