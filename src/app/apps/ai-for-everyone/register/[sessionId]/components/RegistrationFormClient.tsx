@@ -47,13 +47,13 @@ function ProgressBar({ step }: { step: number }) {
                   ? "bg-gradient-to-br from-violet-500 to-pink-500 text-white shadow-lg shadow-pink-500/30"
                   : i + 1 === step
                   ? "bg-gradient-to-br from-violet-500 via-pink-500 to-orange-400 text-white shadow-xl shadow-violet-500/40 scale-110"
-                  : "bg-white border-2 border-[var(--a-line)] text-[var(--a-muted)]"
+                  : "bg-white/5 border-2 border-[var(--a-line)] text-[var(--a-muted)]"
               }`}
             >
               {i + 1 < step ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
             </div>
             <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wider ${
-              i + 1 === step ? "text-[var(--a-purple-deep)]" : "text-[var(--a-muted)]"
+              i + 1 === step ? "text-[var(--a-purple)]" : "text-[var(--a-muted)]"
             }`}>
               {label}
             </span>
@@ -192,7 +192,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="ai4all relative min-h-screen">
       <div className="ai4all-aurora">
         <span className="ai4all-aurora-c" />
       </div>
@@ -399,7 +399,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
 
               {/* Donation options selector */}
               <div>
-                <p className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "var(--a-purple-deep)" }}>
+                <p className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "var(--a-purple)" }}>
                   Choose your participation type
                 </p>
                 <div className="grid grid-cols-2 gap-3">
@@ -440,7 +440,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                         className={`rounded-2xl p-4 text-[14px] font-bold text-center leading-snug transition-all border-2 ${
                           isSelected
                             ? "bg-gradient-to-br from-violet-500 via-pink-500 to-orange-400 text-white border-transparent shadow-lg shadow-pink-500/20 scale-102"
-                            : "bg-white border-[var(--a-line)] text-[var(--a-ink-soft)] hover:border-[var(--a-purple)] hover:text-[var(--a-ink)]"
+                            : "bg-white/5 border-[var(--a-line)] text-[var(--a-ink-soft)] hover:border-[var(--a-purple)] hover:text-[var(--a-ink)] hover:bg-white/10"
                         }`}
                       >
                         {opt.label}
@@ -476,19 +476,19 @@ export default function RegistrationFormClient({ sessionId }: Props) {
 
               {/* IF DONATION ROUTE: Show Payment Details & Screenshot Upload */}
               {form.donationStatus === "donated" && (
-                <div className="space-y-4 ai4all-rise bg-white p-5 rounded-3xl border-2 border-[var(--a-line)]">
+                <div className="space-y-4 ai4all-rise bg-[var(--a-surface)] backdrop-blur-xl p-5 rounded-3xl border-2 border-[var(--a-line)]">
                   <h3 className="font-black text-base" style={{ color: "var(--a-ink)" }}>
                     Direct Payment Details
                   </h3>
                   <p className="text-xs" style={{ color: "var(--a-ink-soft)" }}>
-                    Please send the fee of <strong className="text-violet-600">₹{form.donationAmount || "50"}</strong> using GPay/PhonePe/Paytm to teacher's direct account:
+                    Please send the fee of <strong className="text-[var(--a-purple)]">₹{form.donationAmount || "50"}</strong> using GPay/PhonePe/Paytm to teacher's direct account:
                   </p>
 
                   <div className="space-y-3">
                     {/* GPay UPI Number */}
-                    <div className="flex items-center justify-between bg-[var(--a-blush)] p-3 rounded-2xl border border-[var(--a-line)]">
+                    <div className="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-[var(--a-line)]">
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-violet-600 block">Google Pay / Phone Number</span>
+                        <span className="text-[10px] uppercase font-bold text-pink-400 block">Google Pay / Phone Number</span>
                         <strong className="text-sm font-black" style={{ color: "var(--a-ink)" }}>+91 9744616598</strong>
                       </div>
                       <button
@@ -505,9 +505,9 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                     </div>
 
                     {/* UPI ID */}
-                    <div className="flex items-center justify-between bg-[var(--a-blush)] p-3 rounded-2xl border border-[var(--a-line)]">
+                    <div className="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-[var(--a-line)]">
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-violet-600 block">UPI ID (Any payment app)</span>
+                        <span className="text-[10px] uppercase font-bold text-pink-400 block">UPI ID (Any payment app)</span>
                         <strong className="text-sm font-black break-all" style={{ color: "var(--a-ink)" }}>sindhusudhakaransindhusudhakar-2@oksbi</strong>
                       </div>
                       <button
@@ -531,7 +531,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                     </label>
 
                     {!form.screenshotUrl ? (
-                      <div className="relative group rounded-2xl border-2 border-dashed border-[var(--a-line)] hover:border-violet-500 bg-[var(--a-blush)] hover:bg-violet-500/5 transition-all p-6 text-center">
+                      <div className="relative group rounded-2xl border-2 border-dashed border-[var(--a-line)] hover:border-violet-500 bg-white/5 hover:bg-violet-500/5 transition-all p-6 text-center">
                         <input
                           type="file"
                           accept="image/*"
@@ -582,14 +582,14 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                         </div>
                       </div>
                     ) : (
-                      <div className="relative rounded-2xl border-2 border-[var(--a-line)] overflow-hidden bg-slate-50 p-2 flex items-center gap-4">
+                      <div className="relative rounded-2xl border-2 border-[var(--a-line)] overflow-hidden bg-white/5 p-2 flex items-center gap-4">
                         <img
                           src={form.screenshotUrl}
                           alt="Screenshot Preview"
                           className="w-16 h-20 object-cover rounded-lg border"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                          <p className="text-xs font-bold text-emerald-400 flex items-center gap-1">
                             ✓ Screenshot uploaded successfully
                           </p>
                           <p className="text-[10px]" style={{ color: "var(--a-muted)" }}>
@@ -599,7 +599,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                         <button
                           type="button"
                           onClick={() => set("screenshotUrl", "")}
-                          className="p-1.5 rounded-full hover:bg-rose-100 text-rose-500 transition-colors mr-2"
+                          className="p-1.5 rounded-full hover:bg-rose-950/40 text-rose-400 transition-colors mr-2"
                           title="Remove screenshot"
                         >
                           <X className="h-4 w-4" />
@@ -617,7 +617,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
 
               {/* IF AID ROUTE: Show Hardship Explanation */}
               {form.donationStatus === "hardship" && (
-                <div className="space-y-4 ai4all-rise bg-white p-5 rounded-3xl border-2 border-[var(--a-line)]">
+                <div className="space-y-4 ai4all-rise bg-[var(--a-surface)] backdrop-blur-xl p-5 rounded-3xl border-2 border-[var(--a-line)]">
                   <div className="rounded-2xl p-4 flex gap-3" style={{
                     background: "linear-gradient(135deg, rgba(251,191,36,0.08), rgba(249,115,22,0.08))",
                     border: "1px solid rgba(251,191,36,0.25)"
@@ -705,27 +705,27 @@ export default function RegistrationFormClient({ sessionId }: Props) {
           {/* Story Popup Modal */}
           {showStory && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ai4all-rise">
-              <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 overflow-hidden max-h-[85vh] flex flex-col border border-violet-100">
+              <div className="relative bg-[var(--a-bg-2)] w-full max-w-lg rounded-3xl shadow-2xl p-6 overflow-hidden max-h-[85vh] flex flex-col border border-[var(--a-line)]">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b pb-4 mb-4">
-                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-1.5">
+                <div className="flex items-center justify-between border-b border-[var(--a-line)] pb-4 mb-4">
+                  <h3 className="text-lg font-black flex items-center gap-1.5" style={{ color: "var(--a-ink)" }}>
                     <Heart className="h-5 w-5 text-rose-500 fill-rose-500 animate-pulse" />
                     Sindhu Teacher's Story
                   </h3>
                   <button
                     type="button"
                     onClick={() => setShowStory(false)}
-                    className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+                    className="p-1.5 rounded-full hover:bg-white/10 text-[var(--a-ink-soft)] transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </button>
                 </div>
                 {/* Content */}
-                <div className="overflow-y-auto pr-1 text-slate-700 space-y-4 text-[14px] leading-relaxed font-medium">
+                <div className="overflow-y-auto pr-1 space-y-4 text-[14px] leading-relaxed font-medium" style={{ color: "var(--a-ink-soft)" }}>
                   <p>
                     തൃശ്ശൂർ ജില്ലയിലെ കിരാലൂർ PMLP സ്കൂളിൽ വർഷങ്ങളായി ജോലി ചെയ്ത് വരികയായിരുന്ന സിന്ധു ടീച്ചറെ സഹായിക്കാനായി വോളന്റീർ ചെയ്യുന്ന ഗ്രാസ്വേയുടെയും Outreach ന്റെയും പരിപാടികൾക്കിടയിലാണ് മനുരാജ് പരിചയപ്പെടുന്നത്.
                   </p>
-                  <p className="bg-rose-50/50 p-4 rounded-2xl border border-rose-100/50 font-bold text-rose-950">
+                  <p className="bg-rose-950/20 p-4 rounded-2xl border border-rose-900/30 font-bold text-rose-200">
                     പക്ഷാഘാതം (Stroke) ബാധിച്ച് കഠിനമായ പക്ഷാഘാതാനന്തര ശാരീരിക അവസ്ഥകളിലൂടെ കടന്നുപോകുന്ന ടീച്ചറുടെ പുനരധിവാസത്തിനും ചികിത്സയ്ക്കും അടിയന്തരമായി വൻ തുകകൾ ആവശ്യമുണ്ട്.
                   </p>
                   <p>
@@ -734,12 +734,12 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                   <p>
                     ഈ പഠന ക്ലാസിൽ നിങ്ങൾ ക്ലാസ് ഫീസായി നൽകുന്ന തുക മുഴുവനായും സിന്ധു ടീച്ചറുടെ അക്കൗണ്ടിലേക്ക് നേരിട്ട് അയച്ചു നൽകാനാണ് ആഗ്രഹിക്കുന്നത്. <strong>ടീച്ചറുടെ നേരിട്ടുള്ള നമ്പറിലാണ് ഗൂഗിൾ പേ അക്കൗണ്ട് ഉള്ളത്: +91 9744616598</strong>.
                   </p>
-                  <p className="text-xs text-slate-500 italic pt-2 border-t">
+                  <p className="text-xs italic pt-2 border-t border-[var(--a-line)]" style={{ color: "var(--a-muted)" }}>
                     ഈ പ്രയാസഘട്ടത്തിൽ സിന്ധു ടീച്ചർക്കൊപ്പം നിന്ന് നമ്മളാൽ കഴിയുന്ന ചെറിയ സഹായം എത്തിച്ചുനൽകാം. സ്നേഹപൂർവ്വം, മനുരാജ്.
                   </p>
                 </div>
                 {/* Footer */}
-                <div className="mt-6 pt-4 border-t flex justify-end">
+                <div className="mt-6 pt-4 border-t border-[var(--a-line)] flex justify-end">
                   <button
                     type="button"
                     onClick={() => setShowStory(false)}
