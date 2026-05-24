@@ -115,6 +115,8 @@ export interface Registration {
   donationStatus: "donated" | "hardship" | "skipped";
   donationAmount?: number;
   financialReason?: string;
+  screenshotUrl?: string;
+  isScreenshotCorrect?: boolean;
   createdAt: string;
 }
 

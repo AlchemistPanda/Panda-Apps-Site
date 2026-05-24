@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, ArrowRight, Loader2, CheckCircle2, Heart, ExternalLink, Sparkles,
+  ArrowLeft, ArrowRight, Loader2, CheckCircle2, Heart, ExternalLink, Sparkles, Copy, X, FileImage, AlertTriangle,
 } from "lucide-react";
 import type { Session } from "@/lib/ai4all";
 import { useRouter } from "next/navigation";
@@ -29,6 +29,7 @@ interface FormData {
   donationAmount: number | null;
   donationStatus: "donated" | "hardship" | "skipped";
   financialReason: string;
+  screenshotUrl?: string;
 }
 
 const NGO_OPTIONS = [
@@ -43,7 +44,7 @@ const NGO_OPTIONS = [
 const AMOUNTS = [10, 20, 50, 100];
 
 function ProgressBar({ step }: { step: number }) {
-  const steps = ["About You", "Why Join", "Contribute", "Confirm"];
+  const steps = ["About You", "Why Join", "Support & Register"];
   return (
     <div className="mb-10">
       <div className="flex items-center justify-between mb-3">
@@ -69,7 +70,7 @@ function ProgressBar({ step }: { step: number }) {
         ))}
       </div>
       <div className="ai4all-progress-track">
-        <div className="ai4all-progress-fill" style={{ width: `${((step - 1) / 3) * 100}%` }} />
+        <div className="ai4all-progress-fill" style={{ width: `${((step - 1) / 2) * 100}%` }} />
       </div>
     </div>
   );
@@ -88,7 +89,15 @@ export default function RegistrationFormClient({ sessionId }: Props) {
     name: "", phone: "", whatsapp: "", sameAsPhone: true,
     district: "", locationOther: "", institution: "",
     whyJoin: "", donationAmount: null, donationStatus: "skipped", financialReason: "",
+    screenshotUrl: "",
   });
+  const [isCustomAmount, setIsCustomAmount] = useState(false);
+  const [customAmountVal, setCustomAmountVal] = useState("");
+  const [showStory, setShowStory] = useState(false);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+  const [copiedGpay, setCopiedGpay] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     fetch(`/api/ai-for-everyone/sessions/${sessionId}`, { cache: "no-store" })
@@ -133,6 +142,10 @@ export default function RegistrationFormClient({ sessionId }: Props) {
 
   async function complete(status: "donated" | "hardship") {
     if (status === "hardship" && !form.financialReason.trim()) return;
+    if (status === "donated" && !form.screenshotUrl) {
+      alert("Please upload a payment screenshot first.");
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/ai-for-everyone/registrations", {
@@ -150,6 +163,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
           donationStatus: status,
           donationAmount: status === "donated" ? form.donationAmount : undefined,
           financialReason: status === "hardship" ? form.financialReason.trim() : undefined,
+          screenshotUrl: status === "donated" ? form.screenshotUrl : undefined,
         }),
       });
       if (!res.ok) {
@@ -372,181 +386,378 @@ export default function RegistrationFormClient({ sessionId }: Props) {
             </div>
           )}
 
-          {/* Step 3 */}
+          {/* Step 3: Support & Register */}
           {step === 3 && (
-            <div className="ai4all-rise">
-              <div className="text-center mb-7">
+            <div className="ai4all-rise space-y-6">
+              <div className="text-center mb-6">
                 <div className="text-5xl mb-3 inline-block ai4all-float">💝</div>
                 <h2 className="text-2xl font-black tracking-tight mb-2" style={{ color: "var(--a-ink)" }}>
-                  Support someone in need
+                  Support Sindhu Teacher's Recovery
                 </h2>
                 <p className="text-sm leading-relaxed" style={{ color: "var(--a-ink-soft)" }}>
-                  This course has a small fee, donated entirely to verified NGOs.
-                  <br />
-                  <strong style={{ color: "var(--a-ink)" }}>Not a single rupee is kept</strong> by the instructor.
+                  This training has a small registration fee of ₹50 or ₹100. **100% of these contributions** go directly to the bank account of **Sindhu Teacher**, a primary school teacher from Thrissur who is recovering from a stroke.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setShowStory(true)}
+                  className="mt-3 text-xs font-bold text-violet-600 hover:text-violet-700 hover:underline inline-flex items-center gap-1"
+                >
+                  📖 Read Sindhu Teacher's Story (മലയാളത്തിൽ വായിക്കുക)
+                </button>
               </div>
 
-              {/* Amount selector */}
-              <div className="mb-6">
+              {/* Donation options selector */}
+              <div>
                 <p className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "var(--a-purple-deep)" }}>
-                  Choose an amount
+                  Choose your participation type
                 </p>
-                <div className="grid grid-cols-4 gap-2">
-                  {AMOUNTS.map((amt) => (
-                    <button
-                      key={amt}
-                      onClick={() => set("donationAmount", amt)}
-                      className={`rounded-2xl py-4 text-base font-black transition-all ${
-                        form.donationAmount === amt
-                          ? "bg-gradient-to-br from-violet-500 via-pink-500 to-orange-400 text-white shadow-lg shadow-pink-500/30 scale-105"
-                          : "bg-white border-2 border-[var(--a-line)] text-[var(--a-ink-soft)] hover:border-[var(--a-purple)] hover:text-[var(--a-ink)]"
-                      }`}
-                    >
-                      ₹{amt}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: "₹50 Contribution", value: "50", status: "donated" as const, amt: 50 },
+                    { label: "₹100 Contribution", value: "100", status: "donated" as const, amt: 100 },
+                    { label: "₹100+ (Custom Amount)", value: "custom", status: "donated" as const, amt: 0 },
+                    { label: "I need Financial Aid (Free)", value: "aid", status: "hardship" as const, amt: 0 }
+                  ].map((opt) => {
+                    const isSelected = 
+                      opt.value === "custom" && isCustomAmount && form.donationStatus === "donated" ||
+                      opt.value === "aid" && form.donationStatus === "hardship" ||
+                      opt.value === "50" && form.donationAmount === 50 && form.donationStatus === "donated" && !isCustomAmount ||
+                      opt.value === "100" && form.donationAmount === 100 && form.donationStatus === "donated" && !isCustomAmount;
+
+                    return (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() => {
+                          if (opt.value === "custom") {
+                            setIsCustomAmount(true);
+                            set("donationStatus", "donated");
+                            set("donationAmount", 150); // initial fallback
+                            setForm((f) => ({ ...f, financialReason: "" }));
+                          } else if (opt.value === "aid") {
+                            setIsCustomAmount(false);
+                            set("donationStatus", "hardship");
+                            set("donationAmount", null);
+                            set("screenshotUrl", "");
+                          } else {
+                            setIsCustomAmount(false);
+                            set("donationStatus", "donated");
+                            set("donationAmount", opt.amt);
+                            setForm((f) => ({ ...f, financialReason: "" }));
+                          }
+                        }}
+                        className={`rounded-2xl p-4 text-[14px] font-bold text-center leading-snug transition-all border-2 ${
+                          isSelected
+                            ? "bg-gradient-to-br from-violet-500 via-pink-500 to-orange-400 text-white border-transparent shadow-lg shadow-pink-500/20 scale-102"
+                            : "bg-white border-[var(--a-line)] text-[var(--a-ink-soft)] hover:border-[var(--a-purple)] hover:text-[var(--a-ink)]"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* NGO links */}
-              <div className="mb-5">
-                <p className="text-xs font-bold mb-3 uppercase tracking-wider" style={{ color: "var(--a-purple-deep)" }}>
-                  {form.donationAmount
-                    ? `Donate ₹${form.donationAmount} to one of these NGOs`
-                    : "Select an amount above, then donate to:"}
-                </p>
-                <div className="space-y-2">
-                  {NGO_OPTIONS.map((ngo) => (
-                    <a
-                      key={ngo.name}
-                      href={ngo.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-3 rounded-2xl border-2 border-[var(--a-line)] bg-white hover:border-[var(--a-purple)] hover:shadow-md p-4 transition-all"
-                    >
-                      <div className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xl bg-gradient-to-br ${ngo.gradient} shadow-md`}>
-                        {ngo.emoji}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-[14px] group-hover:text-[var(--a-purple)] transition-colors" style={{ color: "var(--a-ink)" }}>
-                          {ngo.name}
-                        </p>
-                        <p className="text-xs truncate" style={{ color: "var(--a-muted)" }}>
-                          {ngo.description}
-                        </p>
-                      </div>
-                      <ExternalLink className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--a-muted)" }} />
-                    </a>
-                  ))}
+              {/* If Custom Amount is selected */}
+              {form.donationStatus === "donated" && isCustomAmount && (
+                <div className="ai4all-rise">
+                  <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: "var(--a-purple-deep)" }}>
+                    Enter Custom Contribution Amount (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min={100}
+                    placeholder="Enter amount (minimum ₹100)"
+                    value={customAmountVal}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setCustomAmountVal(val);
+                      set("donationAmount", val ? parseInt(val, 10) : null);
+                    }}
+                    className="ai4all-input"
+                  />
+                  {form.donationAmount !== null && form.donationAmount < 100 && (
+                    <p className="text-rose-500 text-xs mt-1 font-medium">Please enter at least ₹100</p>
+                  )}
                 </div>
-              </div>
+              )}
 
-              <p className="text-xs text-center" style={{ color: "var(--a-muted)" }}>
-                Click a link → donate on their site → come back and click Next
-              </p>
-            </div>
-          )}
+              {/* IF DONATION ROUTE: Show Payment Details & Screenshot Upload */}
+              {form.donationStatus === "donated" && (
+                <div className="space-y-4 ai4all-rise bg-white p-5 rounded-3xl border-2 border-[var(--a-line)]">
+                  <h3 className="font-black text-base" style={{ color: "var(--a-ink)" }}>
+                    Direct Payment Details
+                  </h3>
+                  <p className="text-xs" style={{ color: "var(--a-ink-soft)" }}>
+                    Please send the fee of <strong className="text-violet-600">₹{form.donationAmount || "50"}</strong> using GPay/PhonePe/Paytm to teacher's direct account:
+                  </p>
 
-          {/* Step 4 */}
-          {step === 4 && (
-            <div className="ai4all-rise text-center">
-              <div className="text-6xl mb-4 inline-block ai4all-float">🎉</div>
-              <h2 className="text-3xl font-black tracking-tight mb-2" style={{ color: "var(--a-ink)" }}>
-                Almost there!
-              </h2>
-              <p className="text-sm mb-8" style={{ color: "var(--a-ink-soft)" }}>
-                One last step — did you complete the donation?
-              </p>
+                  <div className="space-y-3">
+                    {/* GPay UPI Number */}
+                    <div className="flex items-center justify-between bg-[var(--a-blush)] p-3 rounded-2xl border border-[var(--a-line)]">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-violet-600 block">Google Pay / Phone Number</span>
+                        <strong className="text-sm font-black" style={{ color: "var(--a-ink)" }}>+91 9744616598</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText("+919744616598");
+                          setCopiedGpay(true);
+                          setTimeout(() => setCopiedGpay(false), 2000);
+                        }}
+                        className="ai4all-btn ai4all-btn-glass py-1.5 px-3 text-xs"
+                      >
+                        {copiedGpay ? "Copied!" : <span className="flex items-center gap-1"><Copy className="h-3 w-3" /> Copy</span>}
+                      </button>
+                    </div>
 
-              {!showHardship ? (
-                <div className="space-y-4">
-                  <button
-                    onClick={() => complete("donated")}
-                    disabled={submitting}
-                    className="ai4all-btn ai4all-btn-primary w-full text-base font-bold py-5 disabled:opacity-70"
-                  >
-                    {submitting
-                      ? <Loader2 className="h-5 w-5 animate-spin" />
-                      : <CheckCircle2 className="h-5 w-5" />}
-                    Yes, I donated! ✓
-                  </button>
-
-                  <div className="flex items-center gap-3 my-2">
-                    <div className="flex-1 h-px bg-[var(--a-line)]" />
-                    <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: "var(--a-muted)" }}>or</span>
-                    <div className="flex-1 h-px bg-[var(--a-line)]" />
+                    {/* UPI ID */}
+                    <div className="flex items-center justify-between bg-[var(--a-blush)] p-3 rounded-2xl border border-[var(--a-line)]">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-violet-600 block">UPI ID (Any payment app)</span>
+                        <strong className="text-sm font-black break-all" style={{ color: "var(--a-ink)" }}>sindhusudhakaransindhusudhakar-2@oksbi</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText("sindhusudhakaransindhusudhakar-2@oksbi");
+                          setCopiedUpi(true);
+                          setTimeout(() => setCopiedUpi(false), 2000);
+                        }}
+                        className="ai4all-btn ai4all-btn-glass py-1.5 px-3 text-xs shrink-0 ml-2"
+                      >
+                        {copiedUpi ? "Copied!" : <span className="flex items-center gap-1"><Copy className="h-3 w-3" /> Copy</span>}
+                      </button>
+                    </div>
                   </div>
 
-                  <button
-                    onClick={() => setShowHardship(true)}
-                    className="w-full text-sm font-medium hover:underline"
-                    style={{ color: "var(--a-muted)" }}
-                  >
-                    I&apos;m facing financial difficulties
-                  </button>
-                </div>
-              ) : (
-                <div className="text-left space-y-4 ai4all-rise">
-                  <div className="rounded-2xl p-4" style={{
-                    background: "linear-gradient(135deg, rgba(251,191,36,0.10), rgba(249,115,22,0.10))",
-                    border: "1px solid rgba(251,191,36,0.30)",
-                  }}>
-                    <div className="flex items-start gap-3">
-                      <Heart className="h-5 w-5 shrink-0 mt-0.5 fill-amber-500 text-amber-500" />
-                      <p className="text-sm leading-relaxed" style={{ color: "var(--a-ink)" }}>
-                        No worries at all — knowledge should never be out of reach.
-                        Tell us briefly about your situation.
+                  {/* Upload Screenshot */}
+                  <div className="space-y-2 pt-2 border-t border-[var(--a-line)]">
+                    <label className="block text-xs font-bold uppercase tracking-wider" style={{ color: "var(--a-purple-deep)" }}>
+                      Upload Payment Screenshot <span className="text-rose-500">*</span>
+                    </label>
+
+                    {!form.screenshotUrl ? (
+                      <div className="relative group rounded-2xl border-2 border-dashed border-[var(--a-line)] hover:border-violet-500 bg-[var(--a-blush)] hover:bg-violet-500/5 transition-all p-6 text-center">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setUploading(true);
+                              setUploadError("");
+                              try {
+                                const fd = new FormData();
+                                fd.append("file", file);
+                                const res = await fetch("/api/ai-for-everyone/public-upload", {
+                                  method: "POST",
+                                  body: fd,
+                                });
+                                const data = await res.json();
+                                if (!res.ok || data.error) {
+                                  throw new Error(data.error || "Upload failed");
+                                }
+                                set("screenshotUrl", data.url);
+                              } catch (err: any) {
+                                setUploadError(err.message || "Failed to upload screenshot.");
+                              } finally {
+                                setUploading(false);
+                              }
+                            }
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={uploading}
+                        />
+                        <div className="flex flex-col items-center gap-2">
+                          {uploading ? (
+                            <>
+                              <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+                              <p className="text-sm font-bold text-violet-600">Uploading screenshot...</p>
+                            </>
+                          ) : (
+                            <>
+                              <FileImage className="h-8 w-8 text-[var(--a-muted)] group-hover:text-violet-500 transition-colors" />
+                              <p className="text-sm font-bold" style={{ color: "var(--a-ink)" }}>
+                                Click or drag screen shot image
+                              </p>
+                              <p className="text-xs" style={{ color: "var(--a-muted)" }}>
+                                Supports JPEG, PNG (Max 10MB)
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative rounded-2xl border-2 border-[var(--a-line)] overflow-hidden bg-slate-50 p-2 flex items-center gap-4">
+                        <img
+                          src={form.screenshotUrl}
+                          alt="Screenshot Preview"
+                          className="w-16 h-20 object-cover rounded-lg border"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                            ✓ Screenshot uploaded successfully
+                          </p>
+                          <p className="text-[10px]" style={{ color: "var(--a-muted)" }}>
+                            You are ready to register!
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => set("screenshotUrl", "")}
+                          className="p-1.5 rounded-full hover:bg-rose-100 text-rose-500 transition-colors mr-2"
+                          title="Remove screenshot"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                    {uploadError && (
+                      <p className="text-rose-500 text-xs font-medium flex items-center gap-1">
+                        <AlertTriangle className="h-3.5 w-3.5" /> {uploadError}
                       </p>
-                    </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* IF AID ROUTE: Show Hardship Explanation */}
+              {form.donationStatus === "hardship" && (
+                <div className="space-y-4 ai4all-rise bg-white p-5 rounded-3xl border-2 border-[var(--a-line)]">
+                  <div className="rounded-2xl p-4 flex gap-3" style={{
+                    background: "linear-gradient(135deg, rgba(251,191,36,0.08), rgba(249,115,22,0.08))",
+                    border: "1px solid rgba(251,191,36,0.25)"
+                  }}>
+                    <Heart className="h-5 w-5 shrink-0 mt-0.5 fill-amber-500 text-amber-500" />
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--a-ink)" }}>
+                      No worries at all — knowledge should never be out of reach. Please share a brief reason why you need financial aid for this session so we can approve your seat.
+                    </p>
                   </div>
                   <textarea
                     rows={4}
-                    placeholder="Please describe your situation briefly..."
+                    placeholder="Briefly describe your situation (student, looking for job, financial hardship...)"
                     value={form.financialReason}
                     onChange={(e) => set("financialReason", e.target.value)}
                     className="ai4all-input resize-none"
                   />
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setShowHardship(false)}
-                      className="flex-1 ai4all-btn ai4all-btn-glass"
-                    >
-                      <ArrowLeft className="h-3.5 w-3.5" /> Back
-                    </button>
-                    <button
-                      onClick={() => complete("hardship")}
-                      disabled={!form.financialReason.trim() || submitting}
-                      className="flex-1 ai4all-btn text-white font-bold disabled:opacity-50"
-                      style={{
-                        background: "linear-gradient(135deg, #F59E0B, #F97316)",
-                      }}
-                    >
-                      {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                      Complete Registration
-                    </button>
-                  </div>
                 </div>
               )}
+
+              {/* Action Buttons for Step 3 */}
+              <div className="flex gap-4 pt-4 border-t border-[var(--a-line)]">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="flex-1 ai4all-btn ai4all-btn-glass py-4 font-bold"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back
+                </button>
+                
+                {form.donationStatus === "donated" ? (
+                  <button
+                    type="button"
+                    onClick={() => complete("donated")}
+                    disabled={!form.screenshotUrl || submitting || (isCustomAmount && (form.donationAmount === null || form.donationAmount < 100))}
+                    className="flex-2 ai4all-btn ai4all-btn-primary py-4 font-bold disabled:opacity-50"
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    Complete Registration & Donation
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => complete("hardship")}
+                    disabled={!form.financialReason.trim() || submitting}
+                    className="flex-2 ai4all-btn py-4 font-bold text-white disabled:opacity-50"
+                    style={{
+                      background: "linear-gradient(135deg, #F59E0B, #F97316)",
+                    }}
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4" />
+                    )}
+                    Submit Registration (Financial Aid)
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Navigation */}
-          {step < 4 && (
+          {/* Navigation for earlier steps */}
+          {step < 3 && (
             <div className="flex justify-between mt-10">
               {step > 1 ? (
                 <button
+                  type="button"
                   onClick={() => setStep((s) => s - 1)}
                   className="ai4all-btn ai4all-btn-glass"
                 >
                   <ArrowLeft className="h-4 w-4" /> Back
                 </button>
               ) : <span />}
-              <button onClick={next} className="ai4all-btn ai4all-btn-primary">
-                {step === 3 ? <Sparkles className="h-4 w-4" /> : null}
-                {step === 3 ? "I've Donated, Next" : "Continue"}
+              <button type="button" onClick={next} className="ai4all-btn ai4all-btn-primary">
+                Continue
                 <ArrowRight className="h-4 w-4" />
               </button>
+            </div>
+          )}
+
+          {/* Story Popup Modal */}
+          {showStory && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ai4all-rise">
+              <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 overflow-hidden max-h-[85vh] flex flex-col border border-violet-100">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b pb-4 mb-4">
+                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-1.5">
+                    <Heart className="h-5 w-5 text-rose-500 fill-rose-500 animate-pulse" />
+                    Sindhu Teacher's Story
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowStory(false)}
+                    className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                {/* Content */}
+                <div className="overflow-y-auto pr-1 text-slate-700 space-y-4 text-[14px] leading-relaxed font-medium">
+                  <p>
+                    തൃശ്ശൂർ ജില്ലയിലെ കിരാലൂർ PMLP സ്കൂളിൽ വർഷങ്ങളായി ജോലി ചെയ്ത് വരികയായിരുന്ന സിന്ധു ടീച്ചറെ സഹായിക്കാനായി വോളന്റീർ ചെയ്യുന്ന ഗ്രാസ്വേയുടെയും Outreach ന്റെയും പരിപാടികൾക്കിടയിലാണ് മനുരാജ് പരിചയപ്പെടുന്നത്.
+                  </p>
+                  <p className="bg-rose-50/50 p-4 rounded-2xl border border-rose-100/50 font-bold text-rose-950">
+                    പക്ഷാഘാതം (Stroke) ബാധിച്ച് കഠിനമായ പക്ഷാഘാതാനന്തര ശാരീരിക അവസ്ഥകളിലൂടെ കടന്നുപോകുന്ന ടീച്ചറുടെ പുനരധിവാസത്തിനും ചികിത്സയ്ക്കും അടിയന്തരമായി വൻ തുകകൾ ആവശ്യമുണ്ട്.
+                  </p>
+                  <p>
+                    &ldquo;അമ്പതോ നൂറോ രൂപയായാലും അതൊരു വലിയ സഹായമാകും..&rdquo; എന്ന ടീച്ചറുടെ എളിയ അഭ്യർത്ഥന മുൻനിർത്തിയാണ് നമ്മൾ ഈ crowdfunding ആരംഭിച്ചിരിക്കുന്നത്.
+                  </p>
+                  <p>
+                    ഈ പഠന ക്ലാസിൽ നിങ്ങൾ ക്ലാസ് ഫീസായി നൽകുന്ന തുക മുഴുവനായും സിന്ധു ടീച്ചറുടെ അക്കൗണ്ടിലേക്ക് നേരിട്ട് അയച്ചു നൽകാനാണ് ആഗ്രഹിക്കുന്നത്. <strong>ടീച്ചറുടെ നേരിട്ടുള്ള നമ്പറിലാണ് ഗൂഗിൾ പേ അക്കൗണ്ട് ഉള്ളത്: +91 9744616598</strong>.
+                  </p>
+                  <p className="text-xs text-slate-500 italic pt-2 border-t">
+                    ഈ പ്രയാസഘട്ടത്തിൽ സിന്ധു ടീച്ചർക്കൊപ്പം നിന്ന് നമ്മളാൽ കഴിയുന്ന ചെറിയ സഹായം എത്തിച്ചുനൽകാം. സ്നേഹപൂർവ്വം, മനുരാജ്.
+                  </p>
+                </div>
+                {/* Footer */}
+                <div className="mt-6 pt-4 border-t flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowStory(false)}
+                    className="ai4all-btn ai4all-btn-primary px-6"
+                  >
+                    Close & Go Back
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

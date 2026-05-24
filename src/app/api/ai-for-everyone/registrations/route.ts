@@ -56,6 +56,8 @@ export async function POST(req: NextRequest) {
       donationStatus: body.donationStatus ?? "skipped",
       donationAmount: body.donationAmount,
       financialReason: body.financialReason?.trim(),
+      screenshotUrl: body.screenshotUrl?.trim() || undefined,
+      isScreenshotCorrect: body.isScreenshotCorrect ?? undefined,
       createdAt: new Date().toISOString(),
     };
 

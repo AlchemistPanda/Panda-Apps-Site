@@ -323,6 +323,7 @@ export default function AdminClient() {
               <RegistrantsTable
                 registrations={registrations}
                 sessions={sessions}
+                onRefresh={() => loadData(token)}
               />
             )}
             {tab === "votes" && (

@@ -7,6 +7,7 @@ import type { Registration, Session } from "@/lib/ai4all";
 interface Props {
   registrations: Registration[];
   sessions: Session[];
+  onRefresh?: () => void;
 }
 
 function exportCSV(rows: Registration[], sessions: Session[]) {
@@ -42,11 +43,35 @@ const BADGE: Record<string, string> = {
   skipped: "bg-border/30 text-muted",
 };
 
-export default function RegistrantsTable({ registrations, sessions }: Props) {
+export default function RegistrantsTable({ registrations, sessions, onRefresh }: Props) {
   const [sessionFilter, setSessionFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [copiedNums, setCopiedNums] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
+
+  async function handleVerify(regId: string, isCorrect: boolean) {
+    setVerifyingId(regId);
+    const token = localStorage.getItem("ai4all_admin_token") ?? "";
+    try {
+      const res = await fetch(`/api/ai-for-everyone/registrations/${regId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isScreenshotCorrect: isCorrect }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update status");
+      }
+      if (onRefresh) onRefresh();
+    } catch (e: any) {
+      alert(e.message || "Error updating verification status");
+    } finally {
+      setVerifyingId(null);
+    }
+  }
 
   const sessionMap = useMemo(
     () => Object.fromEntries(sessions.map((s) => [s.id, s.title])),
@@ -162,6 +187,23 @@ export default function RegistrantsTable({ registrations, sessions }: Props) {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
+                  {r.screenshotUrl && (
+                    <>
+                      {r.isScreenshotCorrect === true ? (
+                        <span className="hidden md:inline-block text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                          ✓ Verified
+                        </span>
+                      ) : r.isScreenshotCorrect === false ? (
+                        <span className="hidden md:inline-block text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full">
+                          ✗ Invalid
+                        </span>
+                      ) : (
+                        <span className="hidden md:inline-block text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full animate-pulse">
+                          ⚠ Unverified
+                        </span>
+                      )}
+                    </>
+                  )}
                   <span className={`text-xs rounded-full px-2.5 py-1 ${BADGE[r.donationStatus] ?? BADGE.skipped}`}>
                     {r.donationStatus}
                     {r.donationAmount ? ` ₹${r.donationAmount}` : ""}
@@ -203,6 +245,69 @@ export default function RegistrantsTable({ registrations, sessions }: Props) {
                       <div className="sm:col-span-2">
                         <p className="text-xs text-amber-400 mb-0.5">Financial situation</p>
                         <p className="text-amber-200/80 leading-relaxed">{r.financialReason}</p>
+                      </div>
+                    )}
+                    {r.screenshotUrl && (
+                      <div className="sm:col-span-2 mt-2 pt-4 border-t border-border/40">
+                        <p className="text-xs text-muted mb-2 font-bold uppercase tracking-wider">Payment Screenshot</p>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                          <a
+                            href={r.screenshotUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block relative group overflow-hidden rounded-xl border border-border/50 bg-black/45 hover:bg-black/60 transition-all max-w-[200px]"
+                          >
+                            <img
+                              src={r.screenshotUrl}
+                              alt="Payment Screenshot"
+                              className="max-h-[220px] w-auto object-contain transition-transform group-hover:scale-102"
+                            />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs font-bold text-white">
+                              Open Original ↗
+                            </div>
+                          </a>
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-xs text-muted">
+                                Verify if this screenshot shows a correct payment of <strong>₹{r.donationAmount ?? "50"}</strong> to Sindhu Teacher.
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-muted">Current status:</span>
+                                {r.isScreenshotCorrect === true ? (
+                                  <span className="text-xs font-bold text-emerald-400">✓ Correct</span>
+                                ) : r.isScreenshotCorrect === false ? (
+                                  <span className="text-xs font-bold text-rose-400">✗ Incorrect</span>
+                                ) : (
+                                  <span className="text-xs font-bold text-amber-400">⚠ Pending verification</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleVerify(r.id, true)}
+                                disabled={verifyingId === r.id}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                                  r.isScreenshotCorrect === true
+                                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                                    : "bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 hover:text-white"
+                                }`}
+                              >
+                                Mark as Correct
+                              </button>
+                              <button
+                                onClick={() => handleVerify(r.id, false)}
+                                disabled={verifyingId === r.id}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                                  r.isScreenshotCorrect === false
+                                    ? "bg-rose-600 text-white shadow-md shadow-rose-600/20"
+                                    : "bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 hover:text-white"
+                                }`}
+                              >
+                                Mark as Incorrect
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
