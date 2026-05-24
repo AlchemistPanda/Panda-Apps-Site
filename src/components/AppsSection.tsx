@@ -8,10 +8,10 @@ import AppCard from "@/components/AppCard";
 
 const apps = [
   {
-    title: "AI for All",
+    title: "AI for Everyone",
     description:
       "Affordable AI training sessions open to everyone — learn image generation, poster design, video tools & more. Hands-on, practical, and a small fee donated entirely to NGOs.",
-    href: "/apps/ai-for-all",
+    href: "/apps/ai-for-everyone",
     icon: GraduationCap,
     gradient: "from-violet-500 to-fuchsia-600",
     category: "AI",
