@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, ArrowRight, Loader2, CheckCircle2, Heart, ExternalLink, Sparkles, Copy, X, FileImage, AlertTriangle,
+  ArrowLeft, ArrowRight, Loader2, CheckCircle2, Heart, ExternalLink, Sparkles, Copy, X, FileImage, AlertTriangle, Download, QrCode
 } from "lucide-react";
 import type { Session } from "@/lib/ai4all";
 import { useRouter } from "next/navigation";
@@ -521,6 +521,33 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                       >
                         {copiedUpi ? "Copied!" : <span className="flex items-center gap-1"><Copy className="h-3 w-3" /> Copy</span>}
                       </button>
+                    </div>
+
+                    {/* UPI QR Code Scanner & Download */}
+                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-4 rounded-2xl border border-[var(--a-line)]">
+                      <div className="relative w-32 h-32 shrink-0 bg-white rounded-xl p-1 overflow-hidden border border-white/20">
+                        <img
+                          src="/images/upi_qr_code.png"
+                          alt="UPI QR Code"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 text-center sm:text-left space-y-2">
+                        <div className="flex items-center justify-center sm:justify-start gap-1 text-[11px] font-bold text-pink-400 uppercase tracking-wider">
+                          <QrCode className="h-3.5 w-3.5" />
+                          <span>Scan QR Code to Pay</span>
+                        </div>
+                        <p className="text-[11px]" style={{ color: "var(--a-ink-soft)" }}>
+                          You can download this QR code to scan it directly inside GPay, PhonePe, or Paytm on your phone.
+                        </p>
+                        <a
+                          href="/images/upi_qr_code.png"
+                          download="sindhu_sudhakaran_upi_qr.png"
+                          className="inline-flex items-center gap-1.5 ai4all-btn ai4all-btn-glass py-1.5 px-3 text-xs"
+                        >
+                          <Download className="h-3 w-3" /> Download QR Code
+                        </a>
+                      </div>
                     </div>
                   </div>
 
