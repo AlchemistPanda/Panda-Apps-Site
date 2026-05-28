@@ -17,11 +17,55 @@ interface VoteOptionWithCount {
 function getFingerprint(): string {
   if (typeof window === "undefined") return "";
   let fp = localStorage.getItem("ai4all_voter_id");
-  if (!fp) {
-    fp = crypto.randomUUID();
+  if (fp) return fp;
+
+  try {
+    // Deterministic canvas rendering fingerprint
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    let canvasHash = "";
+    if (ctx) {
+      ctx.textBaseline = "top";
+      ctx.font = "14px 'Arial', sans-serif";
+      ctx.fillStyle = "#7C3AED"; // violet
+      ctx.fillRect(10, 10, 50, 50);
+      ctx.fillStyle = "#EC4899"; // pink
+      ctx.fillText("AI4All_Poll_Protection_V1", 15, 17);
+      ctx.strokeStyle = "rgba(249, 115, 22, 0.7)"; // orange
+      ctx.beginPath();
+      ctx.arc(35, 35, 20, 0, Math.PI * 2, true);
+      ctx.stroke();
+      
+      const dataUrl = canvas.toDataURL();
+      let hash = 0;
+      for (let i = 0; i < dataUrl.length; i++) {
+        hash = (hash << 5) - hash + dataUrl.charCodeAt(i);
+        hash |= 0;
+      }
+      canvasHash = Math.abs(hash).toString(16);
+    }
+
+    // Hardware, screen, language and OS metrics
+    const screenDetails = `${window.screen.width}x${window.screen.height}x${window.screen.colorDepth}`;
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    const language = navigator.language || "";
+    const cores = navigator.hardwareConcurrency || 2;
+    
+    const rawFp = `fp-${canvasHash}-${screenDetails}-${timeZone}-${language}-${cores}`;
+    let finalHash = 0;
+    for (let i = 0; i < rawFp.length; i++) {
+      finalHash = (finalHash << 5) - finalHash + rawFp.charCodeAt(i);
+      finalHash |= 0;
+    }
+    
+    fp = `voter_${Math.abs(finalHash).toString(16)}`;
     localStorage.setItem("ai4all_voter_id", fp);
+    return fp;
+  } catch {
+    fp = `voter_fallback_${crypto.randomUUID()}`;
+    localStorage.setItem("ai4all_voter_id", fp);
+    return fp;
   }
-  return fp;
 }
 
 function HeartBurst({ x, y }: { x: number; y: number }) {
