@@ -270,9 +270,11 @@ export default function SessionsSection({ sessions, loading }: Props) {
 
         {/* Sessions grid */}
         {!loading && sessions.length > 0 && (
-          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
+          <div className={sessions.length === 1 ? "flex justify-center" : "grid sm:grid-cols-2 gap-6 sm:gap-8"}>
             {sessions.map((s, i) => (
-              <SessionCard key={s.id} session={s} index={i} />
+              <div key={s.id} className={sessions.length === 1 ? "w-full max-w-2xl" : ""}>
+                <SessionCard session={s} index={i} />
+              </div>
             ))}
           </div>
         )}
