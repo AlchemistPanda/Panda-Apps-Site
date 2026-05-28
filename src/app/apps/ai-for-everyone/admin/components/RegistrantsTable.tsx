@@ -51,22 +51,27 @@ const getDonationBadge = (r: Registration) => {
     };
   }
   if (r.donationStatus === "donated") {
-    const selectedSuffix = r.userSelectedAmount ? ` (Selected ₹${r.userSelectedAmount})` : "";
+    const isUnverified = r.isScreenshotCorrect === undefined;
+    const detected = isUnverified ? extractOcrAmount(r.autoVerifiedReason) : null;
+    const displayAmount = detected ? detected : (r.donationAmount ?? 50);
+    const selectedAmt = detected ? (r.donationAmount ?? 50) : r.userSelectedAmount;
+    const selectedSuffix = selectedAmt ? ` (Selected ₹${selectedAmt})` : "";
+
     if (r.isScreenshotCorrect === true) {
       return {
         className: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
-        label: `donated ₹${r.donationAmount ?? 50}${selectedSuffix} (Verified)`,
+        label: `donated ₹${displayAmount}${selectedSuffix} (Verified)`,
       };
     }
     if (r.isScreenshotCorrect === false) {
       return {
         className: "bg-rose-500/20 text-rose-400 border border-rose-500/30",
-        label: `₹${r.donationAmount ?? 50}${selectedSuffix} (Invalid Proof)`,
+        label: `₹${displayAmount}${selectedSuffix} (Invalid Proof)`,
       };
     }
     return {
       className: "bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse",
-      label: `₹${r.donationAmount ?? 50}${selectedSuffix} (Unverified)`,
+      label: `₹${displayAmount}${selectedSuffix} (Unverified)`,
     };
   }
   return {

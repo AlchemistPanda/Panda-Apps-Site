@@ -5,6 +5,15 @@ import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calen
 import Cropper, { Point, Area } from "react-easy-crop";
 import type { Session, Registration } from "@/lib/ai4all";
 
+function extractOcrAmount(reason?: string): number | null {
+  if (!reason) return null;
+  const match = reason.match(/in\s*receipt\s*\(?₹?([0-9,]+)/i);
+  if (match && match[1]) {
+    return parseInt(match[1].replace(/,/g, ""), 10);
+  }
+  return null;
+}
+
 interface Props {
   sessions: Session[];
   registrations: Registration[];
@@ -599,6 +608,11 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                           const isVerified = r.isScreenshotCorrect === true;
                           const isInvalid = r.isScreenshotCorrect === false;
                           
+                          // Dynamically parse OCR amount for unverified records
+                          const detected = !isVerified && !isInvalid ? extractOcrAmount(r.autoVerifiedReason) : null;
+                          const displayAmount = detected ? detected : (r.donationAmount ?? 50);
+                          const selectedAmt = detected ? (r.donationAmount ?? 50) : r.userSelectedAmount;
+                          
                           return (
                             <div
                               key={r.id}
@@ -615,7 +629,7 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                                         ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                                         : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                                     }`}>
-                                      ₹{r.donationAmount ?? 50}{r.userSelectedAmount ? ` (Selected ₹${r.userSelectedAmount})` : ""} {isVerified ? "Verified" : isInvalid ? "Invalid Proof" : "Unverified"}
+                                      ₹{displayAmount}{selectedAmt ? ` (Selected ₹${selectedAmt})` : ""} {isVerified ? "Verified" : isInvalid ? "Invalid Proof" : "Unverified"}
                                     </span>
                                   )}
                                   {r.donationStatus === "hardship" && (
