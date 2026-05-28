@@ -111,20 +111,28 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
   const totalRegs = registrations.length;
   const donated = registrations.filter((r) => r.donationStatus === "donated").length;
   const hardship = registrations.filter((r) => r.donationStatus !== "donated").length;
-  const openSessions = sessions.filter((s) => s.isRegistrationOpen).length;
+
+  const totalVerifiedSum = registrations
+    .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
+    .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+
+  const totalAllSum = registrations
+    .filter((r) => r.donationStatus === "donated")
+    .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
 
   const stats = [
     { label: "Total Registrations", value: totalRegs, emoji: "👥" },
-    { label: "Donated", value: donated, emoji: "💝" },
+    { label: "Donated (Count)", value: donated, emoji: "💝" },
     { label: "Financial Aid", value: hardship, emoji: "🤝" },
-    { label: "Open Sessions", value: openSessions, emoji: "📅" },
+    { label: "Total Verified", value: `₹${totalVerifiedSum.toLocaleString("en-IN")}`, emoji: "✅" },
+    { label: "Total Contributed (All)", value: `₹${totalAllSum.toLocaleString("en-IN")}`, emoji: "💰" },
   ];
 
   return (
     <div className="space-y-10">
       <div>
         <h2 className="text-xl font-bold mb-6">Dashboard Overview</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {stats.map((s) => (
             <div key={s.label} className="rounded-2xl border border-border/50 bg-card/50 p-5">
               <div className="text-2xl mb-2">{s.emoji}</div>
@@ -163,6 +171,10 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
                 .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
                 .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
 
+              const totalSessionAmount = sessionRegs
+                .filter((r) => r.donationStatus === "donated")
+                .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+
               return (
                 <div
                   key={s.id}
@@ -173,9 +185,9 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
                       <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full ${s.isRegistrationOpen ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-muted'}`}>
                         {s.isRegistrationOpen ? "Registration Open" : "Closed"}
                       </span>
-                      {verifiedAmount > 0 && (
+                      {totalSessionAmount > 0 && (
                         <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-400 border border-pink-500/30">
-                          ₹{verifiedAmount.toLocaleString("en-IN")} Verified Collected
+                          ₹{verifiedAmount.toLocaleString("en-IN")} Verified / ₹{totalSessionAmount.toLocaleString("en-IN")} Total
                         </span>
                       )}
                     </div>

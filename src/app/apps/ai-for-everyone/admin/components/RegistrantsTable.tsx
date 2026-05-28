@@ -181,6 +181,12 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
       .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
   }, [filtered]);
 
+  const totalDonationsSum = useMemo(() => {
+    return filtered
+      .filter((r) => r.donationStatus === "donated")
+      .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+  }, [filtered]);
+
   return (
     <div>
       {/* Header */}
@@ -195,11 +201,11 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
               <>
                 <span>·</span>
                 <span className="text-emerald-400 font-semibold">{donatedCount} donated</span>
-                {verifiedDonationsSum > 0 && (
+                {totalDonationsSum > 0 && (
                   <>
                     <span>·</span>
                     <span className="text-pink-400 font-bold bg-pink-500/10 border border-pink-500/20 px-2 py-0.5 rounded-full text-xs">
-                      ₹{verifiedDonationsSum.toLocaleString("en-IN")} verified collected
+                      ₹{verifiedDonationsSum.toLocaleString("en-IN")} Verified / ₹{totalDonationsSum.toLocaleString("en-IN")} Total
                     </span>
                   </>
                 )}
