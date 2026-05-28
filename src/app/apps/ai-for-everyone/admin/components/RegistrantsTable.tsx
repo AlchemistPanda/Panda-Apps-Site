@@ -281,6 +281,12 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
                                   <span className="text-xs font-bold text-amber-400">⚠ Pending verification</span>
                                 )}
                               </div>
+                              {r.autoVerifiedReason && (
+                                <div className="mt-2 text-[11px] p-2 rounded-lg bg-white/5 border border-border/30 max-w-sm leading-relaxed">
+                                  <span className="font-semibold text-pink-400 block mb-0.5">Automated OCR Audit:</span>
+                                  <span className="text-muted-foreground">{r.autoVerifiedReason}</span>
+                                </div>
+                              )}
                             </div>
                             <div className="flex gap-2">
                               <button

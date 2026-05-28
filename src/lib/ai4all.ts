@@ -117,6 +117,7 @@ export interface Registration {
   financialReason?: string;
   screenshotUrl?: string;
   isScreenshotCorrect?: boolean;
+  autoVerifiedReason?: string;
   createdAt: string;
 }
 

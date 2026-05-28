@@ -1,8 +1,119 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redisCmd, verifyAdminToken, getAdminToken, Registration } from "@/lib/ai4all";
 import crypto from "crypto";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const dynamic = "force-dynamic";
+
+async function verifyPaymentReceipt(
+  imageUrl: string,
+  expectedAmount: number
+): Promise<{ isCorrect: boolean; reason: string }> {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    console.warn("GOOGLE_API_KEY is not configured. Skipping auto-verification.");
+    return { isCorrect: false, reason: "GOOGLE_API_KEY not configured on server" };
+  }
+
+  try {
+    // 1. Fetch image
+    const res = await fetch(imageUrl);
+    if (!res.ok) {
+      return { isCorrect: false, reason: `Failed to download screenshot: ${res.statusText}` };
+    }
+
+    const contentType = res.headers.get("content-type") || "image/jpeg";
+    const arrayBuffer = await res.arrayBuffer();
+    const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
+    // 2. Initialize Gemini
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const modelsToTry = [
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+    ];
+
+    const prompt = `
+You are an expert payment auditor. Your task is to look at the attached payment screenshot (UPI, GPay, PhonePe, Paytm, or bank transfer receipt) and verify if the payment was successful, paid to the correct details, and for the expected amount.
+
+EXPECTED DETAILS:
+- Recipient Name: "Sindhu Sudhakaran" (also accept variations like "Sindhu", "Sindhu Sudha", etc.)
+- Recipient UPI ID: "sindhusudhakaransindhusudhakar-2@oksbi" (also accept matching phone "+91 9744616598" or "9744616598")
+- Expected Amount: ₹${expectedAmount} (allow a match if the screenshot shows this exact numeric value as the paid/transferred amount)
+
+Verify the following:
+1. Is this actually a payment receipt/screenshot?
+2. Is the transaction status successful or completed (not failed, pending, or declined)?
+3. Does the transaction amount match the expected amount of ₹${expectedAmount}?
+4. Does the recipient match Sindhu Sudhakaran, 9744616598, or the UPI ID "sindhusudhakaransindhusudhakar-2@oksbi"?
+
+Return your response strictly in the following JSON format:
+{
+  "isPaymentReceipt": boolean,
+  "isSuccessful": boolean,
+  "recipientMatches": boolean,
+  "amountMatches": boolean,
+  "autoVerified": boolean,
+  "reason": "A 1-sentence concise reason explaining what you found (e.g. 'Verified ₹50 payment to Sindhu Sudhakaran successfully' or 'Amount in receipt (₹100) does not match expected ₹50')"
+}
+
+Set "autoVerified" to true ONLY if:
+- isPaymentReceipt is true
+- isSuccessful is true
+- recipientMatches is true
+- amountMatches is true
+`;
+
+    let responseText = "";
+    let lastError: any = null;
+
+    for (const modelName of modelsToTry) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            responseMimeType: "application/json",
+          },
+        });
+
+        const content = [
+          {
+            inlineData: {
+              mimeType: contentType,
+              data: base64Data,
+            },
+          },
+          { text: prompt },
+        ];
+
+        const result = await model.generateContent(content);
+        responseText = result.response.text();
+        if (responseText) break;
+      } catch (err) {
+        console.warn(`Model ${modelName} failed for OCR verification:`, err);
+        lastError = err;
+      }
+    }
+
+    if (!responseText) {
+      throw lastError || new Error("All AI models failed to process payment receipt");
+    }
+
+    const verification = JSON.parse(responseText);
+    return {
+      isCorrect: !!verification.autoVerified,
+      reason: verification.reason || (verification.autoVerified ? "Auto-verified successfully" : "Details did not match"),
+    };
+
+  } catch (error: any) {
+    console.error("Auto-verification error:", error);
+    return {
+      isCorrect: false,
+      reason: error.message || "Failed to parse receipt image",
+    };
+  }
+}
 
 // GET /api/ai-for-everyone/registrations  (admin — all registrations)
 export async function GET(req: NextRequest) {
@@ -43,6 +154,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Registration is closed" }, { status: 403 });
     }
 
+    let isScreenshotCorrect: boolean | undefined = undefined;
+    let autoVerifiedReason: string | undefined = undefined;
+
+    if (body.donationStatus === "donated" && body.screenshotUrl?.trim()) {
+      try {
+        const amount = body.donationAmount ?? 50;
+        const ocrResult = await verifyPaymentReceipt(body.screenshotUrl.trim(), amount);
+        if (ocrResult.isCorrect) {
+          isScreenshotCorrect = true;
+          autoVerifiedReason = `[Auto-Verified] ${ocrResult.reason}`;
+        } else {
+          autoVerifiedReason = `[Auto-Verification Failed] ${ocrResult.reason}`;
+        }
+      } catch (ocrError: any) {
+        console.error("OCR auto-verification error:", ocrError);
+        autoVerifiedReason = `[Auto-Verification Failed] ${ocrError.message || "Error running OCR validation"}`;
+      }
+    }
+
     const reg: Registration = {
       id: crypto.randomUUID(),
       sessionId: body.sessionId,
@@ -50,14 +180,15 @@ export async function POST(req: NextRequest) {
       phone: body.phone.trim(),
       whatsapp: body.whatsapp.trim(),
       district: body.district?.trim() || undefined,
-      locationOther: body.locationOther?.trim() || undefined,
+      locationOther: (body.district === "Other State" || body.district === "Outside India") ? body.locationOther?.trim() : undefined,
       institution: body.institution?.trim() || undefined,
       whyJoin: body.whyJoin.trim(),
       donationStatus: body.donationStatus ?? "skipped",
       donationAmount: body.donationAmount,
       financialReason: body.financialReason?.trim(),
       screenshotUrl: body.screenshotUrl?.trim() || undefined,
-      isScreenshotCorrect: body.isScreenshotCorrect ?? undefined,
+      isScreenshotCorrect: isScreenshotCorrect,
+      autoVerifiedReason: autoVerifiedReason,
       createdAt: new Date().toISOString(),
     };
 
