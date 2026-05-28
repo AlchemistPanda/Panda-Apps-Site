@@ -103,6 +103,7 @@ export interface Session {
   createdAt: string;
   regCount?: number;
   isArchived?: boolean;
+  speaker?: string;
 }
 
 export interface Registration {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useMemo } from "react";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar, Upload, ImageIcon, Crop, ChevronDown, ChevronUp, Users, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar, Upload, ImageIcon, Crop, ChevronDown, ChevronUp, Users, CheckCircle, AlertCircle, User } from "lucide-react";
 import Cropper, { Point, Area } from "react-easy-crop";
 import { Session, Registration, getSessionStatus } from "@/lib/ai4all";
 
@@ -69,6 +69,7 @@ const EMPTY: FormState = {
   coverImageUrl: "",
   coverGradient: GRADIENTS[0],
   isPublished: true,
+  speaker: "",
 };
 
 function SessionForm({
@@ -229,6 +230,17 @@ function SessionForm({
             value={form.maxParticipants ?? ""}
             onChange={(e) =>
               setForm((f) => ({ ...f, maxParticipants: e.target.value ? parseInt(e.target.value) : null }))
+            }
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-muted mb-1">Instructor / Speaker Name</label>
+          <input
+            className={input}
+            placeholder="e.g. Manuraj V R or Sindhu Sudhakaran"
+            value={form.speaker ?? ""}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, speaker: e.target.value }))
             }
           />
         </div>
@@ -555,13 +567,21 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                       </div>
                       <h3 className="font-semibold text-lg">{s.title}</h3>
                       {s.scheduledDate && (
-                        <p className="text-xs text-muted mt-1 flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(s.scheduledDate).toLocaleString("en-IN", {
-                            day: "numeric", month: "short", year: "numeric",
-                            hour: "2-digit", minute: "2-digit",
-                          })}
-                        </p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-1 text-xs text-muted">
+                          <p className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(s.scheduledDate).toLocaleString("en-IN", {
+                              day: "numeric", month: "short", year: "numeric",
+                              hour: "2-digit", minute: "2-digit",
+                            })}
+                          </p>
+                          {s.speaker && (
+                            <p className="flex items-center gap-1 text-violet-400 font-semibold">
+                              <User className="h-3.5 w-3.5" />
+                              <span>Led by {s.speaker}</span>
+                            </p>
+                          )}
+                        </div>
                       )}
 
                       {/* Dynamic Stats Badges */}

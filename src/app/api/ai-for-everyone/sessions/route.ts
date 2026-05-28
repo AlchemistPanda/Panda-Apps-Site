@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
       isPublished: body.isPublished ?? true,
       status: body.status ?? (body.isRegistrationOpen ? "open" : "closed"),
       createdAt: new Date().toISOString(),
+      speaker: body.speaker || "",
     };
     await redisCmd(["SET", `ai4all:session:${session.id}`, JSON.stringify(session)]);
     await redisCmd(["RPUSH", "ai4all:sessions", session.id]);

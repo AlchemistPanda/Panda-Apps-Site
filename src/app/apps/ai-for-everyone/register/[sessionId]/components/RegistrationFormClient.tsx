@@ -235,11 +235,18 @@ export default function RegistrationFormClient({ sessionId }: Props) {
               {session.title}
             </h1>
             {session.scheduledDate && (
-              <p className="text-sm mt-1" style={{ color: "var(--a-ink-soft)" }}>
-                {new Date(session.scheduledDate).toLocaleDateString("en-IN", {
-                  weekday: "long", day: "numeric", month: "long", year: "numeric",
-                })}
-              </p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[var(--a-ink-soft)]">
+                <p>
+                  {new Date(session.scheduledDate).toLocaleDateString("en-IN", {
+                    weekday: "long", day: "numeric", month: "long", year: "numeric",
+                  })}
+                </p>
+                {session.speaker && (
+                  <p className="font-semibold text-[var(--a-purple-deep)]">
+                    · Led by {session.speaker}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         )}

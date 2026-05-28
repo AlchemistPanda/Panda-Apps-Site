@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Calendar, Clock, Users, ArrowRight, Lock, Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { Calendar, Clock, Users, ArrowRight, Lock, Loader2, Sparkles, HelpCircle, User } from "lucide-react";
 import { Session, getSessionStatus } from "@/lib/ai4all";
 import { useLang } from "../i18n";
 
@@ -143,6 +143,12 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4" style={{ color: "var(--a-pink)" }} />
             <span>{formatTime(session.scheduledDate)} · {session.durationMinutes} {tr("sessions.min")}</span>
+          </div>
+        )}
+        {session.speaker && (
+          <div className="flex items-center gap-1.5">
+            <User className="h-4 w-4" style={{ color: "var(--a-purple)" }} />
+            <span className="font-semibold text-[var(--a-purple-deep)]">Led by {session.speaker}</span>
           </div>
         )}
       </div>
