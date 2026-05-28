@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { Calendar, Clock, Users, ArrowRight, Lock, Loader2, Sparkles } from "lucide-react";
-import type { Session } from "@/lib/ai4all";
+import { Calendar, Clock, Users, ArrowRight, Lock, Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { Session, getSessionStatus } from "@/lib/ai4all";
 import { useLang } from "../i18n";
 
 interface Props {
@@ -76,19 +76,42 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
 
       {/* Status badge */}
       <div className="flex items-center justify-between mb-4">
-        {session.isRegistrationOpen ? (
-          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase"
-                style={{ background: "rgba(16,185,129,0.15)", color: "var(--a-mint)", border: "1px solid rgba(16,185,129,0.3)" }}>
-            <span className="ai4all-pulse" />
-            {tr("sessions.regOpen")}
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
-                style={{ background: "rgba(255,255,255,0.05)", color: "var(--a-muted)", border: "1px solid var(--a-line-strong)" }}>
-            <Lock className="h-3 w-3" />
-            {tr("sessions.closed")}
-          </span>
-        )}
+        {(() => {
+          const statusInfo = getSessionStatus(session);
+          if (statusInfo.status === "open") {
+            return (
+              <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase"
+                    style={{ background: "rgba(16,185,129,0.15)", color: "var(--a-mint)", border: "1px solid rgba(16,185,129,0.3)" }}>
+                <span className="ai4all-pulse" />
+                {tr("sessions.regOpen")}
+              </span>
+            );
+          } else if (statusInfo.status === "coming_soon") {
+            return (
+              <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase"
+                    style={{ background: "rgba(245,158,11,0.15)", color: "var(--a-amber)", border: "1px solid rgba(245,158,11,0.3)" }}>
+                <Clock className="h-3 w-3" />
+                Coming Soon
+              </span>
+            );
+          } else if (statusInfo.status === "seats_filled") {
+            return (
+              <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase"
+                    style={{ background: "rgba(239,68,68,0.15)", color: "var(--a-pink)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                <Users className="h-3 w-3" />
+                Seats Filled
+              </span>
+            );
+          } else {
+            return (
+              <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+                    style={{ background: "rgba(255,255,255,0.05)", color: "var(--a-muted)", border: "1px solid var(--a-line-strong)" }}>
+                <Lock className="h-3 w-3" />
+                {tr("sessions.closed")}
+              </span>
+            );
+          }
+        })()}
 
         {session.maxParticipants && (
           <span className="text-xs font-medium text-[var(--a-muted)] flex items-center gap-1">
@@ -144,24 +167,51 @@ function SessionCard({ session, index }: { session: Session; index: number }) {
       )}
 
       {/* CTA */}
-      {session.isRegistrationOpen ? (
-        <a
-          href={`/apps/ai-for-everyone/register/${session.id}`}
-          className="ai4all-btn ai4all-btn-primary w-full sm:w-auto"
-        >
-          <Sparkles className="h-4 w-4" />
-          {tr("sessions.registerNow")}
-          <ArrowRight className="h-4 w-4" />
-        </a>
-      ) : (
-        <button
-          disabled
-          className="ai4all-btn ai4all-btn-glass w-full sm:w-auto opacity-60 cursor-not-allowed"
-        >
-          <Lock className="h-3.5 w-3.5" />
-          {tr("sessions.regClosed")}
-        </button>
-      )}
+      {(() => {
+        const statusInfo = getSessionStatus(session);
+        if (statusInfo.status === "open") {
+          return (
+            <a
+              href={`/apps/ai-for-everyone/register/${session.id}`}
+              className="ai4all-btn ai4all-btn-primary w-full sm:w-auto"
+            >
+              <Sparkles className="h-4 w-4" />
+              {tr("sessions.registerNow")}
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          );
+        } else if (statusInfo.status === "coming_soon") {
+          return (
+            <button
+              disabled
+              className="ai4all-btn ai4all-btn-glass w-full sm:w-auto opacity-70 cursor-not-allowed border border-amber-500/20 text-amber-300"
+            >
+              <Clock className="h-3.5 w-3.5 text-amber-400" />
+              Coming Soon
+            </button>
+          );
+        } else if (statusInfo.status === "seats_filled") {
+          return (
+            <button
+              disabled
+              className="ai4all-btn ai4all-btn-glass w-full sm:w-auto opacity-60 cursor-not-allowed border border-red-500/20 text-red-300"
+            >
+              <Users className="h-3.5 w-3.5 text-red-400" />
+              Seats Filled
+            </button>
+          );
+        } else {
+          return (
+            <button
+              disabled
+              className="ai4all-btn ai4all-btn-glass w-full sm:w-auto opacity-60 cursor-not-allowed"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              {tr("sessions.regClosed")}
+            </button>
+          );
+        }
+      })()}
     </div>
   );
 }

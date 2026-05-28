@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
       coverImageUrl: body.coverImageUrl ?? "",
       coverGradient: body.coverGradient ?? "from-violet-500 to-purple-600",
       isPublished: body.isPublished ?? true,
+      status: body.status ?? (body.isRegistrationOpen ? "open" : "closed"),
       createdAt: new Date().toISOString(),
     };
     await redisCmd(["SET", `ai4all:session:${session.id}`, JSON.stringify(session)]);

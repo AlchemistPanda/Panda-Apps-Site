@@ -99,6 +99,7 @@ export interface Session {
   coverImageUrl: string;
   coverGradient: string;
   isPublished: boolean;
+  status?: 'open' | 'closed' | 'coming_soon' | 'seats_filled';
   createdAt: string;
   regCount?: number;
 }
@@ -180,3 +181,38 @@ export const DEFAULT_VOTE_OPTIONS: Omit<VoteOption, "id" | "createdAt">[] = [
     isCustom: false,
   },
 ];
+
+export function getSessionStatus(s: Session): {
+  status: 'open' | 'closed' | 'coming_soon' | 'seats_filled';
+  label: string;
+  badgeClass: string;
+} {
+  const status = s.status || (s.isRegistrationOpen ? 'open' : 'closed');
+  switch (status) {
+    case 'open':
+      return {
+        status,
+        label: 'Registration Open',
+        badgeClass: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+      };
+    case 'coming_soon':
+      return {
+        status,
+        label: 'Coming Soon',
+        badgeClass: 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
+      };
+    case 'seats_filled':
+      return {
+        status,
+        label: 'Seats Filled',
+        badgeClass: 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
+      };
+    case 'closed':
+    default:
+      return {
+        status,
+        label: 'Closed',
+        badgeClass: 'bg-white/10 text-muted border border-white/5',
+      };
+  }
+}

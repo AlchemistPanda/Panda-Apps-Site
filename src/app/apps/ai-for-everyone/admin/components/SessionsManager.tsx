@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar, Upload, ImageIcon, Crop, ChevronDown, ChevronUp, Users, CheckCircle, AlertCircle } from "lucide-react";
 import Cropper, { Point, Area } from "react-easy-crop";
-import type { Session, Registration } from "@/lib/ai4all";
+import { Session, Registration, getSessionStatus } from "@/lib/ai4all";
 
 function extractOcrAmount(reason?: string): number | null {
   if (!reason) return null;
@@ -62,6 +62,7 @@ const EMPTY: FormState = {
   durationMinutes: 90,
   topics: [],
   isRegistrationOpen: false,
+  status: "closed",
   maxParticipants: null,
   whatsappLink: "",
   appsToDownload: [],
@@ -355,25 +356,38 @@ function SessionForm({
             }}
           />
         )}
-        <div className="flex items-center gap-6">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.isRegistrationOpen}
-              onChange={(e) => setForm((f) => ({ ...f, isRegistrationOpen: e.target.checked }))}
-              className="accent-violet-500 w-4 h-4"
-            />
-            <span className="text-sm">Registration Open</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.isPublished}
-              onChange={(e) => setForm((f) => ({ ...f, isPublished: e.target.checked }))}
-              className="accent-violet-500 w-4 h-4"
-            />
-            <span className="text-sm">Published</span>
-          </label>
+        <div className="w-full grid sm:grid-cols-2 gap-4 items-center">
+          <div>
+            <label className="block text-xs text-muted mb-1 font-semibold">Session Status</label>
+            <select
+              className={input}
+              value={form.status || (form.isRegistrationOpen ? "open" : "closed")}
+              onChange={(e) => {
+                const s = e.target.value as 'open' | 'closed' | 'coming_soon' | 'seats_filled';
+                setForm((f) => ({
+                  ...f,
+                  status: s,
+                  isRegistrationOpen: s === "open",
+                }));
+              }}
+            >
+              <option value="open">🟢 Live / Registration Open</option>
+              <option value="coming_soon">🟡 Coming Soon</option>
+              <option value="seats_filled">🔴 Seats Filled</option>
+              <option value="closed">⚪ Closed</option>
+            </select>
+          </div>
+          <div className="flex items-center pt-5 sm:pt-4">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={form.isPublished}
+                onChange={(e) => setForm((f) => ({ ...f, isPublished: e.target.checked }))}
+                className="accent-violet-500 w-4 h-4"
+              />
+              <span className="text-sm font-medium">Published (Visible on site)</span>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -524,11 +538,16 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap gap-2 mb-2">
-                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${s.isRegistrationOpen ? "bg-emerald-500/20 text-emerald-400" : "bg-border/30 text-muted"}`}>
-                          {s.isRegistrationOpen ? "Open" : "Closed"}
-                        </span>
+                        {(() => {
+                          const statusInfo = getSessionStatus(s);
+                          return (
+                            <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full ${statusInfo.badgeClass}`}>
+                              {statusInfo.label}
+                            </span>
+                          );
+                        })()}
                         {!s.isPublished && (
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded-full">Draft</span>
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30">Draft</span>
                         )}
                       </div>
                       <h3 className="font-semibold text-lg">{s.title}</h3>

@@ -8,7 +8,7 @@ import {
 import SessionsManager from "./SessionsManager";
 import RegistrantsTable from "./RegistrantsTable";
 import VotesManager from "./VotesManager";
-import type { Session, Registration } from "@/lib/ai4all";
+import { Session, Registration, getSessionStatus } from "@/lib/ai4all";
 
 type Tab = "overview" | "sessions" | "registrants" | "votes";
 
@@ -201,9 +201,14 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
                 >
                   <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full ${s.isRegistrationOpen ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-muted'}`}>
-                        {s.isRegistrationOpen ? "Registration Open" : "Closed"}
-                      </span>
+                      {(() => {
+                        const statusInfo = getSessionStatus(s);
+                        return (
+                          <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full ${statusInfo.badgeClass}`}>
+                            {statusInfo.label}
+                          </span>
+                        );
+                      })()}
                       {totalSessionAmount > 0 && (
                         <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-400 border border-pink-500/30">
                           ₹{verifiedAmount.toLocaleString("en-IN")} Verified / ₹{totalSessionAmount.toLocaleString("en-IN")} Total

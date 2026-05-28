@@ -95,7 +95,12 @@ export default function RegistrationFormClient({ sessionId }: Props) {
       .then((r) => { if (!r.ok) throw new Error("not found"); return r.json(); })
       .then((data) => {
         setSession(data);
-        if (!data.isRegistrationOpen) {
+        const status = data.status || (data.isRegistrationOpen ? 'open' : 'closed');
+        if (status === 'coming_soon') {
+          setSessionError("Registration for this session is coming soon! Stay tuned.");
+        } else if (status === 'seats_filled') {
+          setSessionError("This session has reached its maximum seat capacity. Please check back for upcoming sessions!");
+        } else if (status === 'closed') {
           setSessionError("Registration for this session is closed.");
         } else if (data.maxParticipants && (data.regCount ?? 0) >= data.maxParticipants) {
           setSessionError("This session has reached its maximum seat capacity. Please check back for upcoming sessions!");
