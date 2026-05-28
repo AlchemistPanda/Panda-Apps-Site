@@ -171,7 +171,12 @@ export default function RegistrationFormClient({ sessionId }: Props) {
         alert(err.error ?? "Registration failed. Please try again.");
         return;
       }
-      const params = new URLSearchParams({ sessionId, name: form.name.trim() });
+      const data = await res.json();
+      const params = new URLSearchParams({
+        sessionId,
+        name: form.name.trim(),
+        regCode: data.regCode ?? "",
+      });
       router.push(`/apps/ai-for-everyone/success?${params.toString()}`);
     } catch {
       alert("Network error. Please check your connection and try again.");

@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, ExternalLink, Share2, Users, ArrowLeft, Sparkles, Download } from "lucide-react";
+import { CheckCircle2, ExternalLink, Share2, Users, ArrowLeft, Sparkles, Download, Copy } from "lucide-react";
 import type { Session } from "@/lib/ai4all";
 
 const CONFETTI_COLORS = ["#7C3AED", "#EC4899", "#F97316", "#FBBF24", "#10B981", "#38BDF8"];
@@ -47,8 +47,10 @@ function SuccessContent() {
   const params = useSearchParams();
   const sessionId = params.get("sessionId") ?? "";
   const name = params.get("name") ?? "Friend";
+  const regCode = params.get("regCode") ?? "";
   const [session, setSession] = useState<Session | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -63,6 +65,14 @@ function SuccessContent() {
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  function copyCode() {
+    if (!regCode) return;
+    navigator.clipboard.writeText(regCode).then(() => {
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
     });
   }
 
@@ -109,6 +119,59 @@ function SuccessContent() {
           <br />
           We&apos;re excited to have you on this journey.
         </p>
+
+        {/* Glowing Entry Ticket */}
+        {regCode && (
+          <div className="ai4all-card ai4all-rise ai4all-d-3 p-6 mb-6 relative overflow-hidden bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl border border-white/10 shadow-[0_20px_50px_rgba(139,92,246,0.15)] rounded-3xl">
+            {/* Top Ticket Header */}
+            <div className="flex items-center justify-between border-b border-dashed border-border/40 pb-4 mb-4">
+              <span className="text-[10px] uppercase font-black tracking-widest text-violet-400">Official Entry Pass</span>
+              <span className="text-[10px] uppercase font-black tracking-widest text-fuchsia-400">PandaApps</span>
+            </div>
+
+            {/* Left and Right notches for ticket aesthetic */}
+            <div className="absolute top-[68px] -left-3 w-6 h-6 rounded-full bg-[#030014] border-r border-white/10" />
+            <div className="absolute top-[68px] -right-3 w-6 h-6 rounded-full bg-[#030014] border-l border-white/10" />
+
+            <div className="text-center py-2">
+              <span className="text-xs font-bold text-muted block mb-1 uppercase tracking-wider">Your Registration Number</span>
+              
+              {/* Massive Glowing Code */}
+              <div className="relative inline-block mb-3">
+                <span className="text-4xl sm:text-5xl font-black tracking-wider bg-gradient-to-r from-violet-400 via-pink-400 to-orange-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(236,72,153,0.3)] animate-pulse">
+                  {regCode}
+                </span>
+              </div>
+
+              {/* Copy button */}
+              <div className="flex justify-center gap-2 mb-4">
+                <button
+                  onClick={copyCode}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-muted hover:text-foreground transition-all"
+                >
+                  {copiedCode ? (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>Copied Ticket Code!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" />
+                      <span>Copy Code</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Friendly warning */}
+              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-2xl max-w-sm mx-auto">
+                <p className="text-[11px] leading-relaxed text-amber-400/90 font-medium">
+                  ⚠️ <strong>Please note down this registration number</strong>. You will need to show this to track your seats and mark attendance during the session!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Session details card */}
         {session && (

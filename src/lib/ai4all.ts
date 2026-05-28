@@ -123,6 +123,7 @@ export interface Registration {
   autoVerifiedReason?: string;
   userSelectedAmount?: number;
   createdAt: string;
+  regCode?: string;
 }
 
 export interface VoteOption {

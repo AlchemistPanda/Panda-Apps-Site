@@ -207,6 +207,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const regNum = (await redisCmd(["INCR", "ai4all:registration_counter"])) as number ?? 1;
+    const regCode = `AI4E${regNum}`;
+
     const reg: Registration = {
       id: crypto.randomUUID(),
       sessionId: body.sessionId,
@@ -225,12 +228,13 @@ export async function POST(req: NextRequest) {
       isScreenshotCorrect: isScreenshotCorrect,
       autoVerifiedReason: autoVerifiedReason,
       createdAt: new Date().toISOString(),
+      regCode,
     };
 
     await redisCmd(["SET", `ai4all:registration:${reg.id}`, JSON.stringify(reg)]);
     await redisCmd(["RPUSH", `ai4all:registrations:${body.sessionId}`, reg.id]);
-    return NextResponse.json({ id: reg.id }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ id: reg.id, regCode: reg.regCode }, { status: 201 });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || "Server error" }, { status: 500 });
   }
 }

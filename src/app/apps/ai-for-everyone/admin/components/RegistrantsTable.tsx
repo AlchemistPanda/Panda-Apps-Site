@@ -12,8 +12,9 @@ interface Props {
 
 function exportCSV(rows: Registration[], sessions: Session[]) {
   const sessionMap = Object.fromEntries(sessions.map((s) => [s.id, s.title]));
-  const headers = ["Name", "Phone", "WhatsApp", "District", "Location", "Institution", "Session", "Why Join", "Donation Status", "Amount", "Financial Reason", "Date"];
+  const headers = ["Reg Code", "Name", "Phone", "WhatsApp", "District", "Location", "Institution", "Session", "Why Join", "Donation Status", "Amount", "Financial Reason", "Date"];
   const data = rows.map((r) => [
+    r.regCode ?? "",
     r.name, r.phone, r.whatsapp,
     r.district ?? "",
     r.locationOther ?? "",
@@ -119,10 +120,11 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
 
     const sessionTitle = session.title;
     const groupLink = session.whatsappLink || "https://chat.whatsapp.com/...";
+    const code = r.regCode ? `*${r.regCode}*` : "";
 
     const message = lang === "ml"
-      ? `ഹലോ ${r.name}, AI for Everyone സെഷനിലേക്ക് താങ്കളുടെ രജിസ്ട്രേഷൻ വിജയകരമായി പൂർത്തിയായിരിക്കുന്നു! 🤖✨\n\nക്ലാസ്സ് വിവരങ്ങൾക്കും ലിങ്കുകൾക്കുമായി ദയവായി താഴെ കാണുന്ന ഔദ്യോഗിക വാട്സാപ്പ് ഗ്രൂപ്പിൽ ജോയിൻ ചെയ്യുക:\n👉 ${groupLink}\n\nസെഷനിൽ കാണാം! 🤝`
-      : `Hi ${r.name}, your registration for the AI for Everyone session "${sessionTitle}" is successfully confirmed! 🤖✨\n\nTo receive session updates and links, please join our official WhatsApp Group here:\n👉 ${groupLink}\n\nSee you in the session! 🤝`;
+      ? `ഹലോ ${r.name}, AI for Everyone സെഷനിലേക്ക് താങ്കളുടെ രജിസ്ട്രേഷൻ വിജയകരമായി പൂർത്തിയായിരിക്കുന്നു! 🤖✨\n\nതാങ്കളുടെ രജിസ്ട്രേഷൻ നമ്പർ: ${code}\n(ദയവായി ഈ നമ്പർ കുറിച്ചുവെക്കുക)\n\nക്ലാസ്സ് വിവരങ്ങൾക്കും ലിങ്കുകൾക്കുമായി ദയവായി താഴെ കാണുന്ന ഔദ്യോഗിക വാട്സാപ്പ് ഗ്രൂപ്പിൽ ജോയിൻ ചെയ്യുക:\n👉 ${groupLink}\n\nസെഷനിൽ കാണാം! 🤝`
+      : `Hi ${r.name}, your registration for the AI for Everyone session "${sessionTitle}" is successfully confirmed! 🤖✨\n\nYour Registration Number: ${code}\n(Please note down this code)\n\nTo receive session updates and links, please join our official WhatsApp Group here:\n👉 ${groupLink}\n\nSee you in the session! 🤝`;
 
     const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
@@ -169,7 +171,8 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
         (r) =>
           r.name.toLowerCase().includes(q) ||
           r.phone.includes(q) ||
-          r.whatsapp.includes(q)
+          r.whatsapp.includes(q) ||
+          r.regCode?.toLowerCase().includes(q)
       );
     }
     return list;
@@ -292,7 +295,14 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
                     {r.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{r.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm truncate">{r.name}</p>
+                      {r.regCode && (
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-400 border border-violet-500/20 tracking-wider shrink-0 uppercase">
+                          {r.regCode}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted">{r.phone}</p>
                   </div>
                 </div>
