@@ -37,16 +37,18 @@ async function verifyPaymentReceipt(
     const prompt = `
 You are an expert payment auditor. Your task is to look at the attached payment screenshot (UPI, GPay, PhonePe, Paytm, or bank transfer receipt) and verify if the payment was successful, paid to the correct details, and for the expected amount.
 
-EXPECTED DETAILS:
-- Recipient Name: "Sindhu Sudhakaran" (also accept variations like "Sindhu", "Sindhu Sudha", etc.)
-- Recipient UPI ID: "sindhusudhakaransindhusudhakar-2@oksbi" (also accept matching phone "+91 9744616598" or "9744616598")
+EXPECTED RECIPIENT DETAILS:
+- Recipient Name: "Sindhu Sudhakaran" (also accept correct spelling variations, e.g. "Sindhu S", "Sindhu Sudha", "Sindhusudhakaran", "SINDHUSUDHAKARAN", "Sindhu")
+- Recipient UPI ID: "sindhusudhakaransindhusudhakar-2@oksbi" (also accept any UPI ID containing "sindhusudhakaransindhusudhakar", "sindhusudhakaran", or associated with the phone "9744616598")
+- Phone Number: "9744616598" (also accept variations like "+91 9744616598", "+919744616598", or "09744616598")
+- Bank Details: Successful bank account transfers showing "Sindhu Sudhakaran" as the beneficiary / payee.
 - Expected Amount: ₹${expectedAmount} (allow a match if the screenshot shows this exact numeric value as the paid/transferred amount)
 
 Verify the following:
-1. Is this actually a payment receipt/screenshot?
+1. Is this actually a payment receipt or transaction screenshot?
 2. Is the transaction status successful or completed (not failed, pending, or declined)?
 3. Does the transaction amount match the expected amount of ₹${expectedAmount}?
-4. Does the recipient match Sindhu Sudhakaran, 9744616598, or the UPI ID "sindhusudhakaransindhusudhakar-2@oksbi"?
+4. Recipient verification: Does the recipient match ANY of the expected details above (recipient name, UPI ID, phone number, or bank details)? If any of these are present and correct, set "recipientMatches" to true.
 
 Return your response strictly in the following JSON format:
 {
