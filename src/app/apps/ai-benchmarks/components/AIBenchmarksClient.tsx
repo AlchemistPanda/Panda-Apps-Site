@@ -823,10 +823,12 @@ export default function AIBenchmarksClient({ models }: Props) {
               accent: "text-purple-500",
             },
           ].map(s => (
-            <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
-              <p className={`text-lg font-bold truncate ${s.accent}`}>{s.value}</p>
-              {s.sub && <p className="text-[10px] text-muted">{s.sub}</p>}
+            <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3 flex flex-col justify-between h-full">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
+                <p className={`text-sm sm:text-base lg:text-lg font-bold leading-tight break-words ${s.accent}`}>{s.value}</p>
+              </div>
+              {s.sub && <p className="text-[10px] text-muted mt-1">{s.sub}</p>}
             </div>
           ))}
           {/* Auto-discovered count — only if > 0 */}
@@ -1364,10 +1366,12 @@ export default function AIBenchmarksClient({ models }: Props) {
                   { label: "Open Source", value: String(openCount), sub: `of ${IMAGE_MODELS.length} models`, accent: "text-amber-500" },
                 ];
               })().map(s => (
-                <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3">
-                  <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
-                  <p className={`text-lg font-bold truncate ${s.accent}`}>{s.value}</p>
-                  {s.sub && <p className="text-[10px] text-muted">{s.sub}</p>}
+                <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3 flex flex-col justify-between h-full">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
+                    <p className={`text-sm sm:text-base lg:text-lg font-bold leading-tight break-words ${s.accent}`}>{s.value}</p>
+                  </div>
+                  {s.sub && <p className="text-[10px] text-muted mt-1">{s.sub}</p>}
                 </div>
               ))}
             </div>
@@ -1507,10 +1511,12 @@ export default function AIBenchmarksClient({ models }: Props) {
                   { label: "Open Source", value: String(openCount), sub: `of ${VIDEO_MODELS.length} models`, accent: "text-amber-500" },
                 ];
               })().map(s => (
-                <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3">
-                  <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
-                  <p className={`text-lg font-bold truncate ${s.accent}`}>{s.value}</p>
-                  {s.sub && <p className="text-[10px] text-muted">{s.sub}</p>}
+                <div key={s.label} className="rounded-xl border border-border/30 bg-card/50 px-4 py-3 flex flex-col justify-between h-full">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-muted mb-0.5">{s.label}</p>
+                    <p className={`text-sm sm:text-base lg:text-lg font-bold leading-tight break-words ${s.accent}`}>{s.value}</p>
+                  </div>
+                  {s.sub && <p className="text-[10px] text-muted mt-1">{s.sub}</p>}
                 </div>
               ))}
             </div>
