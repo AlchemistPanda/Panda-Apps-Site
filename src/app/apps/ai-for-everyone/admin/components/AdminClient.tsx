@@ -12,6 +12,25 @@ import type { Session, Registration } from "@/lib/ai4all";
 
 type Tab = "overview" | "sessions" | "registrants" | "votes";
 
+function extractOcrAmount(reason?: string): number | null {
+  if (!reason) return null;
+  const match = reason.match(/in\s*receipt\s*\(?₹?([0-9,]+)/i);
+  if (match && match[1]) {
+    return parseInt(match[1].replace(/,/g, ""), 10);
+  }
+  return null;
+}
+
+function getEffectiveDonationAmount(r: Registration): number {
+  if (r.donationStatus !== "donated") return 0;
+  if (r.isScreenshotCorrect === true || r.isScreenshotCorrect === false) {
+    return Number(r.donationAmount ?? 50);
+  }
+  const detected = extractOcrAmount(r.autoVerifiedReason);
+  if (detected !== null) return detected;
+  return Number(r.donationAmount ?? 50);
+}
+
 function LoginForm({ onLogin }: { onLogin: (token: string) => void }) {
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -114,11 +133,11 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
 
   const totalVerifiedSum = registrations
     .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
-    .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
+    .reduce((sum, r) => sum + getEffectiveDonationAmount(r), 0);
 
   const totalAllSum = registrations
     .filter((r) => r.donationStatus === "donated")
-    .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
+    .reduce((sum, r) => sum + getEffectiveDonationAmount(r), 0);
 
   const stats = [
     { label: "Total Registrations", value: totalRegs, emoji: "👥" },
@@ -169,11 +188,11 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
               const hardshipCount = sessionRegs.filter((r) => r.donationStatus !== "donated").length;
               const verifiedAmount = sessionRegs
                 .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
-                .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
+                .reduce((sum, r) => sum + getEffectiveDonationAmount(r), 0);
 
               const totalSessionAmount = sessionRegs
                 .filter((r) => r.donationStatus === "donated")
-                .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
+                .reduce((sum, r) => sum + getEffectiveDonationAmount(r), 0);
 
               return (
                 <div

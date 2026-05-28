@@ -14,6 +14,16 @@ function extractOcrAmount(reason?: string): number | null {
   return null;
 }
 
+function getEffectiveDonationAmount(r: Registration): number {
+  if (r.donationStatus !== "donated") return 0;
+  if (r.isScreenshotCorrect === true || r.isScreenshotCorrect === false) {
+    return Number(r.donationAmount ?? 50);
+  }
+  const detected = extractOcrAmount(r.autoVerifiedReason);
+  if (detected !== null) return detected;
+  return Number(r.donationAmount ?? 50);
+}
+
 interface Props {
   sessions: Session[];
   registrations: Registration[];
@@ -471,7 +481,7 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
           const sessionRegs = registrations.filter((r) => r.sessionId === s.id);
           const verifiedAmount = sessionRegs
             .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
-            .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
+            .reduce((sum, r) => sum + getEffectiveDonationAmount(r), 0);
           const pendingCount = sessionRegs
             .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === undefined)
             .length;

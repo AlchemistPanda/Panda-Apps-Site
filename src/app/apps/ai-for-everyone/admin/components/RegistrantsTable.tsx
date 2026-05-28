@@ -91,6 +91,16 @@ function extractOcrAmount(reason?: string): number | null {
   return null;
 }
 
+function getEffectiveDonationAmount(r: Registration): number {
+  if (r.donationStatus !== "donated") return 0;
+  if (r.isScreenshotCorrect === true || r.isScreenshotCorrect === false) {
+    return Number(r.donationAmount ?? 50);
+  }
+  const detected = extractOcrAmount(r.autoVerifiedReason);
+  if (detected !== null) return detected;
+  return Number(r.donationAmount ?? 50);
+}
+
 export default function RegistrantsTable({ registrations, sessions, onRefresh }: Props) {
   const [sessionFilter, setSessionFilter] = useState("all");
   const [query, setQuery] = useState("");
@@ -178,13 +188,13 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
   const verifiedDonationsSum = useMemo(() => {
     return filtered
       .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
-      .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
+      .reduce((sum, r) => sum + getEffectiveDonationAmount(r), 0);
   }, [filtered]);
 
   const totalDonationsSum = useMemo(() => {
     return filtered
       .filter((r) => r.donationStatus === "donated")
-      .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
+      .reduce((sum, r) => sum + getEffectiveDonationAmount(r), 0);
   }, [filtered]);
 
   return (
