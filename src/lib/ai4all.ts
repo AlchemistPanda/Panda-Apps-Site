@@ -100,6 +100,7 @@ export interface Session {
   coverGradient: string;
   isPublished: boolean;
   createdAt: string;
+  regCount?: number;
 }
 
 export interface Registration {

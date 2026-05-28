@@ -187,6 +187,26 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
                         })}
                       </p>
                     )}
+                    {s.maxParticipants && (
+                      <div className="mt-2.5 max-w-[200px]">
+                        <div className="flex items-center justify-between text-[10px] text-muted mb-1 font-semibold">
+                          <span>Capacity</span>
+                          <span>{regCount} / {s.maxParticipants} filled</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              (regCount / s.maxParticipants) >= 0.95 
+                                ? "bg-gradient-to-r from-rose-500 to-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
+                                : (regCount / s.maxParticipants) >= 0.8
+                                ? "bg-gradient-to-r from-orange-400 to-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.3)]"
+                                : "bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-[0_0_8px_rgba(139,92,246,0.3)]"
+                            }`}
+                            style={{ width: `${Math.min(100, Math.round((regCount / s.maxParticipants) * 100))}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 shrink-0">

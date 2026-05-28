@@ -509,6 +509,26 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                           </span>
                         )}
                       </div>
+                      {s.maxParticipants && (
+                        <div className="mt-3.5 max-w-[240px]">
+                          <div className="flex items-center justify-between text-[10px] text-muted mb-1 font-semibold">
+                            <span>Capacity</span>
+                            <span>{sessionRegs.length} / {s.maxParticipants} filled</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-border/20">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                (sessionRegs.length / s.maxParticipants) >= 0.95 
+                                  ? "bg-gradient-to-r from-rose-500 to-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
+                                  : (sessionRegs.length / s.maxParticipants) >= 0.8
+                                  ? "bg-gradient-to-r from-orange-400 to-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.3)]"
+                                  : "bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-[0_0_8px_rgba(139,92,246,0.3)]"
+                              }`}
+                              style={{ width: `${Math.min(100, Math.round((sessionRegs.length / s.maxParticipants) * 100))}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex flex-col sm:items-end justify-between gap-3 shrink-0 self-stretch sm:self-auto">
@@ -612,6 +632,38 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                                 <p className="text-muted text-[11px]">
                                   Phone: <strong className="text-foreground/90">{r.phone}</strong> · WhatsApp: <strong className="text-foreground/90">{r.whatsapp}</strong>
                                 </p>
+                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                  <button
+                                    onClick={() => {
+                                      const cleanPhone = r.whatsapp.replace(/\D/g, "");
+                                      const formattedPhone = cleanPhone.startsWith("91") && cleanPhone.length === 12
+                                        ? cleanPhone
+                                        : cleanPhone.length === 10
+                                        ? `91${cleanPhone}`
+                                        : cleanPhone;
+                                      const msg = `ഹലോ ${r.name}, AI for Everyone സെഷനിലേക്ക് താങ്കളുടെ രജിസ്ട്രേഷൻ വിജയകരമായി പൂർത്തിയായിരിക്കുന്നു! 🤖✨\n\nക്ലാസ്സ് വിവരങ്ങൾക്കും ലിങ്കുകൾക്കുമായി ദയവായി താഴെ കാണുന്ന ഔദ്യോഗിക വാട്സാപ്പ് ഗ്രൂപ്പിൽ ജോയിൻ ചെയ്യുക:\n👉 ${s.whatsappLink || "https://chat.whatsapp.com/..."}\n\nസെഷനിൽ കാണാം! 🤝`;
+                                      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-600/10 border border-emerald-500/20 hover:bg-emerald-600 hover:text-white text-[10px] font-bold text-emerald-400 transition-all cursor-pointer flex items-center gap-1"
+                                  >
+                                    💬 ML Invite
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const cleanPhone = r.whatsapp.replace(/\D/g, "");
+                                      const formattedPhone = cleanPhone.startsWith("91") && cleanPhone.length === 12
+                                        ? cleanPhone
+                                        : cleanPhone.length === 10
+                                        ? `91${cleanPhone}`
+                                        : cleanPhone;
+                                      const msg = `Hi ${r.name}, your registration for the AI for Everyone session "${s.title}" is successfully confirmed! 🤖✨\n\nTo receive session updates and links, please join our official WhatsApp Group here:\n👉 ${s.whatsappLink || "https://chat.whatsapp.com/..."}\n\nSee you in the session! 🤝`;
+                                      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg bg-violet-600/10 border border-violet-500/20 hover:bg-violet-600 hover:text-white text-[10px] font-bold text-violet-400 transition-all cursor-pointer flex items-center gap-1"
+                                  >
+                                    💬 EN Invite
+                                  </button>
+                                </div>
                                 {r.whyJoin && (
                                   <p className="text-muted/80 text-[10px] italic leading-snug line-clamp-1 mt-0.5">
                                     "{r.whyJoin}"

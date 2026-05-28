@@ -154,6 +154,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Registration is closed" }, { status: 403 });
     }
 
+    const regCount = (await redisCmd(["LLEN", `ai4all:registrations:${body.sessionId}`])) as number ?? 0;
+    if (session.maxParticipants && regCount >= session.maxParticipants) {
+      return NextResponse.json({ error: "This session has reached its maximum seat capacity." }, { status: 403 });
+    }
+
     let isScreenshotCorrect: boolean | undefined = undefined;
     let autoVerifiedReason: string | undefined = undefined;
 

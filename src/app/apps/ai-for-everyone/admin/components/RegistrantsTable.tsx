@@ -93,6 +93,25 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [editedAmounts, setEditedAmounts] = useState<Record<string, string>>({});
 
+  function openWhatsAppInvite(r: Registration, session: Session, lang: "en" | "ml") {
+    const cleanPhone = r.whatsapp.replace(/\D/g, "");
+    const formattedPhone = cleanPhone.startsWith("91") && cleanPhone.length === 12
+      ? cleanPhone
+      : cleanPhone.length === 10
+      ? `91${cleanPhone}`
+      : cleanPhone;
+
+    const sessionTitle = session.title;
+    const groupLink = session.whatsappLink || "https://chat.whatsapp.com/...";
+
+    const message = lang === "ml"
+      ? `ഹലോ ${r.name}, AI for Everyone സെഷനിലേക്ക് താങ്കളുടെ രജിസ്ട്രേഷൻ വിജയകരമായി പൂർത്തിയായിരിക്കുന്നു! 🤖✨\n\nക്ലാസ്സ് വിവരങ്ങൾക്കും ലിങ്കുകൾക്കുമായി ദയവായി താഴെ കാണുന്ന ഔദ്യോഗിക വാട്സാപ്പ് ഗ്രൂപ്പിൽ ജോയിൻ ചെയ്യുക:\n👉 ${groupLink}\n\nസെഷനിൽ കാണാം! 🤝`
+      : `Hi ${r.name}, your registration for the AI for Everyone session "${sessionTitle}" is successfully confirmed! 🤖✨\n\nTo receive session updates and links, please join our official WhatsApp Group here:\n👉 ${groupLink}\n\nSee you in the session! 🤝`;
+
+    const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  }
+
   async function handleVerify(regId: string, isCorrect: boolean, amount?: number) {
     setVerifyingId(regId);
     const token = localStorage.getItem("ai4all_admin_token") ?? "";
@@ -320,6 +339,29 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
                         <p className="text-amber-200/80 leading-relaxed">{r.financialReason}</p>
                       </div>
                     )}
+                    <div className="sm:col-span-2 mt-2 pt-4 border-t border-border/40 space-y-2.5">
+                      <p className="text-xs text-muted font-bold uppercase tracking-wider">Quick Communication</p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => {
+                            const session = sessions.find((s) => s.id === r.sessionId);
+                            if (session) openWhatsAppInvite(r, session, "ml");
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-emerald-600/10 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white text-emerald-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          💬 Send Malayalam Invite
+                        </button>
+                        <button
+                          onClick={() => {
+                            const session = sessions.find((s) => s.id === r.sessionId);
+                            if (session) openWhatsAppInvite(r, session, "en");
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-violet-600/10 border border-violet-500/30 hover:bg-violet-600 hover:text-white text-violet-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          💬 Send English Invite
+                        </button>
+                      </div>
+                    </div>
                     {r.screenshotUrl && (
                       <div className="sm:col-span-2 mt-2 pt-4 border-t border-border/40">
                         <p className="text-xs text-muted mb-2 font-bold uppercase tracking-wider">Payment Screenshot</p>

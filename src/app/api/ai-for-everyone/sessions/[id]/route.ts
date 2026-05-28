@@ -8,7 +8,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const raw = await redisCmd(["GET", `ai4all:session:${id}`]);
   if (!raw) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(JSON.parse(raw as string));
+  const session = JSON.parse(raw as string);
+  const regCount = (await redisCmd(["LLEN", `ai4all:registrations:${id}`])) as number ?? 0;
+  return NextResponse.json({ ...session, regCount });
 }
 
 // PUT /api/ai-for-everyone/sessions/[id]  (admin)
