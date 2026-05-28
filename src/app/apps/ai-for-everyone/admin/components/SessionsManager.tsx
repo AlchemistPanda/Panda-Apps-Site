@@ -471,7 +471,7 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
           const sessionRegs = registrations.filter((r) => r.sessionId === s.id);
           const verifiedAmount = sessionRegs
             .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
-            .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+            .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
           const pendingCount = sessionRegs
             .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === undefined)
             .length;

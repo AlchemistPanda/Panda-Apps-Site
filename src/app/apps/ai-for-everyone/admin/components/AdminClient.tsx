@@ -114,11 +114,11 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
 
   const totalVerifiedSum = registrations
     .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
-    .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+    .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
 
   const totalAllSum = registrations
     .filter((r) => r.donationStatus === "donated")
-    .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+    .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
 
   const stats = [
     { label: "Total Registrations", value: totalRegs, emoji: "👥" },
@@ -169,11 +169,11 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
               const hardshipCount = sessionRegs.filter((r) => r.donationStatus !== "donated").length;
               const verifiedAmount = sessionRegs
                 .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
-                .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+                .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
 
               const totalSessionAmount = sessionRegs
                 .filter((r) => r.donationStatus === "donated")
-                .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+                .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
 
               return (
                 <div

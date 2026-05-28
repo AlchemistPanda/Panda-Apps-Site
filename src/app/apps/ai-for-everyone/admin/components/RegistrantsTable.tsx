@@ -178,13 +178,13 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
   const verifiedDonationsSum = useMemo(() => {
     return filtered
       .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
-      .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+      .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
   }, [filtered]);
 
   const totalDonationsSum = useMemo(() => {
     return filtered
       .filter((r) => r.donationStatus === "donated")
-      .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+      .reduce((sum, r) => sum + Number(r.donationAmount ?? 50), 0);
   }, [filtered]);
 
   return (
