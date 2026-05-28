@@ -51,21 +51,22 @@ const getDonationBadge = (r: Registration) => {
     };
   }
   if (r.donationStatus === "donated") {
+    const selectedSuffix = r.userSelectedAmount ? ` (Selected ₹${r.userSelectedAmount})` : "";
     if (r.isScreenshotCorrect === true) {
       return {
         className: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
-        label: `donated ₹${r.donationAmount ?? 50} (Verified)`,
+        label: `donated ₹${r.donationAmount ?? 50}${selectedSuffix} (Verified)`,
       };
     }
     if (r.isScreenshotCorrect === false) {
       return {
         className: "bg-rose-500/20 text-rose-400 border border-rose-500/30",
-        label: `₹${r.donationAmount ?? 50} (Invalid Proof)`,
+        label: `₹${r.donationAmount ?? 50}${selectedSuffix} (Invalid Proof)`,
       };
     }
     return {
       className: "bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse",
-      label: `₹${r.donationAmount ?? 50} (Unverified)`,
+      label: `₹${r.donationAmount ?? 50}${selectedSuffix} (Unverified)`,
     };
   }
   return {

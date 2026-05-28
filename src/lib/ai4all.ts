@@ -119,6 +119,7 @@ export interface Registration {
   screenshotUrl?: string;
   isScreenshotCorrect?: boolean;
   autoVerifiedReason?: string;
+  userSelectedAmount?: number;
   createdAt: string;
 }
 

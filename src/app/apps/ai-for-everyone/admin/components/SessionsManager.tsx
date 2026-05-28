@@ -615,7 +615,7 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                                         ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                                         : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                                     }`}>
-                                      ₹{r.donationAmount ?? 50} {isVerified ? "Verified" : isInvalid ? "Invalid Proof" : "Unverified"}
+                                      ₹{r.donationAmount ?? 50}{r.userSelectedAmount ? ` (Selected ₹${r.userSelectedAmount})` : ""} {isVerified ? "Verified" : isInvalid ? "Invalid Proof" : "Unverified"}
                                     </span>
                                   )}
                                   {r.donationStatus === "hardship" && (

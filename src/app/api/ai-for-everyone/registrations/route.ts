@@ -8,18 +8,18 @@ export const dynamic = "force-dynamic";
 async function verifyPaymentReceipt(
   imageUrl: string,
   expectedAmount: number
-): Promise<{ isCorrect: boolean; reason: string }> {
+): Promise<{ isCorrect: boolean; reason: string; extractedAmount: number | null; isSuccessful: boolean; recipientMatches: boolean }> {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     console.warn("GOOGLE_API_KEY is not configured. Skipping auto-verification.");
-    return { isCorrect: false, reason: "GOOGLE_API_KEY not configured on server" };
+    return { isCorrect: false, reason: "GOOGLE_API_KEY not configured on server", extractedAmount: null, isSuccessful: false, recipientMatches: false };
   }
 
   try {
     // 1. Fetch image
     const res = await fetch(imageUrl);
     if (!res.ok) {
-      return { isCorrect: false, reason: `Failed to download screenshot: ${res.statusText}` };
+      return { isCorrect: false, reason: `Failed to download screenshot: ${res.statusText}`, extractedAmount: null, isSuccessful: false, recipientMatches: false };
     }
 
     const contentType = res.headers.get("content-type") || "image/jpeg";
@@ -55,6 +55,7 @@ Return your response strictly in the following JSON format:
   "recipientMatches": boolean,
   "amountMatches": boolean,
   "autoVerified": boolean,
+  "extractedAmount": number | null,
   "reason": "A 1-sentence concise reason explaining what you found (e.g. 'Verified ₹50 payment to Sindhu Sudhakaran successfully' or 'Amount in receipt (₹100) does not match expected ₹50')"
 }
 
@@ -104,6 +105,9 @@ Set "autoVerified" to true ONLY if:
     return {
       isCorrect: !!verification.autoVerified,
       reason: verification.reason || (verification.autoVerified ? "Auto-verified successfully" : "Details did not match"),
+      extractedAmount: typeof verification.extractedAmount === 'number' ? verification.extractedAmount : null,
+      isSuccessful: !!verification.isSuccessful,
+      recipientMatches: !!verification.recipientMatches
     };
 
   } catch (error: any) {
@@ -111,6 +115,9 @@ Set "autoVerified" to true ONLY if:
     return {
       isCorrect: false,
       reason: error.message || "Failed to parse receipt image",
+      extractedAmount: null,
+      isSuccessful: false,
+      recipientMatches: false
     };
   }
 }
@@ -161,16 +168,31 @@ export async function POST(req: NextRequest) {
 
     let isScreenshotCorrect: boolean | undefined = undefined;
     let autoVerifiedReason: string | undefined = undefined;
+    let finalAmount = body.donationAmount;
+    let userSelectedAmount: number | undefined = undefined;
 
     if (body.donationStatus === "donated" && body.screenshotUrl?.trim()) {
       try {
-        const amount = body.donationAmount ?? 50;
-        const ocrResult = await verifyPaymentReceipt(body.screenshotUrl.trim(), amount);
+        const expectedAmt = body.donationAmount ?? 50;
+        const ocrResult = await verifyPaymentReceipt(body.screenshotUrl.trim(), expectedAmt);
         if (ocrResult.isCorrect) {
           isScreenshotCorrect = true;
           autoVerifiedReason = `[Auto-Verified] ${ocrResult.reason}`;
         } else {
-          autoVerifiedReason = `[Auto-Verification Failed] ${ocrResult.reason}`;
+          // If the payment is successful to Sindhu Sudhakaran, but the amount is different:
+          if (
+            ocrResult.isSuccessful &&
+            ocrResult.recipientMatches &&
+            ocrResult.extractedAmount &&
+            ocrResult.extractedAmount !== expectedAmt
+          ) {
+            finalAmount = ocrResult.extractedAmount;
+            userSelectedAmount = expectedAmt;
+            isScreenshotCorrect = true;
+            autoVerifiedReason = `[Auto-Verified] Amount in receipt (₹${ocrResult.extractedAmount.toLocaleString("en-IN")}) differs from expected ₹${expectedAmt}, but payment to Sindhu Sudhakaran was successful. Automatically updated donation amount.`;
+          } else {
+            autoVerifiedReason = `[Auto-Verification Failed] ${ocrResult.reason}`;
+          }
         }
       } catch (ocrError: any) {
         console.error("OCR auto-verification error:", ocrError);
@@ -189,7 +211,8 @@ export async function POST(req: NextRequest) {
       institution: body.institution?.trim() || undefined,
       whyJoin: body.whyJoin.trim(),
       donationStatus: body.donationStatus ?? "skipped",
-      donationAmount: body.donationAmount,
+      donationAmount: finalAmount,
+      userSelectedAmount: userSelectedAmount,
       financialReason: body.financialReason?.trim(),
       screenshotUrl: body.screenshotUrl?.trim() || undefined,
       isScreenshotCorrect: isScreenshotCorrect,
