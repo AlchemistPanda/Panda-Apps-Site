@@ -84,6 +84,8 @@ function SessionForm({
   token: string;
 }) {
   const [form, setForm] = useState<FormState>(initial);
+  const [dateInput, setDateInput] = useState(formatToLocalDatetime(initial.scheduledDate));
+  const [durationInput, setDurationInput] = useState((initial.durationMinutes ?? 90).toString());
   const [topicsInput, setTopicsInput] = useState((initial.topics || []).join(", "));
   const [appsInput, setAppsInput] = useState(
     (initial.appsToDownload || []).map((a) => `${a.name}|${a.url}`).join("\n")
@@ -151,7 +153,23 @@ function SessionForm({
       })
       .filter((a) => a.name && a.url);
 
-    onSave({ ...form, topics, appsToDownload: apps, durationMinutes: form.durationMinutes || 90 });
+    let scheduledDate: string | null = null;
+    if (dateInput) {
+      const parsedDate = new Date(dateInput);
+      if (!isNaN(parsedDate.getTime())) {
+        scheduledDate = parsedDate.toISOString();
+      }
+    }
+
+    const durationMinutes = parseInt(durationInput, 10) || 90;
+
+    onSave({ 
+      ...form, 
+      topics, 
+      appsToDownload: apps, 
+      scheduledDate, 
+      durationMinutes 
+    });
   }
 
   const input =
@@ -184,29 +202,20 @@ function SessionForm({
           <input
             type="datetime-local"
             className={input}
-            value={formatToLocalDatetime(form.scheduledDate)}
-            onChange={(e) => {
-              const val = e.target.value;
-              let iso: string | null = null;
-              if (val) {
-                const parsed = new Date(val);
-                if (!isNaN(parsed.getTime())) {
-                  iso = parsed.toISOString();
-                }
-              }
-              setForm((f) => ({ ...f, scheduledDate: iso }));
-            }}
+            value={dateInput}
+            onChange={(e) => setDateInput(e.target.value)}
           />
         </div>
         <div>
           <label className="block text-xs text-muted mb-1">Duration (minutes)</label>
           <input
-            type="number"
+            type="text"
             className={input}
-            value={form.durationMinutes === 0 ? "" : form.durationMinutes}
+            placeholder="e.g. 90"
+            value={durationInput}
             onChange={(e) => {
-              const parsed = parseInt(e.target.value, 10);
-              setForm((f) => ({ ...f, durationMinutes: isNaN(parsed) ? 0 : parsed }));
+              const val = e.target.value.replace(/[^0-9]/g, ""); // Allow only digits
+              setDurationInput(val);
             }}
           />
         </div>
