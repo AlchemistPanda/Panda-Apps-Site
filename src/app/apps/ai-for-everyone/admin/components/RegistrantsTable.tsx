@@ -169,7 +169,7 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
   }
 
   const donatedCount = filtered.filter((r) => r.donationStatus === "donated").length;
-  const hardshipCount = filtered.filter((r) => r.donationStatus === "hardship").length;
+  const hardshipCount = filtered.filter((r) => r.donationStatus !== "donated").length;
   const verifiedDonationsSum = useMemo(() => {
     return filtered
       .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)

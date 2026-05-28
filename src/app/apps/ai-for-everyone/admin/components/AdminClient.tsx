@@ -110,7 +110,7 @@ const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
 function OverviewTab({ sessions, registrations }: { sessions: Session[]; registrations: Registration[] }) {
   const totalRegs = registrations.length;
   const donated = registrations.filter((r) => r.donationStatus === "donated").length;
-  const hardship = registrations.filter((r) => r.donationStatus === "hardship" || r.donationStatus === "skipped").length;
+  const hardship = registrations.filter((r) => r.donationStatus !== "donated").length;
   const openSessions = sessions.filter((s) => s.isRegistrationOpen).length;
 
   const stats = [
@@ -158,7 +158,7 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
               const invalidDonatedCount = sessionRegs.filter(
                 (r) => r.donationStatus === "donated" && r.isScreenshotCorrect === false
               ).length;
-              const hardshipCount = sessionRegs.filter((r) => r.donationStatus === "hardship" || r.donationStatus === "skipped").length;
+              const hardshipCount = sessionRegs.filter((r) => r.donationStatus !== "donated").length;
               const verifiedAmount = sessionRegs
                 .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
                 .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
