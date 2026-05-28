@@ -549,6 +549,9 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                         {!s.isPublished && (
                           <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30">Draft</span>
                         )}
+                        {s.isArchived && (
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 bg-slate-500/20 text-slate-450 rounded-full border border-slate-500/30 font-semibold">Archived (Deleted)</span>
+                        )}
                       </div>
                       <h3 className="font-semibold text-lg">{s.title}</h3>
                       {s.scheduledDate && (
@@ -600,32 +603,34 @@ export default function SessionsManager({ sessions, registrations, token, onRefr
                     </div>
                     
                     <div className="flex flex-col sm:items-end justify-between gap-3 shrink-0 self-stretch sm:self-auto">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => toggleRegistration(s)}
-                          disabled={toggling === s.id}
-                          title={s.isRegistrationOpen ? "Close registration" : "Open registration"}
-                          className="p-2 rounded-lg hover:bg-card-hover transition-colors text-muted hover:text-foreground"
-                        >
-                          {toggling === s.id
-                            ? <Loader2 className="h-4 w-4 animate-spin" />
-                            : s.isRegistrationOpen
-                            ? <ToggleRight className="h-4 w-4 text-emerald-400" />
-                            : <ToggleLeft className="h-4 w-4" />}
-                        </button>
-                        <button
-                          onClick={() => { setEditId(s.id); setShowForm(false); }}
-                          className="p-2 rounded-lg hover:bg-card-hover transition-colors text-muted hover:text-foreground"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteSession(s.id)}
-                          className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-muted hover:text-red-400"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                      {!s.isArchived && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => toggleRegistration(s)}
+                            disabled={toggling === s.id}
+                            title={s.isRegistrationOpen ? "Close registration" : "Open registration"}
+                            className="p-2 rounded-lg hover:bg-card-hover transition-colors text-muted hover:text-foreground"
+                          >
+                            {toggling === s.id
+                              ? <Loader2 className="h-4 w-4 animate-spin" />
+                              : s.isRegistrationOpen
+                              ? <ToggleRight className="h-4 w-4 text-emerald-400" />
+                              : <ToggleLeft className="h-4 w-4" />}
+                          </button>
+                          <button
+                            onClick={() => { setEditId(s.id); setShowForm(false); }}
+                            className="p-2 rounded-lg hover:bg-card-hover transition-colors text-muted hover:text-foreground"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => deleteSession(s.id)}
+                            className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-muted hover:text-red-400"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
 
                       <button
                         onClick={() => setExpandedSessionId(expandedSessionId === s.id ? null : s.id)}

@@ -102,6 +102,7 @@ export interface Session {
   status?: 'open' | 'closed' | 'coming_soon' | 'seats_filled';
   createdAt: string;
   regCount?: number;
+  isArchived?: boolean;
 }
 
 export interface Registration {

@@ -35,7 +35,29 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
-  await redisCmd(["DEL", `ai4all:session:${id}`]);
+
+  // 1. Fetch existing session to archive it
+  const raw = await redisCmd(["GET", `ai4all:session:${id}`]);
+  if (raw) {
+    const existing = JSON.parse(raw as string);
+    const updated = {
+      ...existing,
+      status: "closed",
+      isPublished: false,
+      isRegistrationOpen: false,
+      isArchived: true,
+    };
+    await redisCmd(["SET", `ai4all:session:${id}`, JSON.stringify(updated)]);
+  }
+
+  // 2. Remove from active list
   await redisCmd(["LREM", "ai4all:sessions", "0", id]);
+
+  // 3. Add to archived list
+  const archived = (await redisCmd(["LRANGE", "ai4all:archived_sessions", "0", "-1"])) as string[] ?? [];
+  if (!archived.includes(id)) {
+    await redisCmd(["RPUSH", "ai4all:archived_sessions", id]);
+  }
+
   return NextResponse.json({ ok: true });
 }

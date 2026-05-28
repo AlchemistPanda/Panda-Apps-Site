@@ -130,9 +130,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const sessionId = req.nextUrl.searchParams.get("sessionId");
-  const sessionIds: string[] = sessionId
-    ? [sessionId]
-    : ((await redisCmd(["LRANGE", "ai4all:sessions", "0", "-1"])) as string[]) ?? [];
+  let sessionIds: string[] = [];
+  if (sessionId) {
+    sessionIds = [sessionId];
+  } else {
+    const activeIds = ((await redisCmd(["LRANGE", "ai4all:sessions", "0", "-1"])) as string[]) ?? [];
+    const archivedIds = ((await redisCmd(["LRANGE", "ai4all:archived_sessions", "0", "-1"])) as string[]) ?? [];
+    sessionIds = [...new Set([...activeIds, ...archivedIds])];
+  }
 
   const all: Registration[] = [];
   for (const sid of sessionIds) {

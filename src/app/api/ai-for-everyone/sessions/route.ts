@@ -9,8 +9,12 @@ export async function GET(req: NextRequest) {
   const isAdmin = verifyAdminToken(getAdminToken(req));
 
   try {
-    const ids = (await redisCmd(["LRANGE", "ai4all:sessions", "0", "-1"])) as string[] | null;
-    if (!ids || ids.length === 0) return NextResponse.json([]);
+    const activeIds = ((await redisCmd(["LRANGE", "ai4all:sessions", "0", "-1"])) as string[]) ?? [];
+    const archivedIds = isAdmin
+      ? ((await redisCmd(["LRANGE", "ai4all:archived_sessions", "0", "-1"])) as string[]) ?? []
+      : [];
+    const ids = [...new Set([...activeIds, ...archivedIds])];
+    if (ids.length === 0) return NextResponse.json([]);
 
     const sessions: Session[] = [];
     for (const id of ids) {
