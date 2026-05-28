@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar, Upload, ImageIcon, Crop } from "lucide-react";
+import { useState, useRef, useCallback, useMemo } from "react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Loader2, X, Check, Calendar, Upload, ImageIcon, Crop, ChevronDown, ChevronUp, Users, CheckCircle, AlertCircle } from "lucide-react";
 import Cropper, { Point, Area } from "react-easy-crop";
-import type { Session } from "@/lib/ai4all";
+import type { Session, Registration } from "@/lib/ai4all";
 
 interface Props {
   sessions: Session[];
+  registrations: Registration[];
   token: string;
   onRefresh: () => void;
 }
@@ -347,11 +348,12 @@ function SessionForm({
   );
 }
 
-export default function SessionsManager({ sessions, token, onRefresh }: Props) {
+export default function SessionsManager({ sessions, registrations, token, onRefresh }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
 
   async function createSession(data: FormState) {
     setSaving(true);
@@ -456,73 +458,219 @@ export default function SessionsManager({ sessions, token, onRefresh }: Props) {
       )}
 
       <div className="space-y-4">
-        {sessions.map((s) => (
-          <div key={s.id}>
-            <div className="rounded-2xl border border-border/50 bg-card/50 overflow-hidden">
-              <div className={`h-1 w-full bg-gradient-to-r ${s.coverGradient}`} />
-              <div className="p-5">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      <span className={`text-xs rounded-full px-2.5 py-1 ${s.isRegistrationOpen ? "bg-emerald-500/20 text-emerald-400" : "bg-border/30 text-muted"}`}>
-                        {s.isRegistrationOpen ? "Open" : "Closed"}
-                      </span>
-                      {!s.isPublished && (
-                        <span className="text-xs rounded-full px-2.5 py-1 bg-amber-500/20 text-amber-400">Draft</span>
+        {sessions.map((s) => {
+          const sessionRegs = registrations.filter((r) => r.sessionId === s.id);
+          const verifiedAmount = sessionRegs
+            .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
+            .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+          const pendingCount = sessionRegs
+            .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === undefined)
+            .length;
+
+          return (
+            <div key={s.id}>
+              <div className="rounded-2xl border border-border/50 bg-card/50 overflow-hidden">
+                <div className={`h-1 w-full bg-gradient-to-r ${s.coverGradient}`} />
+                <div className="p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${s.isRegistrationOpen ? "bg-emerald-500/20 text-emerald-400" : "bg-border/30 text-muted"}`}>
+                          {s.isRegistrationOpen ? "Open" : "Closed"}
+                        </span>
+                        {!s.isPublished && (
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded-full">Draft</span>
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-lg">{s.title}</h3>
+                      {s.scheduledDate && (
+                        <p className="text-xs text-muted mt-1 flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(s.scheduledDate).toLocaleString("en-IN", {
+                            day: "numeric", month: "short", year: "numeric",
+                            hour: "2-digit", minute: "2-digit",
+                          })}
+                        </p>
                       )}
+
+                      {/* Dynamic Stats Badges */}
+                      <div className="flex flex-wrap gap-2 mt-3 text-[11px]">
+                        <span className="bg-white/5 border border-border/20 px-2 py-0.5 rounded-lg flex items-center gap-1 font-medium text-muted">
+                          <Users className="h-3 w-3 text-violet-400" /> {sessionRegs.length} registered
+                        </span>
+                        {verifiedAmount > 0 && (
+                          <span className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-lg flex items-center gap-1 font-medium text-emerald-400">
+                            <CheckCircle className="h-3 w-3 text-emerald-400" /> ₹{verifiedAmount.toLocaleString("en-IN")} verified collected
+                          </span>
+                        )}
+                        {pendingCount > 0 && (
+                          <span className="bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-lg flex items-center gap-1 font-medium text-amber-400 animate-pulse">
+                            <AlertCircle className="h-3 w-3 text-amber-400" /> {pendingCount} pending verification
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <h3 className="font-semibold">{s.title}</h3>
-                    {s.scheduledDate && (
-                      <p className="text-xs text-muted mt-1 flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(s.scheduledDate).toLocaleString("en-IN", {
-                          day: "numeric", month: "short", year: "numeric",
-                          hour: "2-digit", minute: "2-digit",
-                        })}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => toggleRegistration(s)}
-                      disabled={toggling === s.id}
-                      title={s.isRegistrationOpen ? "Close registration" : "Open registration"}
-                      className="p-2 rounded-lg hover:bg-card-hover transition-colors text-muted hover:text-foreground"
-                    >
-                      {toggling === s.id
-                        ? <Loader2 className="h-4 w-4 animate-spin" />
-                        : s.isRegistrationOpen
-                        ? <ToggleRight className="h-4 w-4 text-emerald-400" />
-                        : <ToggleLeft className="h-4 w-4" />}
-                    </button>
-                    <button
-                      onClick={() => { setEditId(s.id); setShowForm(false); }}
-                      className="p-2 rounded-lg hover:bg-card-hover transition-colors text-muted hover:text-foreground"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => deleteSession(s.id)}
-                      className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-muted hover:text-red-400"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    
+                    <div className="flex flex-col sm:items-end justify-between gap-3 shrink-0 self-stretch sm:self-auto">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleRegistration(s)}
+                          disabled={toggling === s.id}
+                          title={s.isRegistrationOpen ? "Close registration" : "Open registration"}
+                          className="p-2 rounded-lg hover:bg-card-hover transition-colors text-muted hover:text-foreground"
+                        >
+                          {toggling === s.id
+                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                            : s.isRegistrationOpen
+                            ? <ToggleRight className="h-4 w-4 text-emerald-400" />
+                            : <ToggleLeft className="h-4 w-4" />}
+                        </button>
+                        <button
+                          onClick={() => { setEditId(s.id); setShowForm(false); }}
+                          className="p-2 rounded-lg hover:bg-card-hover transition-colors text-muted hover:text-foreground"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteSession(s.id)}
+                          className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-muted hover:text-red-400"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => setExpandedSessionId(expandedSessionId === s.id ? null : s.id)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-border/50 hover:bg-card-hover hover:text-foreground transition-all text-xs font-bold text-muted"
+                      >
+                        {expandedSessionId === s.id ? (
+                          <>
+                            <ChevronUp className="h-3.5 w-3.5" /> Hide Registrants ({sessionRegs.length})
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-3.5 w-3.5" /> View Registrants ({sessionRegs.length})
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {editId === s.id && (
-              <SessionForm
-                initial={{ ...s }}
-                onSave={(data) => updateSession(s.id, data)}
-                onCancel={() => setEditId(null)}
-                loading={saving}
-                token={token}
-              />
-            )}
-          </div>
-        ))}
+                {/* Collapsible Registrants list */}
+                {expandedSessionId === s.id && (
+                  <div className="border-t border-border/40 bg-black/25 px-5 py-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-muted uppercase tracking-wider">
+                        Registrants for this session
+                      </h4>
+                      <span className="text-[10px] text-muted">
+                        Showing {sessionRegs.length} registrants
+                      </span>
+                    </div>
+
+                    {sessionRegs.length === 0 ? (
+                      <div className="text-center py-6 text-muted text-xs">
+                        No registrants for this session yet
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                        {sessionRegs.map((r) => {
+                          const isVerified = r.isScreenshotCorrect === true;
+                          const isInvalid = r.isScreenshotCorrect === false;
+                          
+                          return (
+                            <div
+                              key={r.id}
+                              className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-border/40 bg-card/60 gap-3 text-xs"
+                            >
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-semibold text-sm">{r.name}</span>
+                                  {r.donationStatus === "donated" && (
+                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                                      isVerified
+                                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                        : isInvalid
+                                        ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                        : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                    }`}>
+                                      ₹{r.donationAmount ?? 50} {isVerified ? "Verified" : isInvalid ? "Invalid Proof" : "Unverified"}
+                                    </span>
+                                  )}
+                                  {r.donationStatus === "hardship" && (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                      Financial Aid
+                                    </span>
+                                  )}
+                                  {r.donationStatus === "skipped" && (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/5 text-muted border border-border/20">
+                                      Skipped
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-muted text-[11px]">
+                                  Phone: <strong className="text-foreground/90">{r.phone}</strong> · WhatsApp: <strong className="text-foreground/90">{r.whatsapp}</strong>
+                                </p>
+                                {r.whyJoin && (
+                                  <p className="text-muted/80 text-[10px] italic leading-snug line-clamp-1 mt-0.5">
+                                    "{r.whyJoin}"
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                                {r.screenshotUrl && (
+                                  <a
+                                    href={r.screenshotUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-2.5 py-1 rounded bg-white/5 border border-border/50 hover:bg-white/10 text-[10px] font-bold text-muted hover:text-foreground transition-all"
+                                  >
+                                    View Receipt ↗
+                                  </a>
+                                )}
+                                <button
+                                  onClick={async () => {
+                                    if (!confirm(`Are you sure you want to delete ${r.name}'s registration? This cannot be undone.`)) return;
+                                    try {
+                                      const res = await fetch(`/api/ai-for-everyone/registrations/${r.id}`, {
+                                        method: "DELETE",
+                                        headers: { Authorization: `Bearer ${token}` }
+                                      });
+                                      if (!res.ok) throw new Error("Delete failed");
+                                      onRefresh();
+                                    } catch (e: any) {
+                                      alert(e.message || "Error deleting registration");
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/25 hover:bg-red-500 hover:text-white transition-all"
+                                  title="Delete Registration"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {editId === s.id && (
+                <SessionForm
+                  initial={{ ...s }}
+                  onSave={(data) => updateSession(s.id, data)}
+                  onCancel={() => setEditId(null)}
+                  loading={saving}
+                  token={token}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

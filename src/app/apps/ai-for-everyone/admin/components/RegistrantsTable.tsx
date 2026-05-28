@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Download, Copy, Check, Search, Filter } from "lucide-react";
+import { Download, Copy, Check, Search, Filter, Trash } from "lucide-react";
 import type { Registration, Session } from "@/lib/ai4all";
 
 interface Props {
@@ -37,11 +37,53 @@ function exportCSV(rows: Registration[], sessions: Session[]) {
   URL.revokeObjectURL(url);
 }
 
-const BADGE: Record<string, string> = {
-  donated: "bg-emerald-500/20 text-emerald-400",
-  hardship: "bg-amber-500/20 text-amber-400",
-  skipped: "bg-border/30 text-muted",
+const getDonationBadge = (r: Registration) => {
+  if (r.donationStatus === "hardship") {
+    return {
+      className: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
+      label: "Financial Aid",
+    };
+  }
+  if (r.donationStatus === "skipped") {
+    return {
+      className: "bg-border/30 text-muted border border-border/20",
+      label: "Skipped",
+    };
+  }
+  if (r.donationStatus === "donated") {
+    if (r.isScreenshotCorrect === true) {
+      return {
+        className: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+        label: `donated ₹${r.donationAmount ?? 50} (Verified)`,
+      };
+    }
+    if (r.isScreenshotCorrect === false) {
+      return {
+        className: "bg-rose-500/20 text-rose-400 border border-rose-500/30",
+        label: `₹${r.donationAmount ?? 50} (Invalid Proof)`,
+      };
+    }
+    return {
+      className: "bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse",
+      label: `₹${r.donationAmount ?? 50} (Unverified)`,
+    };
+  }
+  return {
+    className: "bg-border/30 text-muted border border-border/20",
+    label: r.donationStatus,
+  };
 };
+
+function extractOcrAmount(reason?: string): number | null {
+  if (!reason) return null;
+  const match = reason.match(/in\s*receipt\s*\(?₹?([0-9,]+)/i);
+  if (match && match[1]) {
+    const clean = match[1].replace(/,/g, "");
+    const parsed = parseInt(clean, 10);
+    if (!isNaN(parsed)) return parsed;
+  }
+  return null;
+}
 
 export default function RegistrantsTable({ registrations, sessions, onRefresh }: Props) {
   const [sessionFilter, setSessionFilter] = useState("all");
@@ -49,18 +91,23 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
   const [copiedNums, setCopiedNums] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [editedAmounts, setEditedAmounts] = useState<Record<string, string>>({});
 
-  async function handleVerify(regId: string, isCorrect: boolean) {
+  async function handleVerify(regId: string, isCorrect: boolean, amount?: number) {
     setVerifyingId(regId);
     const token = localStorage.getItem("ai4all_admin_token") ?? "";
     try {
+      const body: any = { isScreenshotCorrect: isCorrect };
+      if (amount !== undefined) {
+        body.donationAmount = amount;
+      }
       const res = await fetch(`/api/ai-for-everyone/registrations/${regId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isScreenshotCorrect: isCorrect }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         throw new Error("Failed to update status");
@@ -103,6 +150,11 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
 
   const donatedCount = filtered.filter((r) => r.donationStatus === "donated").length;
   const hardshipCount = filtered.filter((r) => r.donationStatus === "hardship").length;
+  const verifiedDonationsSum = useMemo(() => {
+    return filtered
+      .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
+      .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+  }, [filtered]);
 
   return (
     <div>
@@ -110,11 +162,28 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl font-bold">Registrants</h2>
-          <p className="text-sm text-muted mt-0.5">
-            {filtered.length} registrant{filtered.length !== 1 ? "s" : ""}
+          <p className="text-sm text-muted mt-0.5 flex flex-wrap gap-x-2 gap-y-1 items-center">
+            <span>
+              {filtered.length} registrant{filtered.length !== 1 ? "s" : ""}
+            </span>
             {filtered.length > 0 && (
-              <> · <span className="text-emerald-400">{donatedCount} donated</span>
-              {hardshipCount > 0 && <> · <span className="text-amber-400">{hardshipCount} hardship</span></>}
+              <>
+                <span>·</span>
+                <span className="text-emerald-400 font-semibold">{donatedCount} donated</span>
+                {verifiedDonationsSum > 0 && (
+                  <>
+                    <span>·</span>
+                    <span className="text-pink-400 font-bold bg-pink-500/10 border border-pink-500/20 px-2 py-0.5 rounded-full text-xs">
+                      ₹{verifiedDonationsSum.toLocaleString("en-IN")} verified collected
+                    </span>
+                  </>
+                )}
+                {hardshipCount > 0 && (
+                  <>
+                    <span>·</span>
+                    <span className="text-amber-400 font-semibold">{hardshipCount} hardship</span>
+                  </>
+                )}
               </>
             )}
           </p>
@@ -204,10 +273,14 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
                       )}
                     </>
                   )}
-                  <span className={`text-xs rounded-full px-2.5 py-1 ${BADGE[r.donationStatus] ?? BADGE.skipped}`}>
-                    {r.donationStatus}
-                    {r.donationAmount ? ` ₹${r.donationAmount}` : ""}
-                  </span>
+                  {(() => {
+                    const badge = getDonationBadge(r);
+                    return (
+                      <span className={`text-xs rounded-full px-2.5 py-1 font-medium transition-all ${badge.className}`}>
+                        {badge.label}
+                      </span>
+                    );
+                  })()}
                   <span className="text-xs text-muted hidden sm:block">
                     {new Date(r.createdAt).toLocaleDateString("en-IN")}
                   </span>
@@ -266,12 +339,12 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
                               Open Original ↗
                             </div>
                           </a>
-                          <div className="space-y-3">
+                          <div className="space-y-4">
                             <div>
                               <p className="text-xs text-muted">
                                 Verify if this screenshot shows a correct payment of <strong>₹{r.donationAmount ?? "50"}</strong> to Sindhu Teacher.
                               </p>
-                              <div className="flex items-center gap-2 mt-1">
+                              <div className="flex items-center gap-2 mt-1.5">
                                 <span className="text-xs text-muted">Current status:</span>
                                 {r.isScreenshotCorrect === true ? (
                                   <span className="text-xs font-bold text-emerald-400">✓ Correct</span>
@@ -282,17 +355,62 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
                                 )}
                               </div>
                               {r.autoVerifiedReason && (
-                                <div className="mt-2 text-[11px] p-2 rounded-lg bg-white/5 border border-border/30 max-w-sm leading-relaxed">
+                                <div className="mt-2 text-[11px] p-2.5 rounded-xl bg-white/5 border border-border/30 max-w-md leading-relaxed">
                                   <span className="font-semibold text-pink-400 block mb-0.5">Automated OCR Audit:</span>
                                   <span className="text-muted-foreground">{r.autoVerifiedReason}</span>
+                                  {(() => {
+                                    const detected = extractOcrAmount(r.autoVerifiedReason);
+                                    if (detected && detected !== r.donationAmount) {
+                                      return (
+                                        <div className="mt-1.5 pt-1.5 border-t border-white/5 flex items-center gap-1.5 text-[10px] text-pink-300">
+                                          <span>💡 Receipt shows ₹{detected.toLocaleString("en-IN")}?</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => setEditedAmounts((prev) => ({ ...prev, [r.id]: detected.toString() }))}
+                                            className="px-2 py-0.5 rounded bg-pink-500/20 hover:bg-pink-500/30 text-pink-200 border border-pink-500/30 font-bold transition-all"
+                                          >
+                                            Update to ₹{detected}
+                                          </button>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
                                 </div>
                               )}
                             </div>
-                            <div className="flex gap-2">
+
+                            {/* Actual Donation Amount Edit Field */}
+                            <div className="rounded-xl border border-border/30 bg-white/5 p-3 max-w-sm space-y-2">
+                              <label className="block text-xs font-bold text-muted uppercase tracking-wider">
+                                Actual Donated Amount (₹)
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  placeholder="Amount"
+                                  value={editedAmounts[r.id] !== undefined ? editedAmounts[r.id] : (r.donationAmount ?? 50).toString()}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setEditedAmounts((prev) => ({ ...prev, [r.id]: val }));
+                                  }}
+                                  className="w-28 rounded-lg border border-border/50 bg-card/80 px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:border-violet-500/50"
+                                />
+                                <span className="text-[10px] text-muted leading-tight">
+                                  Correct the amount if the screenshot shows a different value (e.g. ₹2,000) before marking correct.
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2 pt-1">
                               <button
-                                onClick={() => handleVerify(r.id, true)}
+                                onClick={() => {
+                                  const amtStr = editedAmounts[r.id] !== undefined ? editedAmounts[r.id] : (r.donationAmount ?? 50).toString();
+                                  const parsedAmt = parseInt(amtStr, 10);
+                                  handleVerify(r.id, true, isNaN(parsedAmt) ? (r.donationAmount ?? 50) : parsedAmt);
+                                }}
                                 disabled={verifyingId === r.id}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                                   r.isScreenshotCorrect === true
                                     ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
                                     : "bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 hover:text-white"
@@ -301,9 +419,13 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
                                 Mark as Correct
                               </button>
                               <button
-                                onClick={() => handleVerify(r.id, false)}
+                                onClick={() => {
+                                  const amtStr = editedAmounts[r.id] !== undefined ? editedAmounts[r.id] : (r.donationAmount ?? 50).toString();
+                                  const parsedAmt = parseInt(amtStr, 10);
+                                  handleVerify(r.id, false, isNaN(parsedAmt) ? (r.donationAmount ?? 50) : parsedAmt);
+                                }}
                                 disabled={verifyingId === r.id}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                                   r.isScreenshotCorrect === false
                                     ? "bg-rose-600 text-white shadow-md shadow-rose-600/20"
                                     : "bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 hover:text-white"
@@ -316,6 +438,30 @@ export default function RegistrantsTable({ registrations, sessions, onRefresh }:
                         </div>
                       </div>
                     )}
+                    <div className="sm:col-span-2 mt-4 pt-4 border-t border-border/30 flex items-center justify-between gap-4">
+                      <div className="text-xs text-muted">
+                        Registration ID: <code className="text-muted-foreground bg-white/5 px-1.5 py-0.5 rounded">{r.id}</code>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Are you sure you want to completely delete ${r.name}'s registration? This action is permanent and cannot be undone.`)) return;
+                          try {
+                            const token = localStorage.getItem("ai4all_admin_token") ?? "";
+                            const res = await fetch(`/api/ai-for-everyone/registrations/${r.id}`, {
+                              method: "DELETE",
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            if (!res.ok) throw new Error("Server failed to delete");
+                            if (onRefresh) onRefresh();
+                          } catch (e: any) {
+                            alert(e.message || "Error deleting registration");
+                          }
+                        }}
+                        className="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/35 hover:bg-rose-600 hover:text-white text-rose-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Trash className="h-3.5 w-3.5" /> Delete Registration
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

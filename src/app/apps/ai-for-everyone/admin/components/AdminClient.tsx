@@ -121,16 +121,101 @@ function OverviewTab({ sessions, registrations }: { sessions: Session[]; registr
   ];
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-6">Dashboard Overview</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-border/50 bg-card/50 p-5">
-            <div className="text-2xl mb-2">{s.emoji}</div>
-            <div className="text-3xl font-black mb-1">{s.value}</div>
-            <div className="text-xs text-muted">{s.label}</div>
+    <div className="space-y-10">
+      <div>
+        <h2 className="text-xl font-bold mb-6">Dashboard Overview</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((s) => (
+            <div key={s.label} className="rounded-2xl border border-border/50 bg-card/50 p-5">
+              <div className="text-2xl mb-2">{s.emoji}</div>
+              <div className="text-3xl font-black mb-1">{s.value}</div>
+              <div className="text-xs text-muted">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Session Breakdown Section */}
+      <div>
+        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+          📊 Session Breakdown & Analytics
+        </h3>
+        {sessions.length === 0 ? (
+          <div className="text-center py-10 text-muted text-sm rounded-2xl border border-border/30">
+            No sessions available to show analytics.
           </div>
-        ))}
+        ) : (
+          <div className="grid gap-4">
+            {sessions.map((s) => {
+              const sessionRegs = registrations.filter((r) => r.sessionId === s.id);
+              const regCount = sessionRegs.length;
+              const verifiedDonatedCount = sessionRegs.filter(
+                (r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true
+              ).length;
+              const pendingDonatedCount = sessionRegs.filter(
+                (r) => r.donationStatus === "donated" && r.isScreenshotCorrect === undefined
+              ).length;
+              const invalidDonatedCount = sessionRegs.filter(
+                (r) => r.donationStatus === "donated" && r.isScreenshotCorrect === false
+              ).length;
+              const hardshipCount = sessionRegs.filter((r) => r.donationStatus === "hardship").length;
+              const verifiedAmount = sessionRegs
+                .filter((r) => r.donationStatus === "donated" && r.isScreenshotCorrect === true)
+                .reduce((sum, r) => sum + (r.donationAmount ?? 50), 0);
+
+              return (
+                <div
+                  key={s.id}
+                  className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 hover:border-violet-500/35 transition-all"
+                >
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full ${s.isRegistrationOpen ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-muted'}`}>
+                        {s.isRegistrationOpen ? "Registration Open" : "Closed"}
+                      </span>
+                      {verifiedAmount > 0 && (
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-400 border border-pink-500/30">
+                          ₹{verifiedAmount.toLocaleString("en-IN")} Verified Collected
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-bold text-base text-foreground leading-tight">{s.title}</h4>
+                    {s.scheduledDate && (
+                      <p className="text-xs text-muted">
+                        📅 {new Date(s.scheduledDate).toLocaleDateString("en-IN", {
+                          day: "numeric", month: "short", year: "numeric"
+                        })}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 shrink-0">
+                    <div className="rounded-xl bg-white/5 border border-border/20 p-3 text-center min-w-[90px]">
+                      <span className="block text-2xl font-black mb-0.5 text-white">{regCount}</span>
+                      <span className="block text-[9px] uppercase tracking-wider text-muted font-bold">Registered</span>
+                    </div>
+                    <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-center min-w-[90px]">
+                      <span className="block text-2xl font-black mb-0.5 text-emerald-400">{verifiedDonatedCount}</span>
+                      <span className="block text-[9px] uppercase tracking-wider text-emerald-400/80 font-bold">✓ Verified</span>
+                    </div>
+                    <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-center min-w-[90px] animate-pulse">
+                      <span className="block text-2xl font-black mb-0.5 text-amber-400">{pendingDonatedCount}</span>
+                      <span className="block text-[9px] uppercase tracking-wider text-amber-400/80 font-bold">⚠ Pending</span>
+                    </div>
+                    <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 text-center min-w-[90px]">
+                      <span className="block text-2xl font-black mb-0.5 text-rose-400">{invalidDonatedCount}</span>
+                      <span className="block text-[9px] uppercase tracking-wider text-rose-400/80 font-bold">✗ Invalid</span>
+                    </div>
+                    <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 p-3 text-center min-w-[90px]">
+                      <span className="block text-2xl font-black mb-0.5 text-orange-400">{hardshipCount}</span>
+                      <span className="block text-[9px] uppercase tracking-wider text-orange-400/80 font-bold">🤝 Fin Aid</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Recent registrations */}
@@ -315,6 +400,7 @@ export default function AdminClient() {
             {tab === "sessions" && (
               <SessionsManager
                 sessions={sessions}
+                registrations={registrations}
                 token={token}
                 onRefresh={() => loadData(token)}
               />
