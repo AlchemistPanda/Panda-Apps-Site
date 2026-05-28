@@ -24,6 +24,19 @@ function getEffectiveDonationAmount(r: Registration): number {
   return Number(r.donationAmount ?? 50);
 }
 
+function formatToLocalDatetime(isoString: string | null | undefined): string {
+  if (!isoString) return "";
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "";
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000);
+    return localDate.toISOString().slice(0, 16);
+  } catch {
+    return "";
+  }
+}
+
 interface Props {
   sessions: Session[];
   registrations: Registration[];
@@ -138,7 +151,7 @@ function SessionForm({
       })
       .filter((a) => a.name && a.url);
 
-    onSave({ ...form, topics, appsToDownload: apps });
+    onSave({ ...form, topics, appsToDownload: apps, durationMinutes: form.durationMinutes || 90 });
   }
 
   const input =
@@ -171,13 +184,18 @@ function SessionForm({
           <input
             type="datetime-local"
             className={input}
-            value={form.scheduledDate ? form.scheduledDate.slice(0, 16) : ""}
-            onChange={(e) =>
-              setForm((f) => ({
-                ...f,
-                scheduledDate: e.target.value ? new Date(e.target.value).toISOString() : null,
-              }))
-            }
+            value={formatToLocalDatetime(form.scheduledDate)}
+            onChange={(e) => {
+              const val = e.target.value;
+              let iso: string | null = null;
+              if (val) {
+                const parsed = new Date(val);
+                if (!isNaN(parsed.getTime())) {
+                  iso = parsed.toISOString();
+                }
+              }
+              setForm((f) => ({ ...f, scheduledDate: iso }));
+            }}
           />
         </div>
         <div>
@@ -185,8 +203,11 @@ function SessionForm({
           <input
             type="number"
             className={input}
-            value={form.durationMinutes}
-            onChange={(e) => setForm((f) => ({ ...f, durationMinutes: parseInt(e.target.value) || 90 }))}
+            value={form.durationMinutes === 0 ? "" : form.durationMinutes}
+            onChange={(e) => {
+              const parsed = parseInt(e.target.value, 10);
+              setForm((f) => ({ ...f, durationMinutes: isNaN(parsed) ? 0 : parsed }));
+            }}
           />
         </div>
         <div>
