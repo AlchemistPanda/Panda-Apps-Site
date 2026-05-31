@@ -1,0 +1,371 @@
+/* Scoped Design System & Reset for ledgerweb-theme */
+.ledgerweb-theme {
+  /* Color Palette */
+  --bg-deep: #080a0f;
+  --bg-surface: #121620;
+  --bg-surface-hover: #1b212f;
+  --bg-card: rgba(18, 22, 32, 0.7);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: #8e54ff;
+  
+  --accent-purple: #8e54ff;
+  --accent-purple-glow: rgba(142, 84, 255, 0.25);
+  
+  --color-success: #00e676;
+  --color-success-bg: rgba(0, 230, 118, 0.1);
+  --color-error: #ff3b30;
+  --color-error-bg: rgba(255, 59, 48, 0.1);
+  --color-warning: #ff9f0a;
+  --color-warning-bg: rgba(255, 159, 10, 0.1);
+  --color-holiday: #64748b;
+  --color-holiday-bg: rgba(100, 116, 139, 0.15);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  /* Fonts */
+  --font-display: var(--font-outfit), system-ui, -apple-system, sans-serif;
+  --font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
+  
+  /* Shadows & Radius */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.4);
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  
+  /* Layout */
+  --max-width: 1200px;
+
+  /* Resets within theme */
+  background-color: var(--bg-deep) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.ledgerweb-theme * {
+  box-sizing: border-box;
+}
+
+.ledgerweb-theme h1, 
+.ledgerweb-theme h2, 
+.ledgerweb-theme h3, 
+.ledgerweb-theme h4, 
+.ledgerweb-theme h5, 
+.ledgerweb-theme h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.ledgerweb-theme .animate-fade-in {
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ledgerweb-theme .animate-scale-up {
+  animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ledgerweb-theme .animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Glassmorphism & Premium UI Elements */
+.ledgerweb-theme .glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ledgerweb-theme .glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-lg);
+}
+
+.ledgerweb-theme .glass-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.ledgerweb-theme .glass-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.ledgerweb-theme .glass-button:active:not(:disabled) {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ledgerweb-theme .glass-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ledgerweb-theme .glass-button.primary {
+  background: var(--accent-purple);
+  border-color: transparent;
+}
+
+.ledgerweb-theme .glass-button.primary:hover:not(:disabled) {
+  background: #a170ff;
+  box-shadow: 0 0 20px var(--accent-purple-glow);
+}
+
+.ledgerweb-theme .glass-button.danger {
+  background: rgba(255, 59, 48, 0.15);
+  border-color: rgba(255, 59, 48, 0.3);
+  color: #ff453a;
+}
+
+.ledgerweb-theme .glass-button.danger:hover:not(:disabled) {
+  background: rgba(255, 59, 48, 0.25);
+  border-color: rgba(255, 59, 48, 0.5);
+}
+
+/* Forms & Inputs */
+.ledgerweb-theme .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.ledgerweb-theme .form-label {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ledgerweb-theme .form-input, 
+.ledgerweb-theme .form-select {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.ledgerweb-theme .form-input:focus, 
+.ledgerweb-theme .form-select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-purple-glow);
+}
+
+.ledgerweb-theme .form-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Checkbox Toggle Switch style */
+.ledgerweb-theme .switch-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.ledgerweb-theme .switch-control {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.ledgerweb-theme .switch-checkbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ledgerweb-theme .switch-checkbox:checked + .switch-control {
+  background-color: var(--accent-purple);
+}
+
+.ledgerweb-theme .switch-control::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.ledgerweb-theme .switch-checkbox:checked + .switch-control::before {
+  transform: translateX(20px);
+}
+
+/* Native Dialog backdrop custom styles */
+.ledgerweb-theme dialog::backdrop {
+  background: rgba(8, 10, 15, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Status Badges */
+.ledgerweb-theme .badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  gap: 6px;
+}
+
+.ledgerweb-theme .badge-credited {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid rgba(0, 230, 118, 0.2);
+}
+
+.ledgerweb-theme .badge-pending {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid rgba(255, 159, 10, 0.2);
+}
+
+.ledgerweb-theme .badge-overdue {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+.ledgerweb-theme .badge-holiday {
+  background-color: var(--color-holiday-bg);
+  color: var(--color-holiday);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* Grid Layout for App Containers */
+.ledgerweb-theme .app-container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* PRINT MEDIA STYLES - Used for generating beautiful PDFs */
+@media print {
+  .ledgerweb-theme {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+  }
+  
+  .ledgerweb-theme .glass-panel {
+    background: #ffffff !important;
+    border: 1px solid #cccccc !important;
+    box-shadow: none !important;
+    color: #000000 !important;
+  }
+
+  .ledgerweb-theme .glass-button, 
+  .ledgerweb-theme .no-print, 
+  .ledgerweb-theme header, 
+  .ledgerweb-theme nav, 
+  .ledgerweb-theme button, 
+  .ledgerweb-theme .switch-group, 
+  .ledgerweb-theme .calendar-actions {
+    display: none !important;
+  }
+
+  .ledgerweb-theme .app-container {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .ledgerweb-theme .badge {
+    border: 1px solid #333333 !important;
+    background: transparent !important;
+    color: #000000 !important;
+  }
+
+  .ledgerweb-theme h1, 
+  .ledgerweb-theme h2, 
+  .ledgerweb-theme h3, 
+  .ledgerweb-theme h4 {
+    color: #000000 !important;
+  }
+
+  /* Table styling for print statements */
+  .ledgerweb-theme .print-statement {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 20px !important;
+  }
+  
+  .ledgerweb-theme .print-statement th, 
+  .ledgerweb-theme .print-statement td {
+    border: 1px solid #dddddd !important;
+    padding: 8px !important;
+    text-align: left !important;
+    color: #000000 !important;
+  }
+  
+  .ledgerweb-theme .print-statement th {
+    background-color: #f2f2f2 !important;
+  }
+}

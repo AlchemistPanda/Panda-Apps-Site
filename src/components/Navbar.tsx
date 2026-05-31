@@ -24,7 +24,7 @@ export default function Navbar() {
   }, []);
 
   // Hide global nav on individual app pages — each app has its own back navigation
-  if (pathname.startsWith("/apps/")) return null;
+  if (pathname.startsWith("/apps/") || pathname.startsWith("/ledgerweb")) return null;
 
   return (
     <nav

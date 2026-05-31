@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Github, Twitter, Heart } from "lucide-react";
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/apps/") || pathname.startsWith("/ledgerweb")) return null;
+
   return (
     <footer className="relative z-10 border-t border-border/50 bg-background/80">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
