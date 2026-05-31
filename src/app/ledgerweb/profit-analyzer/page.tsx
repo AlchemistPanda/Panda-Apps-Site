@@ -455,26 +455,40 @@ export default function ProfitAnalyzer() {
 
   // --- 1. LANDING PAGE VIEW (When no plan is selected) ---
   if (selectedPlanId === '') {
-    let totalInvested = 0;
-    let totalExpected = 0;
-    let totalCredited = 0;
-    let totalOverdue = 0;
+    let grandInvested = 0;
+    let grandExpected = 0;
+    let grandCredited = 0;
+    let grandPending = 0;
+    let grandOverdue = 0;
+    let totalNonHolidayPayoutsUpToToday = 0;
+    let totalCreditedCount = 0;
+    let totalPayoutsCount = 0;
     const todayStr = new Date().toISOString().split('T')[0];
 
     plans.forEach((plan) => {
-      totalInvested += plan.amount;
-      plan.payouts.forEach((p) => {
-        if (p.isHoliday) return;
-        totalExpected += p.amount;
-        if (p.status === 'credited') {
-          totalCredited += p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
-        } else if (p.date < todayStr) {
-          totalOverdue += p.amount;
+      const pStats = getPlanStats(plan);
+      grandInvested += pStats.totalInvested;
+      grandExpected += pStats.totalExpected;
+      grandCredited += pStats.totalCredited;
+      grandPending += pStats.totalPending;
+      grandOverdue += pStats.totalOverdue;
+      totalCreditedCount += pStats.creditedCount;
+      totalPayoutsCount += pStats.totalPayouts;
+
+      plan.payouts.forEach((pay) => {
+        if (!pay.isHoliday && pay.date <= todayStr) {
+          totalNonHolidayPayoutsUpToToday++;
         }
       });
     });
 
-    const overallRoi = totalInvested > 0 ? (totalExpected / totalInvested) * 100 : 0;
+    const overallCollectionRate = totalNonHolidayPayoutsUpToToday > 0 
+      ? (totalCreditedCount / totalNonHolidayPayoutsUpToToday) * 100 
+      : 100;
+
+    const overallRoi = grandInvested > 0 ? (grandExpected / grandInvested) * 100 : 0;
+    const overallNetProfitExpected = grandExpected - grandInvested;
+    const overallNetProfitActual = grandCredited - grandInvested;
 
     return (
       <main className="app-container animate-fade-in">
@@ -542,6 +556,26 @@ export default function ProfitAnalyzer() {
 
           .overview-card.roi::before {
             background: var(--accent-purple);
+          }
+
+          .overview-card.expected::before {
+            background: var(--accent-purple);
+          }
+
+          .overview-card.net-profit::before {
+            background: var(--color-success);
+          }
+
+          .overview-card.net-profit-neg::before {
+            background: var(--color-error);
+          }
+
+          .overview-card.pending::before {
+            background: var(--color-warning);
+          }
+
+          .overview-card.collection-rate::before {
+            background: #00b4d8;
           }
 
           .overview-card:hover {
@@ -774,19 +808,73 @@ export default function ProfitAnalyzer() {
             <section className="overview-stats no-print">
               <div className="overview-card">
                 <span className="overview-label">Total Capital Invested</span>
-                <span className="overview-value">₹{totalInvested.toLocaleString('en-IN')}</span>
+                <span className="overview-value">₹{grandInvested.toLocaleString('en-IN')}</span>
               </div>
-              <div className="overview-card roi">
-                <span className="overview-label">Overall return ROI</span>
-                <span className="overview-value" style={{ color: 'var(--accent-purple)' }}>{overallRoi.toFixed(2)}%</span>
+              
+              <div className="overview-card expected">
+                <span className="overview-label">Total Expected Returns</span>
+                <span className="overview-value" style={{ color: 'var(--accent-purple)' }}>
+                  ₹{grandExpected.toLocaleString('en-IN')}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  {overallRoi.toFixed(2)}% ROI Target
+                </span>
               </div>
+
+              <div className={`overview-card ${overallNetProfitExpected >= 0 ? 'net-profit' : 'net-profit-neg'}`}>
+                <span className="overview-label">Net Profit (Expected)</span>
+                <span className="overview-value" style={{ color: overallNetProfitExpected >= 0 ? 'var(--color-success)' : 'var(--color-error)' }}>
+                  {overallNetProfitExpected >= 0 ? '+' : ''}₹{overallNetProfitExpected.toLocaleString('en-IN')}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  Expected - Invested
+                </span>
+              </div>
+
               <div className="overview-card credited">
-                <span className="overview-label">Total Payouts Credited</span>
-                <span className="overview-value credited">₹{totalCredited.toLocaleString('en-IN')}</span>
+                <span className="overview-label">Total Received/Credited</span>
+                <span className="overview-value credited">₹{grandCredited.toLocaleString('en-IN')}</span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  {totalCreditedCount} / {totalPayoutsCount} payouts
+                </span>
               </div>
+
+              <div className={`overview-card ${overallNetProfitActual >= 0 ? 'net-profit' : 'net-profit-neg'}`}>
+                <span className="overview-label">Net Profit (Actual)</span>
+                <span className="overview-value" style={{ color: overallNetProfitActual >= 0 ? 'var(--color-success)' : 'var(--color-error)' }}>
+                  {overallNetProfitActual >= 0 ? '+' : ''}₹{overallNetProfitActual.toLocaleString('en-IN')}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  Credited - Invested
+                </span>
+              </div>
+
+              <div className="overview-card collection-rate">
+                <span className="overview-label">Overall Collection Rate</span>
+                <span className="overview-value" style={{ color: '#00b4d8' }}>
+                  {overallCollectionRate.toFixed(1)}%
+                </span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  Of expected payouts to date
+                </span>
+              </div>
+
+              <div className="overview-card pending">
+                <span className="overview-label">Total Pending Balance</span>
+                <span className="overview-value" style={{ color: 'var(--color-warning)' }}>
+                  ₹{grandPending.toLocaleString('en-IN')}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  Future scheduled payouts
+                </span>
+              </div>
+
               <div className="overview-card overdue">
-                <span className="overview-label">Total Amount Overdue</span>
-                <span className="overview-value overdue">₹{totalOverdue.toLocaleString('en-IN')}</span>
+                <span className="overview-label">Total Overdue Balance</span>
+                <span className="overview-value overdue">₹{grandOverdue.toLocaleString('en-IN')}</span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  Uncredited past scheduled payouts
+                </span>
               </div>
             </section>
 
