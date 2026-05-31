@@ -8,17 +8,21 @@ interface NewPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (plan: InvestmentPlan) => void;
+  planToEdit?: InvestmentPlan;
 }
 
 export const NewPlanModal: React.FC<NewPlanModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  planToEdit,
 }) => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
   const [payoutType, setPayoutType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [dailySkipWeekends, setDailySkipWeekends] = useState(false);
+  const [weeklyPayoutDay, setWeeklyPayoutDay] = useState<number>(1);
+  const [monthlyPayoutDate, setMonthlyPayoutDate] = useState<number>(1);
   const [startDate, setStartDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -31,6 +35,37 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
   const [endDate, setEndDate] = useState('');
   const [payoutAmount, setPayoutAmount] = useState<number | ''>('');
 
+  // Sync state with planToEdit when open
+  useEffect(() => {
+    if (isOpen) {
+      if (planToEdit) {
+        setName(planToEdit.name);
+        setAmount(planToEdit.amount);
+        setPayoutType(planToEdit.payoutType);
+        setDailySkipWeekends(planToEdit.dailySkipWeekends || false);
+        setWeeklyPayoutDay(planToEdit.weeklyPayoutDay !== undefined ? planToEdit.weeklyPayoutDay : 1);
+        setMonthlyPayoutDate(planToEdit.monthlyPayoutDate !== undefined ? planToEdit.monthlyPayoutDate : 1);
+        setStartDate(planToEdit.startDate);
+        setEndDate(planToEdit.endDate);
+        setEndMethod('date');
+        setPayoutAmount(planToEdit.payoutAmount);
+      } else {
+        setName('');
+        setAmount('');
+        setPayoutType('daily');
+        setDailySkipWeekends(false);
+        const today = new Date();
+        setStartDate(today.toISOString().split('T')[0]);
+        setEndMethod('duration');
+        setDurationValue(2);
+        setDurationUnit('months');
+        setPayoutAmount('');
+        setWeeklyPayoutDay(today.getDay());
+        setMonthlyPayoutDate(today.getDate());
+      }
+    }
+  }, [planToEdit, isOpen]);
+
   // Auto-calculate end date when startDate, durationValue, or durationUnit changes
   useEffect(() => {
     if (endMethod === 'duration' && startDate && durationValue) {
@@ -39,35 +74,67 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
     }
   }, [startDate, durationValue, durationUnit, endMethod]);
 
+  // Adjust defaults when startDate changes in Creation mode
+  useEffect(() => {
+    if (startDate && !planToEdit && isOpen) {
+      const startObj = new Date(startDate);
+      if (!isNaN(startObj.getTime())) {
+        setWeeklyPayoutDay(startObj.getDay());
+        setMonthlyPayoutDate(startObj.getDate());
+      }
+    }
+  }, [startDate, planToEdit, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !amount || !startDate || !endDate || !payoutAmount) return;
 
-    // Generate initial payouts list
+    // Generate payouts list
     const payouts = generatePayouts(
       startDate,
       endDate,
       payoutType,
       Number(payoutAmount),
-      payoutType === 'daily' ? dailySkipWeekends : false
+      payoutType === 'daily' ? dailySkipWeekends : false,
+      payoutType === 'weekly' ? weeklyPayoutDay : undefined,
+      payoutType === 'monthly' ? monthlyPayoutDate : undefined
     );
 
-    const newPlan: InvestmentPlan = {
-      id: `plan-${Date.now()}`,
+    // Merge status from old payouts if editing
+    const mergedPayouts = planToEdit
+      ? payouts.map((np) => {
+          const oldPayout = planToEdit.payouts.find((op) => op.date === np.date);
+          if (oldPayout) {
+            return {
+              ...np,
+              status: oldPayout.status,
+              isHoliday: oldPayout.isHoliday,
+              amount: oldPayout.isHoliday ? 0 : np.amount,
+            };
+          }
+          return np;
+        })
+      : payouts;
+
+    const savedPlan: InvestmentPlan = {
+      id: planToEdit ? planToEdit.id : `plan-${Date.now()}`,
       name,
       amount: Number(amount),
       payoutType,
       dailySkipWeekends: payoutType === 'daily' ? dailySkipWeekends : false,
+      weeklyPayoutDay: payoutType === 'weekly' ? weeklyPayoutDay : undefined,
+      monthlyPayoutDate: payoutType === 'monthly' ? monthlyPayoutDate : undefined,
       startDate,
       endDate,
       payoutAmount: Number(payoutAmount),
-      payouts,
-      createdAt: new Date().toISOString(),
+      payouts: mergedPayouts,
+      createdAt: planToEdit ? planToEdit.createdAt : new Date().toISOString(),
     };
 
-    onSave(newPlan);
+    onSave(savedPlan);
+    
     // Reset state
     setName('');
     setAmount('');
@@ -104,7 +171,7 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
       overflowY: 'auto'
     }}>
       <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: '24px', fontSize: '1.5rem' }}>
-        Create Investment Plan
+        {planToEdit ? '✏️ Edit Investment Plan' : '📈 Create Investment Plan'}
       </h2>
 
       <form onSubmit={handleSubmit}>
@@ -175,6 +242,42 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
                 Skip Weekends (Saturday & Sunday)
               </span>
             </label>
+          </div>
+        )}
+
+        {payoutType === 'weekly' && (
+          <div className="form-group">
+            <label className="form-label">Weekly Payout Day</label>
+            <select
+              className="form-select"
+              value={weeklyPayoutDay}
+              onChange={(e) => setWeeklyPayoutDay(Number(e.target.value))}
+            >
+              <option value={1}>Monday</option>
+              <option value={2}>Tuesday</option>
+              <option value={3}>Wednesday</option>
+              <option value={4}>Thursday</option>
+              <option value={5}>Friday</option>
+              <option value={6}>Saturday</option>
+              <option value={0}>Sunday</option>
+            </select>
+          </div>
+        )}
+
+        {payoutType === 'monthly' && (
+          <div className="form-group">
+            <label className="form-label">Monthly Payout Date</label>
+            <select
+              className="form-select"
+              value={monthlyPayoutDate}
+              onChange={(e) => setMonthlyPayoutDate(Number(e.target.value))}
+            >
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                <option key={day} value={day}>
+                  {day}{day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th'} of month
+                </option>
+              ))}
+            </select>
           </div>
         )}
 
@@ -270,7 +373,7 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
             type="submit"
             className="glass-button primary"
           >
-            Create Plan
+            {planToEdit ? 'Save Changes' : 'Create Plan'}
           </button>
         </div>
       </form>

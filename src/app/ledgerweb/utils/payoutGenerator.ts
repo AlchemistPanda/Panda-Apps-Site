@@ -12,7 +12,9 @@ export function generatePayouts(
   endDateStr: string,
   payoutType: 'daily' | 'weekly' | 'monthly',
   payoutAmount: number,
-  dailySkipWeekends: boolean
+  dailySkipWeekends: boolean,
+  weeklyPayoutDay?: number,
+  monthlyPayoutDate?: number
 ): Payout[] {
   const payouts: Payout[] = [];
   const start = new Date(startDateStr);
@@ -29,9 +31,11 @@ export function generatePayouts(
     return `${yyyy}-${mm}-${dd}`;
   };
 
-  let current = new Date(start);
-
   if (payoutType === 'daily') {
+    let current = new Date(start);
+    // Start strictly after the day of investment (start date)
+    current.setDate(current.getDate() + 1);
+    
     while (current <= end) {
       const dayOfWeek = current.getDay(); // 0 = Sunday, 6 = Saturday
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
@@ -50,6 +54,16 @@ export function generatePayouts(
       current.setDate(current.getDate() + 1);
     }
   } else if (payoutType === 'weekly') {
+    const targetDay = weeklyPayoutDay !== undefined ? weeklyPayoutDay : start.getDay();
+    let current = new Date(start);
+    // Start strictly after the day of investment
+    current.setDate(current.getDate() + 1);
+    
+    // Find the first occurrence of the selected weekday after the start date
+    while (current.getDay() !== targetDay) {
+      current.setDate(current.getDate() + 1);
+    }
+    
     while (current <= end) {
       const dateStr = formatLocalDate(current);
       payouts.push({
@@ -63,35 +77,42 @@ export function generatePayouts(
       current.setDate(current.getDate() + 7);
     }
   } else if (payoutType === 'monthly') {
-    const targetDay = start.getDate();
+    const targetDateNum = monthlyPayoutDate !== undefined ? monthlyPayoutDate : start.getDate();
     let monthOffset = 0;
     
+    // If the target day of start month is on or before the start date, the first payout in that month would be <= start, so we must start from the next month.
+    if (start.getDate() >= targetDateNum) {
+      monthOffset = 1;
+    }
+    
     while (true) {
-      // Create a date for the target day of the next month
-      const nextDate = new Date(start.getFullYear(), start.getMonth() + monthOffset, targetDay);
-      
-      // Handle cases where the target month has fewer days than targetDay (e.g. Feb 30th)
       const expectedYear = start.getFullYear() + Math.floor((start.getMonth() + monthOffset) / 12);
       const expectedMonth = ((start.getMonth() + monthOffset) % 12 + 12) % 12;
       
+      // Create a date for the target day of the next month
+      const nextDate = new Date(expectedYear, expectedMonth, targetDateNum);
+      
+      // Handle cases where the target month has fewer days than targetDateNum (e.g. Feb 30th)
       // If the day got shifted to the next month, pull it back to the last day of the expected month
       if (nextDate.getMonth() !== expectedMonth) {
-        nextDate.setDate(0); // Set to last day of previous month
+        nextDate.setDate(0); // Set to last day of expected month
       }
       
       if (nextDate > end) {
         break;
       }
       
-      const dateStr = formatLocalDate(nextDate);
-      payouts.push({
-        id: `${dateStr}-monthly`,
-        date: dateStr,
-        amount: payoutAmount,
-        originalAmount: payoutAmount,
-        status: 'uncredited',
-        isHoliday: false
-      });
+      if (nextDate > start) {
+        const dateStr = formatLocalDate(nextDate);
+        payouts.push({
+          id: `${dateStr}-monthly`,
+          date: dateStr,
+          amount: payoutAmount,
+          originalAmount: payoutAmount,
+          status: 'uncredited',
+          isHoliday: false
+        });
+      }
       
       monthOffset++;
     }

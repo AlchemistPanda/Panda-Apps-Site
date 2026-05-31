@@ -6,6 +6,8 @@ export interface InvestmentPlan {
   amount: number; // Investment amount in INR
   payoutType: 'daily' | 'weekly' | 'monthly';
   dailySkipWeekends: boolean;
+  weeklyPayoutDay?: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  monthlyPayoutDate?: number; // 1 to 31
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   payoutAmount: number; // Regular payout amount
