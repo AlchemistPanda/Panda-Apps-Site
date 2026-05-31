@@ -60,16 +60,24 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // Create an index of payouts by date for quick lookup
-  const payoutsByDate = plan.payouts.reduce((acc, p) => {
+  // Create an index of payouts by expected scheduled date
+  const payoutsByExpectedDate = plan.payouts.reduce((acc, p) => {
     acc[p.date] = p;
+    return acc;
+  }, {} as Record<string, Payout>);
+
+  // Create an index of payouts by actual credited date
+  const payoutsByCreditedDate = plan.payouts.reduce((acc, p) => {
+    if (p.status === 'credited' && p.creditedDate) {
+      acc[p.creditedDate] = p;
+    }
     return acc;
   }, {} as Record<string, Payout>);
 
   // Sync form state when a date is selected
   useEffect(() => {
     if (selectedDate) {
-      const payout = payoutsByDate[selectedDate];
+      const payout = payoutsByExpectedDate[selectedDate];
       if (payout) {
         setActualCreditDate(payout.creditedDate || new Date().toISOString().split('T')[0]);
         setActualReceivedAmount(payout.receivedAmount !== undefined ? payout.receivedAmount : payout.amount);
@@ -82,7 +90,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
 
   const handleSaveCreditDetails = () => {
     if (!selectedDate) return;
-    const payout = payoutsByDate[selectedDate];
+    const payout = payoutsByExpectedDate[selectedDate];
     if (!payout) return;
 
     const updatedPayouts = plan.payouts.map((p) => {
@@ -102,13 +110,13 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
       payouts: updatedPayouts,
     };
 
-    onUpdatePlan(updatedPlan);
+    onUpdatePlan(recalculatePayouts(updatedPlan));
     setSelectedDate(null);
   };
 
   const handleMarkAsUncredited = () => {
     if (!selectedDate) return;
-    const payout = payoutsByDate[selectedDate];
+    const payout = payoutsByExpectedDate[selectedDate];
     if (!payout) return;
 
     const updatedPayouts = plan.payouts.map((p) => {
@@ -128,7 +136,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
       payouts: updatedPayouts,
     };
 
-    onUpdatePlan(updatedPlan);
+    onUpdatePlan(recalculatePayouts(updatedPlan));
     setSelectedDate(null);
   };
 
@@ -164,10 +172,12 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const dateKey = formatDateKey(year, month, day);
-      const payout = payoutsByDate[dateKey];
-      const isToday = dateKey === todayStr;
+      const payoutExpected = payoutsByExpectedDate[dateKey];
+      const payoutCredited = payoutsByCreditedDate[dateKey];
+      
       const inPlanRange = dateKey >= plan.startDate && dateKey <= plan.endDate;
       const isHoliday = plan.holidays?.includes(dateKey) || false;
+      const isToday = dateKey === todayStr;
       
       let cellClass = 'calendar-cell';
       let statusDot = null;
@@ -182,37 +192,59 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         statusDot = <span className="status-dot holiday" title="Market Holiday">🏖️</span>;
       }
 
-      if (payout) {
+      // 1. Handle actual credited payouts on this date Key
+      if (payoutCredited && !isHoliday) {
+        cellClass += ' has-payout is-credited';
+        const activeAmount = payoutCredited.receivedAmount !== undefined ? payoutCredited.receivedAmount : payoutCredited.amount;
+        displayAmount = `₹${activeAmount.toLocaleString('en-IN')}`;
+        
+        const scheduled = new Date(payoutCredited.date);
+        const credited = new Date(payoutCredited.creditedDate!);
+        const delayMs = credited.getTime() - scheduled.getTime();
+        const delayDays = Math.floor(delayMs / (1000 * 60 * 60 * 24));
+        
+        if (delayDays > 0) {
+          statusDot = (
+            <span className="status-dot credited late" title={`Credited Late (Delayed by ${delayDays} days)`}>
+              ⏱️ +{delayDays}d
+            </span>
+          );
+        } else {
+          statusDot = <span className="status-dot credited" title="Credited">✓</span>;
+        }
+      } 
+      // 2. Handle expected scheduled payouts on this date Key
+      else if (payoutExpected && !isHoliday) {
         cellClass += ' has-payout';
         
-        // Display the actual received amount if credited, otherwise recalculated amount!
-        const activeAmount = payout.status === 'credited' && payout.receivedAmount !== undefined
-          ? payout.receivedAmount
-          : payout.amount;
-
-        if (activeAmount > 0) {
-          displayAmount = `₹${activeAmount.toLocaleString('en-IN')}`;
-        }
-        
-        if (!isHoliday) {
-          if (payout.status === 'credited') {
-            cellClass += ' is-credited';
-            // Show a delay checkmark indicator if credited late!
-            const isLate = payout.creditedDate && payout.creditedDate > payout.date;
-            statusDot = (
-              <span 
-                className={`status-dot credited ${isLate ? 'late' : ''}`} 
-                title={isLate ? `Credited Late (${payout.creditedDate})` : 'Credited'}
-              >
-                {isLate ? '⏱️' : '✓'}
-              </span>
-            );
-          } else if (payout.date < todayStr) {
+        if (payoutExpected.status === 'uncredited') {
+          if (payoutExpected.date < todayStr) {
             cellClass += ' is-overdue';
             statusDot = <span className="status-dot overdue" title="Overdue Payout">⚠️</span>;
           } else {
             cellClass += ' is-pending';
             statusDot = <span className="status-dot pending" title="Pending Payout">⏳</span>;
+          }
+          displayAmount = `₹${payoutExpected.amount.toLocaleString('en-IN')}`;
+        } 
+        else if (payoutExpected.status === 'credited') {
+          const isLate = payoutExpected.creditedDate && payoutExpected.creditedDate > payoutExpected.date;
+          
+          if (isLate) {
+            // This is the expected scheduled spot of a late payout! Mark as expected spot
+            cellClass += ' is-expected-spot';
+            displayAmount = `₹${payoutExpected.amount.toLocaleString('en-IN')}`;
+            statusDot = (
+              <span className="status-dot expected-late" title={`Paid Late on ${payoutExpected.creditedDate}`} style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
+                ⏱️ expected
+              </span>
+            );
+          } else {
+            // Credited on time or early on this day
+            cellClass += ' is-credited';
+            const activeAmount = payoutExpected.receivedAmount !== undefined ? payoutExpected.receivedAmount : payoutExpected.amount;
+            displayAmount = `₹${activeAmount.toLocaleString('en-IN')}`;
+            statusDot = <span className="status-dot credited" title="Credited">✓</span>;
           }
         }
       }
@@ -225,10 +257,20 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         <div
           key={`day-${day}`}
           className={cellClass}
-          onClick={() => inPlanRange && setSelectedDate(dateKey)}
+          onClick={() => {
+            if (inPlanRange) {
+              if (payoutExpected) {
+                setSelectedDate(payoutExpected.date);
+              } else if (payoutCredited) {
+                setSelectedDate(payoutCredited.date);
+              } else {
+                setSelectedDate(dateKey);
+              }
+            }
+          }}
         >
           <span className="day-number">{day}</span>
-          {payout && payout.amount > 0 && !isHoliday && (
+          {displayAmount && (
             <div className="payout-indicator">
               <span className="payout-amount">{displayAmount}</span>
             </div>
@@ -248,7 +290,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
   // Calculate delay info for selected date
   const getDelayInfo = () => {
     if (!selectedDate) return null;
-    const payout = payoutsByDate[selectedDate];
+    const payout = payoutsByExpectedDate[selectedDate];
     if (!payout) return null;
 
     const scheduled = new Date(payout.date);
@@ -370,6 +412,23 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         .calendar-cell.is-holiday {
           border-left: 3px solid var(--accent-purple) !important;
           background: rgba(142, 84, 255, 0.04) !important;
+        }
+
+        .calendar-cell.is-expected-spot {
+          border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+          background: rgba(255, 255, 255, 0.01) !important;
+          opacity: 0.7;
+          border-left: 3px dashed var(--text-muted) !important;
+        }
+
+        .calendar-cell.is-expected-spot .day-number {
+          color: var(--text-muted);
+        }
+
+        .calendar-cell.is-expected-spot .payout-amount {
+          color: var(--text-muted);
+          font-style: italic;
+          font-size: 0.72rem;
         }
 
         .payout-indicator {
@@ -517,31 +576,34 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="popover-title">
-              {payoutsByDate[selectedDate] ? 'Manage Payout' : 'Manage Day'}
+              {payoutsByExpectedDate[selectedDate] ? 'Manage Payout' : 'Manage Day'}
             </h4>
             <div className="popover-detail">
               <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                Date: {new Date(selectedDate).toLocaleDateString('en-IN', {
+                Expected Scheduled Date: {new Date(selectedDate).toLocaleDateString('en-IN', {
                   weekday: 'short',
                   day: 'numeric',
                   month: 'short',
                   year: 'numeric'
                 })}
               </p>
-              {payoutsByDate[selectedDate] ? (
+              {payoutsByExpectedDate[selectedDate] ? (
                 <>
-                  <p>Scheduled Payout: ₹{payoutsByDate[selectedDate].originalAmount.toLocaleString('en-IN')}</p>
-                  {payoutsByDate[selectedDate].amount !== payoutsByDate[selectedDate].originalAmount && (
-                    <p>Corrected Payout: ₹{payoutsByDate[selectedDate].amount.toLocaleString('en-IN')}</p>
+                  <p>Scheduled Payout: ₹{payoutsByExpectedDate[selectedDate].originalAmount.toLocaleString('en-IN')}</p>
+                  {payoutsByExpectedDate[selectedDate].amount !== payoutsByExpectedDate[selectedDate].originalAmount && (
+                    <p>Corrected Payout: ₹{payoutsByExpectedDate[selectedDate].amount.toLocaleString('en-IN')}</p>
                   )}
-                  <p style={{ marginTop: '4px' }}>Status: <span style={{ textTransform: 'capitalize', fontWeight: 600, color: payoutsByDate[selectedDate].status === 'credited' ? 'var(--color-success)' : 'var(--color-warning)' }}>
-                    {payoutsByDate[selectedDate].status}
+                  <p style={{ marginTop: '4px' }}>Status: <span style={{ textTransform: 'capitalize', fontWeight: 600, color: payoutsByExpectedDate[selectedDate].status === 'credited' ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                    {payoutsByExpectedDate[selectedDate].status}
                   </span></p>
 
-                  {payoutsByDate[selectedDate].status === 'credited' && delayInfo && (
-                    <div className={`delay-badge ${delayInfo.isLate ? 'late' : delayInfo.isEarly ? 'early' : 'ontime'}`}>
-                      {delayInfo.isLate ? `⏱️ Received Late (Delayed by ${delayInfo.delayDays} days)` : delayInfo.isEarly ? `🚀 Received Early (by ${Math.abs(delayInfo.delayDays)} days)` : `✅ Received on time`}
-                    </div>
+                  {payoutsByExpectedDate[selectedDate].status === 'credited' && delayInfo && (
+                    <>
+                      <p style={{ marginTop: '4px' }}>Actual Credited Date: <strong>{payoutsByExpectedDate[selectedDate].creditedDate}</strong></p>
+                      <div className={`delay-badge ${delayInfo.isLate ? 'late' : delayInfo.isEarly ? 'early' : 'ontime'}`}>
+                        {delayInfo.isLate ? `⏱️ Received Late (Delayed by ${delayInfo.delayDays} days)` : delayInfo.isEarly ? `🚀 Received Early (by ${Math.abs(delayInfo.delayDays)} days)` : `✅ Received on time`}
+                      </div>
+                    </>
                   )}
                 </>
               ) : (
@@ -556,10 +618,10 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
               )}
             </div>
 
-            {payoutsByDate[selectedDate] && !plan.holidays?.includes(selectedDate) && (
+            {payoutsByExpectedDate[selectedDate] && !plan.holidays?.includes(selectedDate) && (
               <div className="credit-form">
                 <h5 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                  {payoutsByDate[selectedDate].status === 'credited' ? 'Adjust Credit Details' : 'Mark Payout as Credited'}
+                  {payoutsByExpectedDate[selectedDate].status === 'credited' ? 'Adjust Credit Details' : 'Mark Payout as Credited'}
                 </h5>
                 <div className="form-group" style={{ marginBottom: '8px' }}>
                   <label className="form-label" style={{ fontSize: '0.75rem' }}>Credit Date</label>
@@ -590,10 +652,10 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
                     style={{ flex: 1, padding: '8px 12px', fontSize: '0.85rem', justifyContent: 'center' }}
                     onClick={handleSaveCreditDetails}
                   >
-                    {payoutsByDate[selectedDate].status === 'credited' ? 'Save Adjustments' : 'Confirm Credit'}
+                    {payoutsByExpectedDate[selectedDate].status === 'credited' ? 'Save Adjustments' : 'Confirm Credit'}
                   </button>
                   
-                  {payoutsByDate[selectedDate].status === 'credited' && (
+                  {payoutsByExpectedDate[selectedDate].status === 'credited' && (
                     <button
                       type="button"
                       className="glass-button danger"
@@ -607,7 +669,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px', borderTop: payoutsByDate[selectedDate] && !plan.holidays?.includes(selectedDate) ? '1px solid var(--border-color)' : 'none', paddingTop: payoutsByDate[selectedDate] && !plan.holidays?.includes(selectedDate) ? '16px' : '0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px', borderTop: payoutsByExpectedDate[selectedDate] && !plan.holidays?.includes(selectedDate) ? '1px solid var(--border-color)' : 'none', paddingTop: payoutsByExpectedDate[selectedDate] && !plan.holidays?.includes(selectedDate) ? '16px' : '0' }}>
               <button
                 type="button"
                 className={`glass-button ${plan.holidays?.includes(selectedDate) ? 'primary' : 'danger'}`}

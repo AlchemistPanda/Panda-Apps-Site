@@ -162,6 +162,9 @@ export function recalculatePayouts(plan: any): any {
   };
 
   const isWorkingDay = (dateStr: string): boolean => {
+    if (plan.payoutType === 'weekly') {
+      return !isWeekend(dateStr);
+    }
     return !(dailySkipWeekends && isWeekend(dateStr));
   };
 
