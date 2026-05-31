@@ -169,8 +169,10 @@ export function recalculatePayouts(plan: any): any {
   };
 
   const updatedPayouts = plan.payouts.map((p: Payout) => {
-    // If this specific date is a holiday, its payout is 0
-    if (holidays.includes(p.date)) {
+    // For daily plans, if this specific date is a holiday, its payout is 0.
+    // For weekly/monthly, holidays are handled by the window-based deduction below,
+    // so we do NOT zero out the payout day itself (which would cause double-deduction).
+    if (plan.payoutType === 'daily' && holidays.includes(p.date)) {
       return {
         ...p,
         isHoliday: true,

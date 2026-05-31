@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { db, InvestmentPlan } from '../services/db';
-import { Payout } from '../utils/payoutGenerator';
+import { Payout, recalculatePayouts } from '../utils/payoutGenerator';
 import { NewPlanModal } from '../components/NewPlanModal';
 import { PlanCalendar } from '../components/PlanCalendar';
 import { SyncBanner, SyncStatus } from '../components/SyncBanner';
@@ -102,6 +102,43 @@ export default function ProfitAnalyzer() {
     loadPlans();
   };
 
+  const handleAutoCreditPastDue = () => {
+    if (!activePlan) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    // Check if there are actually any past due uncredited payouts
+    const hasPastDue = activePlan.payouts.some(
+      (p) => !p.isHoliday && p.status === 'uncredited' && p.date < todayStr
+    );
+    if (!hasPastDue) {
+      alert("No past due payouts to credit!");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to mark all past due payouts as credited on their scheduled date?")) {
+      return;
+    }
+
+    const updatedPayouts = activePlan.payouts.map((p) => {
+      if (!p.isHoliday && p.status === 'uncredited' && p.date < todayStr) {
+        return {
+          ...p,
+          status: 'credited' as const,
+          creditedDate: p.date,
+          receivedAmount: p.amount,
+        };
+      }
+      return p;
+    });
+
+    const updatedPlan = {
+      ...activePlan,
+      payouts: updatedPayouts,
+    };
+
+    handleUpdatePlan(recalculatePayouts(updatedPlan));
+  };
+
   const activePlan = plans.find((p) => p.id === selectedPlanId) || null;
 
   // Compute metrics
@@ -117,6 +154,8 @@ export default function ProfitAnalyzer() {
     let holidayCount = 0;
     let lateCount = 0;
     let totalDelayDays = 0;
+    let nonHolidayPayoutsUpToToday = 0;
+    let overdueCount = 0;
 
     plan.payouts.forEach((p) => {
       if (p.isHoliday) {
@@ -125,6 +164,10 @@ export default function ProfitAnalyzer() {
       }
       
       totalExpected += p.amount;
+      if (p.date <= todayStr) {
+        nonHolidayPayoutsUpToToday++;
+      }
+
       if (p.status === 'credited') {
         const received = p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
         totalCredited += received;
@@ -144,6 +187,7 @@ export default function ProfitAnalyzer() {
         }
       } else if (p.date < todayStr) {
         totalOverdue += p.amount;
+        overdueCount++;
       } else {
         totalPending += p.amount;
       }
@@ -151,6 +195,8 @@ export default function ProfitAnalyzer() {
 
     const roi = totalInvested > 0 ? (totalExpected / totalInvested) * 100 : 0;
     const avgDelay = lateCount > 0 ? totalDelayDays / lateCount : 0;
+    const netProfit = totalCredited - totalInvested;
+    const collectionRate = nonHolidayPayoutsUpToToday > 0 ? (creditedCount / nonHolidayPayoutsUpToToday) * 100 : 100;
 
     return {
       totalInvested,
@@ -164,6 +210,9 @@ export default function ProfitAnalyzer() {
       roi,
       lateCount,
       avgDelay,
+      netProfit,
+      collectionRate,
+      overdueCount,
     };
   };
 
@@ -655,6 +704,29 @@ export default function ProfitAnalyzer() {
                   frequencyLabel = `Monthly (${p.monthlyPayoutDate}${suffix})`;
                 }
 
+                const overdueCount = pStats.overdueCount;
+                const lateCount = pStats.lateCount;
+                let healthBadge = null;
+                if (overdueCount > 0) {
+                  healthBadge = (
+                    <span className="badge" style={{ background: 'rgba(255, 159, 10, 0.1)', border: '1px solid rgba(255, 159, 10, 0.3)', color: 'var(--color-warning)', fontWeight: '600', padding: '2px 6px', fontSize: '0.7rem' }}>
+                      ⏳ {overdueCount} Overdue
+                    </span>
+                  );
+                } else if (lateCount > 0) {
+                  healthBadge = (
+                    <span className="badge" style={{ background: 'rgba(0, 180, 216, 0.1)', border: '1px solid rgba(0, 180, 216, 0.3)', color: '#00b4d8', fontWeight: '600', padding: '2px 6px', fontSize: '0.7rem' }}>
+                      💳 {lateCount} Late Paid
+                    </span>
+                  );
+                } else {
+                  healthBadge = (
+                    <span className="badge" style={{ background: 'rgba(0, 230, 118, 0.1)', border: '1px solid rgba(0, 230, 118, 0.3)', color: '#00e676', fontWeight: '600', padding: '2px 6px', fontSize: '0.7rem' }}>
+                      🟢 On Track
+                    </span>
+                  );
+                }
+
                 return (
                   <div
                     key={p.id}
@@ -662,7 +734,12 @@ export default function ProfitAnalyzer() {
                     onClick={() => setSelectedPlanId(p.id)}
                   >
                     <div className="plan-card-header">
-                      <span className="plan-card-title">{p.name}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <span className="plan-card-title">{p.name}</span>
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          {healthBadge}
+                        </div>
+                      </div>
                       <span className="plan-card-amount">₹{p.amount.toLocaleString('en-IN')}</span>
                     </div>
 
@@ -680,8 +757,12 @@ export default function ProfitAnalyzer() {
                         <span>Credited Payouts</span>
                         <span>{pStats.creditedCount} / {pStats.totalPayouts}</span>
                       </div>
-                      <div className="plan-progress-bar">
+                      <div className="plan-progress-bar" style={{ marginBottom: '8px' }}>
                         <div className="plan-progress-fill" style={{ width: `${progressPct}%` }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                        <span>Received: <strong style={{ color: 'var(--color-success)' }}>₹{pStats.totalCredited.toLocaleString('en-IN')}</strong></span>
+                        <span>Target: <strong>₹{pStats.totalExpected.toLocaleString('en-IN')}</strong></span>
                       </div>
                     </div>
 
@@ -1076,6 +1157,20 @@ export default function ProfitAnalyzer() {
                 <span className="stat-label">Expected Profit</span>
                 <span className="stat-value">₹{stats.totalExpected.toLocaleString('en-IN')}</span>
               </div>
+              <div className="stat-card net-profit" style={{
+                borderLeft: '3px solid ' + (stats.netProfit >= 0 ? 'var(--color-success)' : 'var(--color-error)'),
+                background: stats.netProfit >= 0 ? 'rgba(0, 230, 118, 0.02)' : 'rgba(255, 59, 48, 0.02)'
+              }}>
+                <span className="stat-label">Net Profit</span>
+                <span className="stat-value" style={{
+                  color: stats.netProfit >= 0 ? 'var(--color-success)' : 'var(--color-error)'
+                }}>
+                  {stats.netProfit >= 0 ? '+' : ''}₹{stats.netProfit.toLocaleString('en-IN')}
+                </span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                  Credited - Invested
+                </span>
+              </div>
               <div className="stat-card credited">
                 <span className="stat-label">Total Credited</span>
                 <span className="stat-value">₹{stats.totalCredited.toLocaleString('en-IN')}</span>
@@ -1084,6 +1179,18 @@ export default function ProfitAnalyzer() {
                     ⏱️ {stats.lateCount} late (avg. {stats.avgDelay.toFixed(1)}d delay)
                   </span>
                 )}
+              </div>
+              <div className="stat-card collection-rate" style={{
+                borderLeft: '3px solid #00b4d8',
+                background: 'rgba(0, 180, 216, 0.02)'
+              }}>
+                <span className="stat-label">Collection Rate</span>
+                <span className="stat-value" style={{ color: '#00b4d8' }}>
+                  {stats.collectionRate.toFixed(1)}%
+                </span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                  Of expected payouts to date
+                </span>
               </div>
               <div className="stat-card pending">
                 <span className="stat-label">Pending</span>
@@ -1097,6 +1204,19 @@ export default function ProfitAnalyzer() {
 
             {/* Share/Export Utilities */}
             <div className="action-bar no-print">
+              <button
+                type="button"
+                className="glass-button success"
+                onClick={handleAutoCreditPastDue}
+                style={{
+                  color: 'var(--color-success)',
+                  background: 'rgba(0, 230, 118, 0.05)',
+                  border: '1px solid rgba(0, 230, 118, 0.2)',
+                  fontWeight: 'bold',
+                }}
+              >
+                ✅ Auto-Credit All Past Due
+              </button>
               <button
                 type="button"
                 className="glass-button"

@@ -77,7 +77,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
   // Sync form state when a date is selected
   useEffect(() => {
     if (selectedDate) {
-      const payout = payoutsByExpectedDate[selectedDate];
+      const payout = plan.payouts.find(p => p.date === selectedDate);
       if (payout) {
         setActualCreditDate(payout.creditedDate || new Date().toISOString().split('T')[0]);
         setActualReceivedAmount(payout.receivedAmount !== undefined ? payout.receivedAmount : payout.amount);
@@ -86,7 +86,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         setActualReceivedAmount('');
       }
     }
-  }, [selectedDate, plan.id]);
+  }, [selectedDate, plan.id, plan.payouts]);
 
   const handleSaveCreditDetails = () => {
     if (!selectedDate) return;
@@ -194,7 +194,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
 
       // 1. Handle actual credited payouts on this date Key
       if (payoutCredited && !isHoliday) {
-        cellClass += ' has-payout is-credited';
+        cellClass += ' has-payout';
         const activeAmount = payoutCredited.receivedAmount !== undefined ? payoutCredited.receivedAmount : payoutCredited.amount;
         displayAmount = `₹${activeAmount.toLocaleString('en-IN')}`;
         
@@ -204,12 +204,14 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         const delayDays = Math.floor(delayMs / (1000 * 60 * 60 * 24));
         
         if (delayDays > 0) {
+          cellClass += ' is-late-credit';
           statusDot = (
             <span className="status-dot credited late" title={`Credited Late (Delayed by ${delayDays} days)`}>
-              ⏱️ +{delayDays}d
+              💳 +{delayDays}d
             </span>
           );
         } else {
+          cellClass += ' is-credited';
           statusDot = <span className="status-dot credited" title="Credited">✓</span>;
         }
       } 
@@ -235,7 +237,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
             cellClass += ' is-expected-spot';
             displayAmount = `₹${payoutExpected.amount.toLocaleString('en-IN')}`;
             statusDot = (
-              <span className="status-dot expected-late" title={`Paid Late on ${payoutExpected.creditedDate}`} style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
+              <span className="status-dot expected-late" title={`Paid Late on ${payoutExpected.creditedDate}`} style={{ color: 'var(--color-warning)', fontSize: '0.65rem', fontWeight: 'bold' }}>
                 ⏱️ expected
               </span>
             );
@@ -416,19 +418,27 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
 
         .calendar-cell.is-expected-spot {
           border: 1px dashed rgba(255, 255, 255, 0.15) !important;
-          background: rgba(255, 255, 255, 0.01) !important;
-          opacity: 0.7;
-          border-left: 3px dashed var(--text-muted) !important;
+          background: rgba(255, 159, 10, 0.04) !important;
+          opacity: 0.85;
+          border-left: 3px solid var(--color-warning) !important;
         }
 
         .calendar-cell.is-expected-spot .day-number {
-          color: var(--text-muted);
+          color: var(--text-primary);
         }
 
         .calendar-cell.is-expected-spot .payout-amount {
-          color: var(--text-muted);
-          font-style: italic;
-          font-size: 0.72rem;
+          color: var(--color-warning);
+          font-weight: 600;
+        }
+
+        .calendar-cell.is-late-credit {
+          border-left: 3px solid #00b4d8 !important;
+          background: rgba(0, 180, 216, 0.04) !important;
+        }
+
+        .calendar-cell.is-late-credit .payout-amount {
+          color: #00b4d8;
         }
 
         .payout-indicator {
@@ -458,11 +468,12 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         }
 
         .status-dot.credited.late {
-          background: rgba(245, 158, 11, 0.1);
-          border: 1px solid rgba(245, 158, 11, 0.3);
+          background: rgba(0, 180, 216, 0.1);
+          border: 1px solid rgba(0, 180, 216, 0.3);
           border-radius: 4px;
-          padding: 1px 3px;
+          padding: 2px 4px;
           font-size: 0.65rem;
+          color: #00b4d8;
         }
 
         /* Detail Modal / popover */
@@ -568,6 +579,27 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         {renderCells()}
       </div>
 
+      <div className="calendar-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ color: 'var(--color-success)', fontWeight: 'bold' }}>✓</span> Credited
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ color: 'var(--color-warning)' }}>⏳</span> Pending
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ color: 'var(--color-error)' }}>⚠️</span> Overdue
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ color: 'var(--accent-purple)' }}>🏖️</span> Holiday
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ color: 'var(--color-warning)' }}>⏱️ expected</span> Expected (Late)
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ color: '#00b4d8' }}>💳</span> Late Credit
+        </div>
+      </div>
+
       {/* Interactive Payout / Holiday Management Popover */}
       {selectedDate && (
         <div className="payout-popover-backdrop" onClick={() => setSelectedDate(null)}>
@@ -623,6 +655,47 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
                 <h5 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
                   {payoutsByExpectedDate[selectedDate].status === 'credited' ? 'Adjust Credit Details' : 'Mark Payout as Credited'}
                 </h5>
+                
+                {payoutsByExpectedDate[selectedDate].status === 'uncredited' && (
+                  <button
+                    type="button"
+                    className="glass-button success"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      fontSize: '0.85rem',
+                      justifyContent: 'center',
+                      background: 'rgba(0, 230, 118, 0.1)',
+                      border: '1px solid rgba(0, 230, 118, 0.3)',
+                      color: '#00e676',
+                      fontWeight: 'bold',
+                      marginBottom: '12px'
+                    }}
+                    onClick={() => {
+                      const payout = payoutsByExpectedDate[selectedDate];
+                      if (!payout) return;
+                      const updatedPayouts = plan.payouts.map((p) => {
+                        if (p.date === selectedDate) {
+                          return {
+                            ...p,
+                            status: 'credited' as const,
+                            creditedDate: new Date().toISOString().split('T')[0],
+                            receivedAmount: p.amount,
+                          };
+                        }
+                        return p;
+                      });
+                      const updatedPlan = {
+                        ...plan,
+                        payouts: updatedPayouts,
+                      };
+                      onUpdatePlan(recalculatePayouts(updatedPlan));
+                      setSelectedDate(null);
+                    }}
+                  >
+                    ✅ Mark Credited Today (₹{payoutsByExpectedDate[selectedDate].amount.toLocaleString('en-IN')})
+                  </button>
+                )}
                 <div className="form-group" style={{ marginBottom: '8px' }}>
                   <label className="form-label" style={{ fontSize: '0.75rem' }}>Credit Date</label>
                   <input

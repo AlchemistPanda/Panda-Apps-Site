@@ -112,6 +112,9 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
               status: oldPayout.status,
               isHoliday: oldPayout.isHoliday,
               amount: oldPayout.isHoliday ? 0 : np.amount,
+              // Preserve late-payout tracking data
+              creditedDate: oldPayout.creditedDate,
+              receivedAmount: oldPayout.receivedAmount,
             };
           }
           return np;
