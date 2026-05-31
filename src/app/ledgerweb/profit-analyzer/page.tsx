@@ -139,6 +139,109 @@ export default function ProfitAnalyzer() {
     handleUpdatePlan(recalculatePayouts(updatedPlan));
   };
 
+  const handleCopyAllPlansSummary = () => {
+    if (plans.length === 0) {
+      alert("No investment plans to copy!");
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    let grandInvested = 0;
+    let grandExpected = 0;
+    let grandCredited = 0;
+    let grandPending = 0;
+    let grandOverdue = 0;
+    let totalNonHolidayPayoutsUpToToday = 0;
+    let totalCreditedCount = 0;
+    let totalPayoutsCount = 0;
+    
+    let planSummariesText = '';
+
+    plans.forEach((p, idx) => {
+      const pStats = getPlanStats(p);
+      
+      grandInvested += pStats.totalInvested;
+      grandExpected += pStats.totalExpected;
+      grandCredited += pStats.totalCredited;
+      grandPending += pStats.totalPending;
+      grandOverdue += pStats.totalOverdue;
+      totalCreditedCount += pStats.creditedCount;
+      totalPayoutsCount += pStats.totalPayouts;
+      
+      // Calculate non-holiday up to today for overall rate
+      p.payouts.forEach((pay) => {
+        if (!pay.isHoliday && pay.date <= todayStr) {
+          totalNonHolidayPayoutsUpToToday++;
+        }
+      });
+
+      let healthEmoji = '🟢';
+      let healthStatus = 'On Track';
+      if (pStats.overdueCount > 0) {
+        healthEmoji = '⏳';
+        healthStatus = `${pStats.overdueCount} Overdue`;
+      } else if (pStats.lateCount > 0) {
+        healthEmoji = '💳';
+        healthStatus = `${pStats.lateCount} Late Paid`;
+      }
+
+      let frequencyLabel: string = p.payoutType;
+      if (p.payoutType === 'weekly' && p.weeklyPayoutDay !== undefined) {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        frequencyLabel = `Weekly (${days[p.weeklyPayoutDay]})`;
+      } else if (p.payoutType === 'monthly' && p.monthlyPayoutDate !== undefined) {
+        const suffix = p.monthlyPayoutDate === 1 || p.monthlyPayoutDate === 21 || p.monthlyPayoutDate === 31 ? 'st' : p.monthlyPayoutDate === 2 || p.monthlyPayoutDate === 22 ? 'nd' : p.monthlyPayoutDate === 3 || p.monthlyPayoutDate === 23 ? 'rd' : 'th';
+        frequencyLabel = `Monthly (${p.monthlyPayoutDate}${suffix})`;
+      }
+
+      planSummariesText += `\n*${idx + 1}. ${p.name}* [${healthEmoji} ${healthStatus}]\n`;
+      planSummariesText += `  • Capital Invested: ₹${pStats.totalInvested.toLocaleString('en-IN')}\n`;
+      planSummariesText += `  • Expected Payouts: ₹${pStats.totalExpected.toLocaleString('en-IN')} (${pStats.roi.toFixed(1)}% ROI)\n`;
+      planSummariesText += `  • Received to Date: ₹${pStats.totalCredited.toLocaleString('en-IN')} (${pStats.creditedCount}/${pStats.totalPayouts} payouts)\n`;
+      planSummariesText += `  • Collection Rate: ${pStats.collectionRate.toFixed(1)}%\n`;
+      planSummariesText += `  • Overdue Amount: ₹${pStats.totalOverdue.toLocaleString('en-IN')}\n`;
+      planSummariesText += `  • Pending Amount: ₹${pStats.totalPending.toLocaleString('en-IN')}\n`;
+      planSummariesText += `  • Schedule: ${frequencyLabel} | ${p.startDate} to ${p.endDate}\n`;
+    });
+
+    const overallCollectionRate = totalNonHolidayPayoutsUpToToday > 0 
+      ? (totalCreditedCount / totalNonHolidayPayoutsUpToToday) * 100 
+      : 100;
+
+    const overallNetProfitExpected = grandExpected - grandInvested;
+    const overallNetProfitActual = grandCredited - grandInvested;
+
+    let text = `*📊 PANDATHINGS PROFIT ANALYZER - CONSOLIDATED SUMMARY 📊*\n`;
+    text += `_Generated on: ${new Date().toLocaleDateString('en-IN')} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}_\n\n`;
+    
+    text += `*================================*\n`;
+    text += `*📈 GRAND TOTALS & METRICS*\n`;
+    text += `*================================*\n`;
+    text += `💰 *Total Capital Invested:* ₹${grandInvested.toLocaleString('en-IN')}\n`;
+    text += `🎯 *Total Expected Returns:* ₹${grandExpected.toLocaleString('en-IN')}\n`;
+    text += `💸 *Overall Net Profit (Expected):* ${overallNetProfitExpected >= 0 ? '+' : ''}₹${overallNetProfitExpected.toLocaleString('en-IN')}\n`;
+    text += `💵 *Total Received/Credited:* ₹${grandCredited.toLocaleString('en-IN')} (${totalCreditedCount}/${totalPayoutsCount} total payouts)\n`;
+    text += `🎉 *Overall Net Profit (Actual):* ${overallNetProfitActual >= 0 ? '+' : ''}₹${overallNetProfitActual.toLocaleString('en-IN')}\n`;
+    text += `⚠️ *Total Overdue Balance:* ₹${grandOverdue.toLocaleString('en-IN')}\n`;
+    text += `⏳ *Total Pending Balance:* ₹${grandPending.toLocaleString('en-IN')}\n`;
+    text += `📈 *Overall Collection Rate:* ${overallCollectionRate.toFixed(1)}%\n\n`;
+
+    text += `*================================*\n`;
+    text += `*📋 INDIVIDUAL INVESTMENT DETAILS*\n`;
+    text += `*================================*\n`;
+    text += planSummariesText;
+    
+    text += `\n*--------------------------------*\n`;
+    text += `_Generated via PandaApps Profit Analyzer_`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Consolidated investment summary successfully copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy to clipboard', err);
+      alert('Failed to copy summary to clipboard. Please check console logs.');
+    });
+  };
+
   const activePlan = plans.find((p) => p.id === selectedPlanId) || null;
 
   // Compute metrics
@@ -688,7 +791,25 @@ export default function ProfitAnalyzer() {
             </section>
 
             {/* Investment Plans Section */}
-            <h2 className="plans-section-title">My Investment Plans ({plans.length})</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }} className="no-print">
+              <h2 className="plans-section-title" style={{ margin: 0 }}>My Investment Plans ({plans.length})</h2>
+              <button
+                type="button"
+                className="glass-button primary"
+                onClick={handleCopyAllPlansSummary}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  background: 'rgba(142, 84, 255, 0.1)',
+                  border: '1px solid rgba(142, 84, 255, 0.3)',
+                  color: 'var(--accent-purple)',
+                  cursor: 'pointer'
+                }}
+              >
+                📋 Copy Consolidated Summary
+              </button>
+            </div>
             
             <div className="plans-grid">
               {plans.map((p) => {
