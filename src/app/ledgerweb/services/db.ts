@@ -12,6 +12,7 @@ export interface InvestmentPlan {
   endDate: string; // YYYY-MM-DD
   payoutAmount: number; // Regular payout amount
   payouts: Payout[];
+  holidays?: string[]; // Array of holiday dates in YYYY-MM-DD format
   createdAt: string;
 }
 

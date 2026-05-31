@@ -2,23 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import { InvestmentPlan } from '../services/db';
-import { Payout } from '../utils/payoutGenerator';
+import { Payout, recalculatePayouts } from '../utils/payoutGenerator';
 
 interface PlanCalendarProps {
   plan: InvestmentPlan;
-  onUpdatePayout: (payoutId: string, updates: Partial<Payout>) => void;
+  onUpdatePlan: (updatedPlan: InvestmentPlan) => void;
 }
 
 export const PlanCalendar: React.FC<PlanCalendarProps> = ({
   plan,
-  onUpdatePayout,
+  onUpdatePlan,
 }) => {
   // Initialize to the start date of the plan
   const [viewDate, setViewDate] = useState(() => {
     return new Date(plan.startDate);
   });
   
-  const [selectedPayout, setSelectedPayout] = useState<Payout | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   // Sync calendar view month when the plan changes
   useEffect(() => {
@@ -62,32 +62,45 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
     return acc;
   }, {} as Record<string, Payout>);
 
-  const handleCellClick = (payout: Payout) => {
-    setSelectedPayout(payout);
-  };
-
   const handleToggleCredited = () => {
-    if (!selectedPayout) return;
-    const nextStatus = selectedPayout.status === 'credited' ? 'uncredited' : 'credited';
-    onUpdatePayout(selectedPayout.id, { status: nextStatus });
-    setSelectedPayout({
-      ...selectedPayout,
-      status: nextStatus,
+    if (!selectedDate) return;
+    const payout = payoutsByDate[selectedDate];
+    if (!payout) return;
+
+    const nextStatus: 'credited' | 'uncredited' = payout.status === 'credited' ? 'uncredited' : 'credited';
+    const updatedPayouts = plan.payouts.map((p) => {
+      if (p.date === selectedDate) {
+        return { ...p, status: nextStatus };
+      }
+      return p;
     });
+
+    const updatedPlan = {
+      ...plan,
+      payouts: updatedPayouts,
+    };
+
+    onUpdatePlan(updatedPlan);
   };
 
   const handleToggleHoliday = () => {
-    if (!selectedPayout) return;
-    const isHoliday = !selectedPayout.isHoliday;
-    const amount = isHoliday ? 0 : selectedPayout.originalAmount;
-    const updates = { isHoliday, amount };
+    if (!selectedDate) return;
     
-    onUpdatePayout(selectedPayout.id, updates);
-    setSelectedPayout({
-      ...selectedPayout,
-      isHoliday,
-      amount,
+    const isHoliday = plan.holidays?.includes(selectedDate) || false;
+    let newHolidays = plan.holidays ? [...plan.holidays] : [];
+    
+    if (isHoliday) {
+      newHolidays = newHolidays.filter(h => h !== selectedDate);
+    } else {
+      newHolidays.push(selectedDate);
+    }
+
+    const updatedPlan = recalculatePayouts({
+      ...plan,
+      holidays: newHolidays
     });
+
+    onUpdatePlan(updatedPlan);
   };
 
   // Generate day cells
@@ -104,27 +117,40 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
       const dateKey = formatDateKey(year, month, day);
       const payout = payoutsByDate[dateKey];
       const isToday = dateKey === todayStr;
+      const inPlanRange = dateKey >= plan.startDate && dateKey <= plan.endDate;
+      const isHoliday = plan.holidays?.includes(dateKey) || false;
       
       let cellClass = 'calendar-cell';
       let statusDot = null;
       let displayAmount = '';
 
+      if (inPlanRange) {
+        cellClass += ' is-range-day';
+      }
+
+      if (isHoliday) {
+        cellClass += ' is-holiday';
+        statusDot = <span className="status-dot holiday" title="Market Holiday">🏖️</span>;
+      }
+
       if (payout) {
         cellClass += ' has-payout';
-        displayAmount = `₹${payout.amount.toLocaleString('en-IN')}`;
+        // Display the recalculated amount!
+        if (payout.amount > 0) {
+          displayAmount = `₹${payout.amount.toLocaleString('en-IN')}`;
+        }
         
-        if (payout.isHoliday) {
-          cellClass += ' is-holiday';
-          statusDot = <span className="status-dot holiday" title="Market Holiday">🏖️</span>;
-        } else if (payout.status === 'credited') {
-          cellClass += ' is-credited';
-          statusDot = <span className="status-dot credited" title="Credited">✓</span>;
-        } else if (payout.date < todayStr) {
-          cellClass += ' is-overdue';
-          statusDot = <span className="status-dot overdue" title="Overdue Payout">⚠️</span>;
-        } else {
-          cellClass += ' is-pending';
-          statusDot = <span className="status-dot pending" title="Pending Payout">⏳</span>;
+        if (!isHoliday) {
+          if (payout.status === 'credited') {
+            cellClass += ' is-credited';
+            statusDot = <span className="status-dot credited" title="Credited">✓</span>;
+          } else if (payout.date < todayStr) {
+            cellClass += ' is-overdue';
+            statusDot = <span className="status-dot overdue" title="Overdue Payout">⚠️</span>;
+          } else {
+            cellClass += ' is-pending';
+            statusDot = <span className="status-dot pending" title="Pending Payout">⏳</span>;
+          }
         }
       }
 
@@ -136,12 +162,16 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         <div
           key={`day-${day}`}
           className={cellClass}
-          onClick={() => payout && handleCellClick(payout)}
+          onClick={() => inPlanRange && setSelectedDate(dateKey)}
         >
           <span className="day-number">{day}</span>
-          {payout && (
+          {payout && payout.amount > 0 && !isHoliday && (
             <div className="payout-indicator">
               <span className="payout-amount">{displayAmount}</span>
+            </div>
+          )}
+          {statusDot && (
+            <div className="status-dot-wrapper">
               {statusDot}
             </div>
           )}
@@ -192,8 +222,8 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
 
         .calendar-cell {
           aspect-ratio: 1.1;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.03);
+          background: rgba(255, 255, 255, 0.01);
+          border: 1px solid rgba(255, 255, 255, 0.02);
           border-radius: var(--radius-sm);
           padding: 8px;
           display: flex;
@@ -201,6 +231,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
           justify-content: space-between;
           position: relative;
           transition: all 0.2s ease;
+          opacity: 0.4;
         }
 
         .calendar-cell.empty {
@@ -209,9 +240,22 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
           pointer-events: none;
         }
 
+        .calendar-cell.is-range-day {
+          opacity: 1;
+          background: rgba(255, 255, 255, 0.02);
+          border-color: rgba(255, 255, 255, 0.04);
+          cursor: pointer;
+        }
+
+        .calendar-cell.is-range-day:hover {
+          background: rgba(255, 255, 255, 0.06);
+          transform: translateY(-1px);
+          border-color: rgba(255, 255, 255, 0.08);
+        }
+
         .calendar-cell.is-today {
-          border-color: var(--accent-purple);
-          background: rgba(142, 84, 255, 0.04);
+          border-color: var(--accent-purple) !important;
+          background: rgba(142, 84, 255, 0.04) !important;
         }
         
         .calendar-cell.is-today .day-number {
@@ -225,50 +269,39 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
           color: var(--text-secondary);
         }
 
-        .calendar-cell.has-payout {
-          cursor: pointer;
-          background: rgba(255, 255, 255, 0.04);
-          border-color: rgba(255, 255, 255, 0.06);
-        }
-
-        .calendar-cell.has-payout:hover {
-          background: rgba(255, 255, 255, 0.08);
-          transform: translateY(-1px);
-        }
-
         /* Status colors on cells */
         .calendar-cell.is-credited {
-          border-left: 3px solid var(--color-success);
+          border-left: 3px solid var(--color-success) !important;
         }
         .calendar-cell.is-pending {
-          border-left: 3px solid var(--color-warning);
+          border-left: 3px solid var(--color-warning) !important;
         }
         .calendar-cell.is-overdue {
-          border-left: 3px solid var(--color-error);
-          background: rgba(255, 59, 48, 0.02);
+          border-left: 3px solid var(--color-error) !important;
+          background: rgba(255, 59, 48, 0.02) !important;
         }
         .calendar-cell.is-holiday {
-          border-left: 3px solid var(--color-holiday);
-          background: rgba(100, 116, 139, 0.05);
-          opacity: 0.6;
+          border-left: 3px solid var(--accent-purple) !important;
+          background: rgba(142, 84, 255, 0.04) !important;
         }
 
         .payout-indicator {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-start;
           align-items: center;
           margin-top: 4px;
+        }
+
+        .status-dot-wrapper {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
         }
 
         .payout-amount {
           font-size: 0.8rem;
           font-weight: 600;
           color: var(--text-primary);
-        }
-
-        .calendar-cell.is-holiday .payout-amount {
-          text-decoration: line-through;
-          color: var(--text-muted);
         }
 
         .status-dot {
@@ -292,7 +325,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
 
         .payout-popover {
           width: 90%;
-          max-width: 320px;
+          max-width: 340px;
           padding: 24px;
         }
 
@@ -342,55 +375,71 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         {renderCells()}
       </div>
 
-      {/* Interactive Payout Management Popover */}
-      {selectedPayout && (
-        <div className="payout-popover-backdrop" onClick={() => setSelectedPayout(null)}>
+      {/* Interactive Payout / Holiday Management Popover */}
+      {selectedDate && (
+        <div className="payout-popover-backdrop" onClick={() => setSelectedDate(null)}>
           <div
             className="payout-popover glass-panel animate-scale-up"
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="popover-title">
-              Manage Payout
+              {payoutsByDate[selectedDate] ? 'Manage Payout' : 'Manage Day'}
             </h4>
             <div className="popover-detail">
               <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                Date: {new Date(selectedPayout.date).toLocaleDateString('en-IN', {
+                Date: {new Date(selectedDate).toLocaleDateString('en-IN', {
                   weekday: 'short',
                   day: 'numeric',
                   month: 'short',
                   year: 'numeric'
                 })}
               </p>
-              <p>Original Value: ₹{selectedPayout.originalAmount.toLocaleString('en-IN')}</p>
-              <p>Current Payout: ₹{selectedPayout.amount.toLocaleString('en-IN')}</p>
+              {payoutsByDate[selectedDate] ? (
+                <>
+                  <p>Original Payout: ₹{payoutsByDate[selectedDate].originalAmount.toLocaleString('en-IN')}</p>
+                  <p>Corrected Payout: ₹{payoutsByDate[selectedDate].amount.toLocaleString('en-IN')}</p>
+                  <p style={{ marginTop: '4px' }}>Status: <span style={{ textTransform: 'capitalize', fontWeight: 600, color: payoutsByDate[selectedDate].status === 'credited' ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                    {payoutsByDate[selectedDate].status}
+                  </span></p>
+                </>
+              ) : (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Non-payout day in plan duration.
+                </p>
+              )}
+              {plan.holidays?.includes(selectedDate) && (
+                <p style={{ color: 'var(--accent-purple)', fontWeight: 600, marginTop: '8px' }}>
+                  🏖️ Marked as Market Holiday
+                </p>
+              )}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {!selectedPayout.isHoliday && (
+              {payoutsByDate[selectedDate] && !plan.holidays?.includes(selectedDate) && (
                 <button
                   type="button"
                   className="glass-button primary"
                   style={{ justifyContent: 'center' }}
                   onClick={handleToggleCredited}
                 >
-                  {selectedPayout.status === 'credited' ? 'Mark as Uncredited' : 'Mark as Credited'}
+                  {payoutsByDate[selectedDate].status === 'credited' ? 'Mark as Uncredited' : 'Mark as Credited'}
                 </button>
               )}
               
               <button
                 type="button"
-                className={`glass-button ${selectedPayout.isHoliday ? 'primary' : 'danger'}`}
+                className={`glass-button ${plan.holidays?.includes(selectedDate) ? 'primary' : 'danger'}`}
                 style={{ justifyContent: 'center' }}
                 onClick={handleToggleHoliday}
               >
-                {selectedPayout.isHoliday ? '🏖️ Remove Holiday' : '🏖️ Mark as Holiday'}
+                {plan.holidays?.includes(selectedDate) ? '🏖️ Remove Holiday' : '🏖️ Mark as Holiday'}
               </button>
 
               <button
                 type="button"
                 className="glass-button"
                 style={{ justifyContent: 'center', marginTop: '10px' }}
-                onClick={() => setSelectedPayout(null)}
+                onClick={() => setSelectedDate(null)}
               >
                 Close
               </button>

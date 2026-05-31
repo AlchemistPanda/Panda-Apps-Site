@@ -149,3 +149,123 @@ export function calculateEndDate(
   const dd = String(end.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
 }
+
+export function recalculatePayouts(plan: any): any {
+  const holidays = plan.holidays || [];
+  const dailySkipWeekends = plan.dailySkipWeekends || false;
+
+  const isWeekend = (dateStr: string): boolean => {
+    const day = new Date(dateStr).getDay();
+    return day === 0 || day === 6;
+  };
+
+  const isWorkingDay = (dateStr: string): boolean => {
+    return !(dailySkipWeekends && isWeekend(dateStr));
+  };
+
+  const updatedPayouts = plan.payouts.map((p: Payout) => {
+    // If this specific date is a holiday, its payout is 0
+    if (holidays.includes(p.date)) {
+      return {
+        ...p,
+        isHoliday: true,
+        amount: 0,
+      };
+    }
+
+    if (plan.payoutType === 'daily') {
+      return {
+        ...p,
+        isHoliday: false,
+        amount: p.originalAmount,
+      };
+    }
+
+    if (plan.payoutType === 'weekly') {
+      // Find the 7 days window ending on p.date: [p.date - 6, p.date]
+      const endDate = new Date(p.date);
+      let workingDays = 0;
+      let holidayDays = 0;
+
+      for (let i = 0; i < 7; i++) {
+        const currentDate = new Date(endDate);
+        currentDate.setDate(endDate.getDate() - i);
+        
+        // Format local date
+        const yyyy = currentDate.getFullYear();
+        const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(currentDate.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+
+        // We only care about dates within the plan's range
+        if (dateStr >= plan.startDate && dateStr <= plan.endDate) {
+          const isWork = isWorkingDay(dateStr);
+          if (isWork) {
+            workingDays++;
+            if (holidays.includes(dateStr)) {
+              holidayDays++;
+            }
+          }
+        }
+      }
+
+      // Calculate amount: subtract holiday days from working days
+      const amount = workingDays > 0 
+        ? Math.max(0, p.originalAmount - (p.originalAmount / workingDays) * holidayDays)
+        : p.originalAmount;
+
+      return {
+        ...p,
+        isHoliday: false,
+        amount: Math.round(amount * 100) / 100, // round to 2 decimal places
+      };
+    }
+
+    if (plan.payoutType === 'monthly') {
+      // Find the monthly window leading up to p.date.
+      const endDate = new Date(p.date);
+      let workingDays = 0;
+      let holidayDays = 0;
+      
+      const current = new Date(endDate);
+
+      // Loop for 31 days or until we hit start date, counting working days
+      for (let i = 0; i < 31; i++) {
+        const yyyy = current.getFullYear();
+        const mm = String(current.getMonth() + 1).padStart(2, '0');
+        const dd = String(current.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+
+        if (dateStr >= plan.startDate) {
+          const isWork = isWorkingDay(dateStr);
+          if (isWork) {
+            workingDays++;
+            if (holidays.includes(dateStr)) {
+              holidayDays++;
+            }
+          }
+        } else {
+          break;
+        }
+        current.setDate(current.getDate() - 1);
+      }
+
+      const amount = workingDays > 0
+        ? Math.max(0, p.originalAmount - (p.originalAmount / workingDays) * holidayDays)
+        : p.originalAmount;
+
+      return {
+        ...p,
+        isHoliday: false,
+        amount: Math.round(amount * 100) / 100,
+      };
+    }
+
+    return p;
+  });
+
+  return {
+    ...plan,
+    payouts: updatedPayouts,
+  };
+}

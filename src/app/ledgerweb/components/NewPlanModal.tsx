@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { InvestmentPlan } from '../services/db';
-import { generatePayouts, calculateEndDate } from '../utils/payoutGenerator';
+import { generatePayouts, calculateEndDate, recalculatePayouts } from '../utils/payoutGenerator';
 
 interface NewPlanModalProps {
   isOpen: boolean;
@@ -130,10 +130,11 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
       endDate,
       payoutAmount: Number(payoutAmount),
       payouts: mergedPayouts,
+      holidays: planToEdit ? (planToEdit.holidays || []) : [],
       createdAt: planToEdit ? planToEdit.createdAt : new Date().toISOString(),
     };
 
-    onSave(savedPlan);
+    onSave(recalculatePayouts(savedPlan));
     
     // Reset state
     setName('');

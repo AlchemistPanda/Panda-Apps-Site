@@ -75,22 +75,7 @@ export default function ProfitAnalyzer() {
     }
   };
 
-  const handleUpdatePayout = async (payoutId: string, updates: Partial<Payout>) => {
-    const activePlan = plans.find((p) => p.id === selectedPlanId);
-    if (!activePlan) return;
-
-    const updatedPayouts = activePlan.payouts.map((p) => {
-      if (p.id === payoutId) {
-        return { ...p, ...updates };
-      }
-      return p;
-    });
-
-    const updatedPlan = {
-      ...activePlan,
-      payouts: updatedPayouts,
-    };
-
+  const handleUpdatePlan = async (updatedPlan: InvestmentPlan) => {
     if (db.isConfigured()) setSyncStatus('saving');
     
     // Optimistic UI update
@@ -101,7 +86,7 @@ export default function ProfitAnalyzer() {
       await db.savePlan(updatedPlan);
       if (db.isConfigured()) setSyncStatus('synced');
     } catch (e) {
-      console.error('Failed to update payout status', e);
+      console.error('Failed to update plan details', e);
       setSyncStatus('error');
       // Rollback optimistic update
       setPlans(previousPlans);
@@ -1096,7 +1081,7 @@ export default function ProfitAnalyzer() {
             <div className="no-print">
               <PlanCalendar
                 plan={activePlan}
-                onUpdatePayout={handleUpdatePayout}
+                onUpdatePlan={handleUpdatePlan}
               />
             </div>
 
