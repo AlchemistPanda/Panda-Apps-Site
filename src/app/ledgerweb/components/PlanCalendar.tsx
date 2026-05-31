@@ -69,10 +69,13 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
   // Create an index of payouts by actual credited date
   const payoutsByCreditedDate = plan.payouts.reduce((acc, p) => {
     if (p.status === 'credited' && p.creditedDate) {
-      acc[p.creditedDate] = p;
+      if (!acc[p.creditedDate]) {
+        acc[p.creditedDate] = [];
+      }
+      acc[p.creditedDate].push(p);
     }
     return acc;
-  }, {} as Record<string, Payout>);
+  }, {} as Record<string, Payout[]>);
 
   // Sync form state when a date is selected
   useEffect(() => {
@@ -173,81 +176,43 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
     for (let day = 1; day <= daysInMonth; day++) {
       const dateKey = formatDateKey(year, month, day);
       const payoutExpected = payoutsByExpectedDate[dateKey];
-      const payoutCredited = payoutsByCreditedDate[dateKey];
+      const creditedPayouts = payoutsByCreditedDate[dateKey] || [];
+      
+      // Filter out any credited payout that was credited on time on its expected day,
+      // because that is already rendered as the expected payout to avoid duplicates.
+      const lateCredits = creditedPayouts.filter(p => p.date !== dateKey);
       
       const inPlanRange = dateKey >= plan.startDate && dateKey <= plan.endDate;
       const isHoliday = plan.holidays?.includes(dateKey) || false;
       const isToday = dateKey === todayStr;
       
       let cellClass = 'calendar-cell';
-      let statusDot = null;
-      let displayAmount = '';
-
+      let borderLeftStyle = '';
+      
       if (inPlanRange) {
         cellClass += ' is-range-day';
       }
 
       if (isHoliday) {
         cellClass += ' is-holiday';
-        statusDot = <span className="status-dot holiday" title="Market Holiday">🏖️</span>;
-      }
-
-      // 1. Handle actual credited payouts on this date Key
-      if (payoutCredited && !isHoliday) {
-        cellClass += ' has-payout';
-        const activeAmount = payoutCredited.receivedAmount !== undefined ? payoutCredited.receivedAmount : payoutCredited.amount;
-        displayAmount = `₹${activeAmount.toLocaleString('en-IN')}`;
-        
-        const scheduled = new Date(payoutCredited.date);
-        const credited = new Date(payoutCredited.creditedDate!);
-        const delayMs = credited.getTime() - scheduled.getTime();
-        const delayDays = Math.floor(delayMs / (1000 * 60 * 60 * 24));
-        
-        if (delayDays > 0) {
+        borderLeftStyle = '3px solid var(--accent-purple)';
+      } else if (inPlanRange) {
+        // Determine border-left class based on priority of events
+        if (payoutExpected && payoutExpected.status === 'uncredited' && payoutExpected.date < todayStr) {
+          cellClass += ' is-overdue';
+          borderLeftStyle = '3px solid var(--color-error)';
+        } else if (lateCredits.length > 0) {
           cellClass += ' is-late-credit';
-          statusDot = (
-            <span className="status-dot credited late" title={`Credited Late (Delayed by ${delayDays} days)`}>
-              💳 +{delayDays}d
-            </span>
-          );
-        } else {
+          borderLeftStyle = '3px solid #00b4d8';
+        } else if (payoutExpected && payoutExpected.status === 'credited' && payoutExpected.creditedDate && payoutExpected.creditedDate > payoutExpected.date) {
+          cellClass += ' is-expected-spot';
+          borderLeftStyle = '3px solid var(--color-warning)';
+        } else if (payoutExpected && payoutExpected.status === 'credited') {
           cellClass += ' is-credited';
-          statusDot = <span className="status-dot credited" title="Credited">✓</span>;
-        }
-      } 
-      // 2. Handle expected scheduled payouts on this date Key
-      else if (payoutExpected && !isHoliday) {
-        cellClass += ' has-payout';
-        
-        if (payoutExpected.status === 'uncredited') {
-          if (payoutExpected.date < todayStr) {
-            cellClass += ' is-overdue';
-            statusDot = <span className="status-dot overdue" title="Overdue Payout">⚠️</span>;
-          } else {
-            cellClass += ' is-pending';
-            statusDot = <span className="status-dot pending" title="Pending Payout">⏳</span>;
-          }
-          displayAmount = `₹${payoutExpected.amount.toLocaleString('en-IN')}`;
-        } 
-        else if (payoutExpected.status === 'credited') {
-          const isLate = payoutExpected.creditedDate && payoutExpected.creditedDate > payoutExpected.date;
-          
-          if (isLate) {
-            // This is the expected scheduled spot of a late payout! Mark as expected spot
-            cellClass += ' is-expected-spot';
-            displayAmount = `₹${payoutExpected.amount.toLocaleString('en-IN')}`;
-            statusDot = (
-              <span className="status-dot expected-late" title={`Paid Late on ${payoutExpected.creditedDate}`} style={{ color: 'var(--color-warning)', fontSize: '0.65rem', fontWeight: 'bold' }}>
-                ⏱️ expected
-              </span>
-            );
-          } else {
-            // Credited on time or early on this day
-            cellClass += ' is-credited';
-            const activeAmount = payoutExpected.receivedAmount !== undefined ? payoutExpected.receivedAmount : payoutExpected.amount;
-            displayAmount = `₹${activeAmount.toLocaleString('en-IN')}`;
-            statusDot = <span className="status-dot credited" title="Credited">✓</span>;
-          }
+          borderLeftStyle = '3px solid var(--color-success)';
+        } else if (payoutExpected && payoutExpected.status === 'uncredited') {
+          cellClass += ' is-pending';
+          borderLeftStyle = '3px solid var(--color-warning)';
         }
       }
 
@@ -255,31 +220,92 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         cellClass += ' is-today';
       }
 
+      const eventElements: React.ReactNode[] = [];
+
+      if (isHoliday) {
+        eventElements.push(
+          <div key="holiday" className="event-row holiday" style={{ justifyContent: 'center', background: 'rgba(142, 84, 255, 0.06)', borderLeft: '2px solid var(--accent-purple)', width: '100%' }}>
+            <span className="event-badge holiday" style={{ color: 'var(--accent-purple)' }}>🏖️ Holiday</span>
+          </div>
+        );
+      } else if (inPlanRange) {
+        // 1. Process expected payout
+        if (payoutExpected) {
+          if (payoutExpected.status === 'uncredited') {
+            const isOverdue = payoutExpected.date < todayStr;
+            eventElements.push(
+              <div key="expected" className={`event-row ${isOverdue ? 'overdue' : 'pending'}`}>
+                <span className="event-amount">₹{payoutExpected.amount.toLocaleString('en-IN')}</span>
+                <span className={`event-badge ${isOverdue ? 'overdue' : 'pending'}`}>
+                  {isOverdue ? '⚠️ Overdue' : '⏳ Pending'}
+                </span>
+              </div>
+            );
+          } else if (payoutExpected.status === 'credited') {
+            const isLate = payoutExpected.creditedDate && payoutExpected.creditedDate > payoutExpected.date;
+            if (isLate) {
+              eventElements.push(
+                <div key="expected" className="event-row expected-late">
+                  <span className="event-amount">₹{payoutExpected.amount.toLocaleString('en-IN')}</span>
+                  <span className="event-badge expected-late">
+                    ⏱️ expected
+                  </span>
+                </div>
+              );
+            } else {
+              const activeAmount = payoutExpected.receivedAmount !== undefined ? payoutExpected.receivedAmount : payoutExpected.amount;
+              eventElements.push(
+                <div key="expected" className="event-row credited">
+                  <span className="event-amount">₹{activeAmount.toLocaleString('en-IN')}</span>
+                  <span className="event-badge credited">✓</span>
+                </div>
+              );
+            }
+          }
+        }
+
+        // 2. Process all late credits received on this day
+        lateCredits.forEach((p, idx) => {
+          const scheduled = new Date(p.date);
+          const credited = new Date(p.creditedDate!);
+          const delayMs = credited.getTime() - scheduled.getTime();
+          const delayDays = Math.floor(delayMs / (1000 * 60 * 60 * 24));
+          const activeAmount = p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
+
+          eventElements.push(
+            <div key={`late-${p.id || idx}`} className="event-row late-credit">
+              <span className="event-amount">₹{activeAmount.toLocaleString('en-IN')}</span>
+              <span className="event-badge late-credit">
+                💳 +{delayDays}d
+              </span>
+            </div>
+          );
+        });
+      }
+
       cells.push(
         <div
           key={`day-${day}`}
           className={cellClass}
+          style={borderLeftStyle ? { borderLeft: borderLeftStyle } : undefined}
           onClick={() => {
             if (inPlanRange) {
               if (payoutExpected) {
                 setSelectedDate(payoutExpected.date);
-              } else if (payoutCredited) {
-                setSelectedDate(payoutCredited.date);
+              } else if (creditedPayouts.length > 0) {
+                setSelectedDate(creditedPayouts[0].date);
               } else {
                 setSelectedDate(dateKey);
               }
             }
           }}
         >
-          <span className="day-number">{day}</span>
-          {displayAmount && (
-            <div className="payout-indicator">
-              <span className="payout-amount">{displayAmount}</span>
-            </div>
-          )}
-          {statusDot && (
-            <div className="status-dot-wrapper">
-              {statusDot}
+          <div className="cell-header">
+            <span className="day-number">{day}</span>
+          </div>
+          {eventElements.length > 0 && (
+            <div className="events-container">
+              {eventElements}
             </div>
           )}
         </div>
@@ -356,13 +382,15 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
           background: rgba(255, 255, 255, 0.01);
           border: 1px solid rgba(255, 255, 255, 0.02);
           border-radius: var(--radius-sm);
-          padding: 8px;
+          padding: 6px;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
+          justify-content: flex-start;
+          gap: 4px;
           position: relative;
           transition: all 0.2s ease;
           opacity: 0.4;
+          min-height: 70px;
         }
 
         .calendar-cell.empty {
@@ -395,84 +423,90 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         }
 
         .day-number {
-          font-size: 0.9rem;
-          font-weight: 500;
+          font-size: 0.8rem;
+          font-weight: 600;
           color: var(--text-secondary);
         }
 
-        /* Status colors on cells */
-        .calendar-cell.is-credited {
-          border-left: 3px solid var(--color-success) !important;
-        }
-        .calendar-cell.is-pending {
-          border-left: 3px solid var(--color-warning) !important;
-        }
-        .calendar-cell.is-overdue {
-          border-left: 3px solid var(--color-error) !important;
-          background: rgba(255, 59, 48, 0.02) !important;
-        }
-        .calendar-cell.is-holiday {
-          border-left: 3px solid var(--accent-purple) !important;
-          background: rgba(142, 84, 255, 0.04) !important;
-        }
-
-        .calendar-cell.is-expected-spot {
-          border: 1px dashed rgba(255, 255, 255, 0.15) !important;
-          background: rgba(255, 159, 10, 0.04) !important;
-          opacity: 0.85;
-          border-left: 3px solid var(--color-warning) !important;
-        }
-
-        .calendar-cell.is-expected-spot .day-number {
-          color: var(--text-primary);
-        }
-
-        .calendar-cell.is-expected-spot .payout-amount {
-          color: var(--color-warning);
-          font-weight: 600;
-        }
-
-        .calendar-cell.is-late-credit {
-          border-left: 3px solid #00b4d8 !important;
-          background: rgba(0, 180, 216, 0.04) !important;
-        }
-
-        .calendar-cell.is-late-credit .payout-amount {
-          color: #00b4d8;
-        }
-
-        .payout-indicator {
+        .cell-header {
           display: flex;
-          justify-content: flex-start;
+          justify-content: space-between;
           align-items: center;
-          margin-top: 4px;
+          width: 100%;
         }
 
-        .status-dot-wrapper {
-          position: absolute;
-          bottom: 8px;
-          right: 8px;
+        .events-container {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          width: 100%;
+          overflow: hidden;
         }
 
-        .payout-amount {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--text-primary);
+        .event-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-size: 0.65rem;
+          width: 100%;
+          line-height: 1.2;
+          gap: 4px;
         }
 
-        .status-dot {
-          font-size: 0.8rem;
+        /* Event Row Styles */
+        .event-row.credited {
+          background: rgba(0, 230, 118, 0.06);
+          border-left: 2px solid var(--color-success);
+          color: #ffffff;
+        }
+        .event-row.pending {
+          background: rgba(255, 159, 10, 0.06);
+          border-left: 2px solid var(--color-warning);
+          color: #ffffff;
+        }
+        .event-row.overdue {
+          background: rgba(255, 59, 48, 0.06);
+          border-left: 2px solid var(--color-error);
+          color: #ffffff;
+        }
+        .event-row.expected-late {
+          background: rgba(255, 159, 10, 0.06);
+          border-left: 2px dashed var(--color-warning);
+          color: #ffffff;
+        }
+        .event-row.late-credit {
+          background: rgba(0, 180, 216, 0.06);
+          border-left: 2px solid #00b4d8;
+          color: #ffffff;
+        }
+
+        .event-amount {
+          font-weight: 700;
+        }
+
+        .event-badge {
+          font-size: 0.6rem;
+          font-weight: bold;
           display: inline-flex;
           align-items: center;
-          justify-content: center;
+          gap: 2px;
         }
 
-        .status-dot.credited.late {
-          background: rgba(0, 180, 216, 0.1);
-          border: 1px solid rgba(0, 180, 216, 0.3);
-          border-radius: 4px;
-          padding: 2px 4px;
-          font-size: 0.65rem;
+        .event-badge.credited {
+          color: var(--color-success);
+        }
+        .event-badge.pending {
+          color: var(--color-warning);
+        }
+        .event-badge.overdue {
+          color: var(--color-error);
+        }
+        .event-badge.expected-late {
+          color: var(--color-warning);
+        }
+        .event-badge.late-credit {
           color: #00b4d8;
         }
 
