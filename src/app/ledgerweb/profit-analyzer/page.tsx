@@ -115,6 +115,8 @@ export default function ProfitAnalyzer() {
     let totalPending = 0;
     let creditedCount = 0;
     let holidayCount = 0;
+    let lateCount = 0;
+    let totalDelayDays = 0;
 
     plan.payouts.forEach((p) => {
       if (p.isHoliday) {
@@ -124,8 +126,22 @@ export default function ProfitAnalyzer() {
       
       totalExpected += p.amount;
       if (p.status === 'credited') {
-        totalCredited += p.amount;
+        const received = p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
+        totalCredited += received;
         creditedCount++;
+
+        if (p.creditedDate && p.creditedDate > p.date) {
+          lateCount++;
+          const scheduled = new Date(p.date);
+          const credited = new Date(p.creditedDate);
+          if (!isNaN(scheduled.getTime()) && !isNaN(credited.getTime())) {
+            const diffMs = credited.getTime() - scheduled.getTime();
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            if (diffDays > 0) {
+              totalDelayDays += diffDays;
+            }
+          }
+        }
       } else if (p.date < todayStr) {
         totalOverdue += p.amount;
       } else {
@@ -134,6 +150,7 @@ export default function ProfitAnalyzer() {
     });
 
     const roi = totalInvested > 0 ? (totalExpected / totalInvested) * 100 : 0;
+    const avgDelay = lateCount > 0 ? totalDelayDays / lateCount : 0;
 
     return {
       totalInvested,
@@ -145,6 +162,8 @@ export default function ProfitAnalyzer() {
       holidayCount,
       totalPayouts: plan.payouts.length,
       roi,
+      lateCount,
+      avgDelay,
     };
   };
 
@@ -170,6 +189,9 @@ export default function ProfitAnalyzer() {
     textContent += `Total Amount Overdue:     INR ${stats.totalOverdue.toLocaleString('en-IN')}\n`;
     textContent += `Total Amount Pending:     INR ${stats.totalPending.toLocaleString('en-IN')}\n`;
     textContent += `Holidays Accounted:       ${stats.holidayCount} days\n`;
+    if (stats.lateCount > 0) {
+      textContent += `Late Payouts:             ${stats.lateCount} (avg. delay ${stats.avgDelay.toFixed(1)} days)\n`;
+    }
     textContent += `Net Return on Investment: ${stats.roi.toFixed(2)}%\n`;
     textContent += `==========================================\n`;
     textContent += `PAYOUT SCHEDULE LOG\n`;
@@ -179,8 +201,13 @@ export default function ProfitAnalyzer() {
 
     activePlan.payouts.forEach((p) => {
       let statusStr = p.status.toUpperCase();
+      const activeVal = p.status === 'credited' && p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
+
       if (p.isHoliday) statusStr = 'HOLIDAY 🏖️';
-      else if (p.status === 'credited') statusStr = 'CREDITED ✅';
+      else if (p.status === 'credited') {
+        const isLate = p.creditedDate && p.creditedDate > p.date;
+        statusStr = `CREDITED ✅ (Recv ₹${activeVal.toLocaleString('en-IN')}${isLate ? ` on ${p.creditedDate} LATE` : ''})`;
+      }
       else if (p.date < new Date().toISOString().split('T')[0]) statusStr = 'OVERDUE ⚠️';
       else statusStr = 'PENDING ⏳';
 
@@ -209,6 +236,9 @@ export default function ProfitAnalyzer() {
     text += `💰 *Capital Invested:* ₹${stats.totalInvested.toLocaleString('en-IN')}\n`;
     text += `📈 *Expected Returns:* ₹${stats.totalExpected.toLocaleString('en-IN')}\n`;
     text += `✅ *Total Credited:* ₹${stats.totalCredited.toLocaleString('en-IN')} (${stats.creditedCount}/${stats.totalPayouts} payouts)\n`;
+    if (stats.lateCount > 0) {
+      text += `⏱️ *Late Payouts:* ${stats.lateCount} (avg. delay ${stats.avgDelay.toFixed(1)}d)\n`;
+    }
     text += `⚠️ *Total Overdue:* ₹${stats.totalOverdue.toLocaleString('en-IN')}\n`;
     text += `⏳ *Total Pending:* ₹${stats.totalPending.toLocaleString('en-IN')}\n`;
     text += `🏖️ *Holidays:* ${stats.holidayCount} days\n`;
@@ -221,16 +251,24 @@ export default function ProfitAnalyzer() {
       const isOverdue = p.status === 'uncredited' && p.date < new Date().toISOString().split('T')[0];
       if (p.status === 'credited' || isOverdue || p.isHoliday) {
         let statusEmoji = '✅';
-        let detailText = 'Credited';
+        const activeVal = p.status === 'credited' && p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
+        let detailText = `Credited ₹${activeVal.toLocaleString('en-IN')}`;
+
         if (p.isHoliday) {
           statusEmoji = '🏖️';
           detailText = 'Holiday';
         } else if (isOverdue) {
           statusEmoji = '⚠️';
-          detailText = '*OVERDUE*';
+          detailText = `*OVERDUE* (Scheduled: ₹${p.originalAmount.toLocaleString('en-IN')})`;
+        } else if (p.status === 'credited') {
+          const isLate = p.creditedDate && p.creditedDate > p.date;
+          if (isLate) {
+            statusEmoji = '⏱️';
+            detailText = `Credited ₹${activeVal.toLocaleString('en-IN')} (*LATE* on ${p.creditedDate})`;
+          }
         }
         
-        text += `- ${p.date}: ₹${p.originalAmount.toLocaleString('en-IN')} (${statusEmoji} ${detailText})\n`;
+        text += `- ${p.date}: ${statusEmoji} ${detailText}\n`;
         logged++;
       }
     });
@@ -277,7 +315,7 @@ export default function ProfitAnalyzer() {
         if (p.isHoliday) return;
         totalExpected += p.amount;
         if (p.status === 'credited') {
-          totalCredited += p.amount;
+          totalCredited += p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
         } else if (p.date < todayStr) {
           totalOverdue += p.amount;
         }
@@ -1041,6 +1079,11 @@ export default function ProfitAnalyzer() {
               <div className="stat-card credited">
                 <span className="stat-label">Total Credited</span>
                 <span className="stat-value">₹{stats.totalCredited.toLocaleString('en-IN')}</span>
+                {stats.lateCount > 0 && (
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    ⏱️ {stats.lateCount} late (avg. {stats.avgDelay.toFixed(1)}d delay)
+                  </span>
+                )}
               </div>
               <div className="stat-card pending">
                 <span className="stat-label">Pending</span>
@@ -1128,8 +1171,15 @@ export default function ProfitAnalyzer() {
                 <tbody>
                   {activePlan.payouts.map((p) => {
                     let statusLabel = 'Pending';
+                    const activeAmount = p.status === 'credited' && p.receivedAmount !== undefined
+                      ? p.receivedAmount
+                      : p.amount;
+
                     if (p.isHoliday) statusLabel = 'Holiday';
-                    else if (p.status === 'credited') statusLabel = 'Credited';
+                    else if (p.status === 'credited') {
+                      const isLate = p.creditedDate && p.creditedDate > p.date;
+                      statusLabel = `Credited${isLate ? ` Late (${p.creditedDate})` : ''}`;
+                    }
                     else if (p.date < new Date().toISOString().split('T')[0]) statusLabel = 'OVERDUE';
 
                     return (
@@ -1143,7 +1193,7 @@ export default function ProfitAnalyzer() {
                           })}
                         </td>
                         <td style={{ padding: '8px', textAlign: 'right', fontSize: '9pt', color: '#000000' }}>
-                          ₹{p.amount.toLocaleString('en-IN')}
+                          ₹{activeAmount.toLocaleString('en-IN')}
                         </td>
                         <td style={{ padding: '8px', textAlign: 'center', fontSize: '9pt', color: '#000000', fontWeight: statusLabel === 'OVERDUE' ? 'bold' : 'normal' }}>
                           {statusLabel}

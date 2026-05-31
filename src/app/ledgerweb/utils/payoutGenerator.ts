@@ -5,6 +5,8 @@ export interface Payout {
   originalAmount: number; // Stored payout amount to restore if holiday is removed
   status: 'credited' | 'uncredited';
   isHoliday: boolean;
+  creditedDate?: string; // YYYY-MM-DD
+  receivedAmount?: number; // Actual amount received in INR
 }
 
 export function generatePayouts(

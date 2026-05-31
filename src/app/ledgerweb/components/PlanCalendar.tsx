@@ -20,6 +20,10 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
   
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  // Popover form states
+  const [actualCreditDate, setActualCreditDate] = useState<string>('');
+  const [actualReceivedAmount, setActualReceivedAmount] = useState<number | ''>('');
+
   // Sync calendar view month when the plan changes
   useEffect(() => {
     setViewDate(new Date(plan.startDate));
@@ -62,15 +66,33 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
     return acc;
   }, {} as Record<string, Payout>);
 
-  const handleToggleCredited = () => {
+  // Sync form state when a date is selected
+  useEffect(() => {
+    if (selectedDate) {
+      const payout = payoutsByDate[selectedDate];
+      if (payout) {
+        setActualCreditDate(payout.creditedDate || new Date().toISOString().split('T')[0]);
+        setActualReceivedAmount(payout.receivedAmount !== undefined ? payout.receivedAmount : payout.amount);
+      } else {
+        setActualCreditDate('');
+        setActualReceivedAmount('');
+      }
+    }
+  }, [selectedDate, plan.id]);
+
+  const handleSaveCreditDetails = () => {
     if (!selectedDate) return;
     const payout = payoutsByDate[selectedDate];
     if (!payout) return;
 
-    const nextStatus: 'credited' | 'uncredited' = payout.status === 'credited' ? 'uncredited' : 'credited';
     const updatedPayouts = plan.payouts.map((p) => {
       if (p.date === selectedDate) {
-        return { ...p, status: nextStatus };
+        return {
+          ...p,
+          status: 'credited' as const,
+          creditedDate: actualCreditDate || p.date,
+          receivedAmount: actualReceivedAmount !== '' ? Number(actualReceivedAmount) : p.amount,
+        };
       }
       return p;
     });
@@ -81,6 +103,33 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
     };
 
     onUpdatePlan(updatedPlan);
+    setSelectedDate(null);
+  };
+
+  const handleMarkAsUncredited = () => {
+    if (!selectedDate) return;
+    const payout = payoutsByDate[selectedDate];
+    if (!payout) return;
+
+    const updatedPayouts = plan.payouts.map((p) => {
+      if (p.date === selectedDate) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { creditedDate, receivedAmount, ...rest } = p;
+        return {
+          ...rest,
+          status: 'uncredited' as const,
+        };
+      }
+      return p;
+    });
+
+    const updatedPlan = {
+      ...plan,
+      payouts: updatedPayouts,
+    };
+
+    onUpdatePlan(updatedPlan);
+    setSelectedDate(null);
   };
 
   const handleToggleHoliday = () => {
@@ -135,15 +184,29 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
 
       if (payout) {
         cellClass += ' has-payout';
-        // Display the recalculated amount!
-        if (payout.amount > 0) {
-          displayAmount = `₹${payout.amount.toLocaleString('en-IN')}`;
+        
+        // Display the actual received amount if credited, otherwise recalculated amount!
+        const activeAmount = payout.status === 'credited' && payout.receivedAmount !== undefined
+          ? payout.receivedAmount
+          : payout.amount;
+
+        if (activeAmount > 0) {
+          displayAmount = `₹${activeAmount.toLocaleString('en-IN')}`;
         }
         
         if (!isHoliday) {
           if (payout.status === 'credited') {
             cellClass += ' is-credited';
-            statusDot = <span className="status-dot credited" title="Credited">✓</span>;
+            // Show a delay checkmark indicator if credited late!
+            const isLate = payout.creditedDate && payout.creditedDate > payout.date;
+            statusDot = (
+              <span 
+                className={`status-dot credited ${isLate ? 'late' : ''}`} 
+                title={isLate ? `Credited Late (${payout.creditedDate})` : 'Credited'}
+              >
+                {isLate ? '⏱️' : '✓'}
+              </span>
+            );
           } else if (payout.date < todayStr) {
             cellClass += ' is-overdue';
             statusDot = <span className="status-dot overdue" title="Overdue Payout">⚠️</span>;
@@ -181,6 +244,30 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
 
     return cells;
   };
+
+  // Calculate delay info for selected date
+  const getDelayInfo = () => {
+    if (!selectedDate) return null;
+    const payout = payoutsByDate[selectedDate];
+    if (!payout) return null;
+
+    const scheduled = new Date(payout.date);
+    const credited = new Date(actualCreditDate || payout.date);
+    
+    if (isNaN(scheduled.getTime()) || isNaN(credited.getTime())) return null;
+
+    const delayMs = credited.getTime() - scheduled.getTime();
+    const delayDays = Math.floor(delayMs / (1000 * 60 * 60 * 24));
+
+    return {
+      delayDays,
+      isLate: delayDays > 0,
+      isOntime: delayDays === 0,
+      isEarly: delayDays < 0,
+    };
+  };
+
+  const delayInfo = getDelayInfo();
 
   return (
     <div className="calendar-card glass-panel">
@@ -311,6 +398,14 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
           justify-content: center;
         }
 
+        .status-dot.credited.late {
+          background: rgba(245, 158, 11, 0.1);
+          border: 1px solid rgba(245, 158, 11, 0.3);
+          border-radius: 4px;
+          padding: 1px 3px;
+          font-size: 0.65rem;
+        }
+
         /* Detail Modal / popover */
         .payout-popover-backdrop {
           position: fixed;
@@ -324,21 +419,60 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         }
 
         .payout-popover {
-          width: 90%;
-          max-width: 340px;
-          padding: 24px;
+          width: 95%;
+          max-width: 360px;
+          padding: 28px;
+          border: 1px solid var(--border-color);
         }
 
         .popover-title {
           font-family: var(--font-display);
-          font-size: 1.15rem;
+          font-size: 1.25rem;
           margin-bottom: 8px;
         }
 
         .popover-detail {
           font-size: 0.9rem;
           color: var(--text-secondary);
-          margin-bottom: 20px;
+          margin-bottom: 16px;
+        }
+
+        .delay-badge {
+          padding: 8px 12px;
+          border-radius: 6px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          margin-top: 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .delay-badge.late {
+          background: rgba(245, 158, 11, 0.08);
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          color: #f59e0b;
+        }
+
+        .delay-badge.ontime {
+          background: rgba(16, 185, 129, 0.08);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          color: #10b981;
+        }
+
+        .delay-badge.early {
+          background: rgba(59, 130, 246, 0.08);
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          color: #3b82f6;
+        }
+
+        .credit-form {
+          border-top: 1px solid var(--border-color);
+          padding-top: 16px;
+          margin-top: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
       `}</style>
 
@@ -396,11 +530,19 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
               </p>
               {payoutsByDate[selectedDate] ? (
                 <>
-                  <p>Original Payout: ₹{payoutsByDate[selectedDate].originalAmount.toLocaleString('en-IN')}</p>
-                  <p>Corrected Payout: ₹{payoutsByDate[selectedDate].amount.toLocaleString('en-IN')}</p>
+                  <p>Scheduled Payout: ₹{payoutsByDate[selectedDate].originalAmount.toLocaleString('en-IN')}</p>
+                  {payoutsByDate[selectedDate].amount !== payoutsByDate[selectedDate].originalAmount && (
+                    <p>Corrected Payout: ₹{payoutsByDate[selectedDate].amount.toLocaleString('en-IN')}</p>
+                  )}
                   <p style={{ marginTop: '4px' }}>Status: <span style={{ textTransform: 'capitalize', fontWeight: 600, color: payoutsByDate[selectedDate].status === 'credited' ? 'var(--color-success)' : 'var(--color-warning)' }}>
                     {payoutsByDate[selectedDate].status}
                   </span></p>
+
+                  {payoutsByDate[selectedDate].status === 'credited' && delayInfo && (
+                    <div className={`delay-badge ${delayInfo.isLate ? 'late' : delayInfo.isEarly ? 'early' : 'ontime'}`}>
+                      {delayInfo.isLate ? `⏱️ Received Late (Delayed by ${delayInfo.delayDays} days)` : delayInfo.isEarly ? `🚀 Received Early (by ${Math.abs(delayInfo.delayDays)} days)` : `✅ Received on time`}
+                    </div>
+                  )}
                 </>
               ) : (
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
@@ -414,18 +556,58 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
               )}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {payoutsByDate[selectedDate] && !plan.holidays?.includes(selectedDate) && (
-                <button
-                  type="button"
-                  className="glass-button primary"
-                  style={{ justifyContent: 'center' }}
-                  onClick={handleToggleCredited}
-                >
-                  {payoutsByDate[selectedDate].status === 'credited' ? 'Mark as Uncredited' : 'Mark as Credited'}
-                </button>
-              )}
-              
+            {payoutsByDate[selectedDate] && !plan.holidays?.includes(selectedDate) && (
+              <div className="credit-form">
+                <h5 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  {payoutsByDate[selectedDate].status === 'credited' ? 'Adjust Credit Details' : 'Mark Payout as Credited'}
+                </h5>
+                <div className="form-group" style={{ marginBottom: '8px' }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Credit Date</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={actualCreditDate}
+                    onChange={(e) => setActualCreditDate(e.target.value)}
+                    style={{ fontSize: '0.85rem', padding: '6px 10px' }}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Amount Received (₹)</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="Received Value"
+                    value={actualReceivedAmount}
+                    onChange={(e) => setActualReceivedAmount(e.target.value ? Number(e.target.value) : '')}
+                    style={{ fontSize: '0.85rem', padding: '6px 10px' }}
+                  />
+                </div>
+                
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    className="glass-button primary"
+                    style={{ flex: 1, padding: '8px 12px', fontSize: '0.85rem', justifyContent: 'center' }}
+                    onClick={handleSaveCreditDetails}
+                  >
+                    {payoutsByDate[selectedDate].status === 'credited' ? 'Save Adjustments' : 'Confirm Credit'}
+                  </button>
+                  
+                  {payoutsByDate[selectedDate].status === 'credited' && (
+                    <button
+                      type="button"
+                      className="glass-button danger"
+                      style={{ padding: '8px 12px', fontSize: '0.85rem', justifyContent: 'center' }}
+                      onClick={handleMarkAsUncredited}
+                    >
+                      Reset to Uncredited
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px', borderTop: payoutsByDate[selectedDate] && !plan.holidays?.includes(selectedDate) ? '1px solid var(--border-color)' : 'none', paddingTop: payoutsByDate[selectedDate] && !plan.holidays?.includes(selectedDate) ? '16px' : '0' }}>
               <button
                 type="button"
                 className={`glass-button ${plan.holidays?.includes(selectedDate) ? 'primary' : 'danger'}`}
@@ -438,7 +620,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
               <button
                 type="button"
                 className="glass-button"
-                style={{ justifyContent: 'center', marginTop: '10px' }}
+                style={{ justifyContent: 'center', marginTop: '6px' }}
                 onClick={() => setSelectedDate(null)}
               >
                 Close
