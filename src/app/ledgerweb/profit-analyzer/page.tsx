@@ -16,10 +16,14 @@ export default function ProfitAnalyzer() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('synced');
 
   useEffect(() => {
-    if (!db.isConfigured()) {
-      setSyncStatus('unconfigured');
-    }
-    loadPlans();
+    const initialize = async () => {
+      const configured = await db.init();
+      if (!configured) {
+        setSyncStatus('unconfigured');
+      }
+      await loadPlans();
+    };
+    initialize();
   }, []);
 
   const loadPlans = async () => {
@@ -781,28 +785,15 @@ export default function ProfitAnalyzer() {
         </div>
       )}
 
-      {/* SQL Setup Instructions Accordion */}
+      {/* Upstash Redis Integration Guide */}
       {!isLoadingPlans && (
         <section className="sql-accordion glass-panel no-print">
           <details>
-            <summary>🛠️ Supabase SQL Database Setup Guide</summary>
+            <summary>🛠️ Upstash Redis Database Integration Guide</summary>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '12px', lineHeight: '1.4' }}>
-              To connect your database, log into the <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-purple)', fontWeight: 600 }}>Supabase Dashboard</a>, navigate to the <strong>SQL Editor</strong> in your project, create a new query, and run the script below to initialize the required schema:
+              Your data is automatically synced in real-time to your core <strong>Upstash Redis</strong> database. 
+              No manual table creation, migrations, or setup scripts are needed! Key-value storage is fully managed and configured out of the box using your platform credentials.
             </p>
-            <pre className="sql-code-block">
-{`CREATE TABLE investment_plans (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  amount NUMERIC NOT NULL,
-  "payoutType" TEXT NOT NULL,
-  "dailySkipWeekends" BOOLEAN NOT NULL,
-  "startDate" TEXT NOT NULL,
-  "endDate" TEXT NOT NULL,
-  "payoutAmount" NUMERIC NOT NULL,
-  payouts JSONB NOT NULL,
-  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);`}
-            </pre>
           </details>
         </section>
       )}

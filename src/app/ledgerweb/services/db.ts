@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
 import { Payout } from '../utils/payoutGenerator';
 
 export interface InvestmentPlan {
@@ -14,22 +13,31 @@ export interface InvestmentPlan {
   createdAt: string;
 }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
-export const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
-
 const PLANS_KEY = 'pandathings_investment_plans';
+
+let isConfiguredState = false;
 
 export const db = {
   isConfigured(): boolean {
-    return !!supabase;
+    return isConfiguredState;
+  },
+
+  async init(): Promise<boolean> {
+    if (typeof window === 'undefined') return false;
+    try {
+      const res = await fetch('/api/ledgerweb/config');
+      const data = await res.json();
+      isConfiguredState = !!data.configured;
+      return isConfiguredState;
+    } catch (e) {
+      console.error('Failed to probe Upstash Redis config', e);
+      isConfiguredState = false;
+      return false;
+    }
   },
 
   async getPlans(): Promise<InvestmentPlan[]> {
-    if (!supabase) {
+    if (!isConfiguredState) {
       // Demo Mode Fallback (LocalStorage)
       if (typeof window === 'undefined') return [];
       try {
@@ -41,21 +49,18 @@ export const db = {
       }
     }
 
-    const { data, error } = await supabase
-      .from('investment_plans')
-      .select('*')
-      .order('createdAt', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching plans from Supabase:', error);
+    try {
+      const res = await fetch('/api/ledgerweb/plans');
+      if (!res.ok) throw new Error('API fetch failed');
+      return await res.json();
+    } catch (error) {
+      console.error('Error fetching plans from Redis API:', error);
       throw error;
     }
-
-    return (data || []) as unknown as InvestmentPlan[];
   },
 
   async savePlan(plan: InvestmentPlan): Promise<void> {
-    if (!supabase) {
+    if (!isConfiguredState) {
       // Demo Mode Fallback (LocalStorage)
       if (typeof window === 'undefined') return;
       try {
@@ -73,29 +78,23 @@ export const db = {
       return;
     }
 
-    const { error } = await supabase
-      .from('investment_plans')
-      .upsert({
-        id: plan.id,
-        name: plan.name,
-        amount: plan.amount,
-        payoutType: plan.payoutType,
-        dailySkipWeekends: plan.dailySkipWeekends,
-        startDate: plan.startDate,
-        endDate: plan.endDate,
-        payoutAmount: plan.payoutAmount,
-        payouts: plan.payouts,
-        createdAt: plan.createdAt
+    try {
+      const res = await fetch('/api/ledgerweb/plans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(plan),
       });
-
-    if (error) {
-      console.error('Error upserting plan in Supabase:', error);
+      if (!res.ok) throw new Error('API save failed');
+    } catch (error) {
+      console.error('Error saving plan to Redis API:', error);
       throw error;
     }
   },
 
   async deletePlan(id: string): Promise<void> {
-    if (!supabase) {
+    if (!isConfiguredState) {
       // Demo Mode Fallback (LocalStorage)
       if (typeof window === 'undefined') return;
       try {
@@ -108,13 +107,13 @@ export const db = {
       return;
     }
 
-    const { error } = await supabase
-      .from('investment_plans')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting plan from Supabase:', error);
+    try {
+      const res = await fetch(`/api/ledgerweb/plans/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('API delete failed');
+    } catch (error) {
+      console.error('Error deleting plan from Redis API:', error);
       throw error;
     }
   }

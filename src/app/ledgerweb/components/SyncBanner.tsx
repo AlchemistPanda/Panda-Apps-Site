@@ -109,7 +109,7 @@ export const SyncBanner: React.FC<SyncBannerProps> = ({ status, onRetry }) => {
       {status === 'saving' && (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <span className="sync-indicator-pulse" />
-          <span>Syncing changes to Supabase cloud database...</span>
+          <span>Syncing changes to Upstash Redis cloud database...</span>
         </div>
       )}
 
@@ -136,7 +136,7 @@ export const SyncBanner: React.FC<SyncBannerProps> = ({ status, onRetry }) => {
             </div>
           </div>
           <div className="unconfigured-details">
-            To connect a permanent cloud database for safety, configure <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> env variables in Vercel or locally in a <code>.env.local</code> file.
+            To connect your permanent database for safety, configure <code>UPSTASH_REDIS_REST_URL</code> and <code>UPSTASH_REDIS_REST_TOKEN</code> env variables in Vercel or locally in a <code>.env.local</code> file.
           </div>
         </>
       )}

@@ -9,7 +9,11 @@ export default function Dashboard() {
   const [dbConnected, setDbConnected] = useState(false);
 
   useEffect(() => {
-    setDbConnected(db.isConfigured());
+    const initialize = async () => {
+      const configured = await db.init();
+      setDbConnected(configured);
+    };
+    initialize();
   }, []);
 
   const handleClearSession = () => {
@@ -177,7 +181,7 @@ export default function Dashboard() {
         </p>
         <div className="db-status-badge">
           {dbConnected ? (
-            <span className="badge badge-credited">☁️ Cloud Database Connected</span>
+            <span className="badge badge-credited">☁️ Upstash Redis Connected</span>
           ) : (
             <span className="badge badge-pending">⚠️ Demo Mode: Local Storage</span>
           )}
