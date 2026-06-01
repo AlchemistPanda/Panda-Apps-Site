@@ -409,18 +409,29 @@ export default function ProfitAnalyzer() {
         let statusEmoji = '✅';
         const activeVal = p.status === 'credited' && p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
         let detailText = `Credited ₹${activeVal.toLocaleString('en-IN')}`;
+        if (p.status === 'credited' && p.receivedAmount !== undefined && p.receivedAmount !== p.amount) {
+          detailText += ` (Expected: ₹${p.amount.toLocaleString('en-IN')})`;
+        } else if (p.status === 'credited' && p.amount !== p.originalAmount) {
+          detailText += ` [corrected from ₹${p.originalAmount.toLocaleString('en-IN')}]`;
+        }
 
         if (p.isHoliday) {
           statusEmoji = '🏖️';
           detailText = 'Holiday';
         } else if (isOverdue) {
           statusEmoji = '⚠️';
-          detailText = `*OVERDUE* (Scheduled: ₹${p.originalAmount.toLocaleString('en-IN')})`;
+          const correctedText = p.amount !== p.originalAmount ? ` [corrected from ₹${p.originalAmount.toLocaleString('en-IN')}]` : '';
+          detailText = `*OVERDUE* (Expected: ₹${p.amount.toLocaleString('en-IN')}${correctedText})`;
         } else if (p.status === 'credited') {
           const isLate = p.creditedDate && p.creditedDate > p.date;
           if (isLate) {
             statusEmoji = '⏱️';
             detailText = `Credited ₹${activeVal.toLocaleString('en-IN')} (*LATE* on ${p.creditedDate})`;
+            if (p.receivedAmount !== undefined && p.receivedAmount !== p.amount) {
+              detailText += ` (Expected: ₹${p.amount.toLocaleString('en-IN')})`;
+            } else if (p.amount !== p.originalAmount) {
+              detailText += ` [corrected from ₹${p.originalAmount.toLocaleString('en-IN')}]`;
+            }
           }
         }
         
