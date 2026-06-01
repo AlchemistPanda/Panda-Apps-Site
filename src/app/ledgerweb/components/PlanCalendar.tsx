@@ -4,6 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { InvestmentPlan } from '../services/db';
 import { Payout, recalculatePayouts } from '../utils/payoutGenerator';
 
+const getLocalDateString = (date = new Date()): string => {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 interface PlanCalendarProps {
   plan: InvestmentPlan;
   onUpdatePlan: (updatedPlan: InvestmentPlan) => void;
@@ -40,7 +47,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
     return `${yyyy}-${mm}-${dd}`;
   };
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString();
 
   // Calendar calculations
   const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sun, 6 = Sat
@@ -82,7 +89,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
     if (selectedDate) {
       const payout = plan.payouts.find(p => p.date === selectedDate);
       if (payout) {
-        setActualCreditDate(payout.creditedDate || new Date().toISOString().split('T')[0]);
+        setActualCreditDate(payout.creditedDate || getLocalDateString());
         setActualReceivedAmount(payout.receivedAmount !== undefined ? payout.receivedAmount : payout.amount);
       } else {
         setActualCreditDate('');
@@ -713,7 +720,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
                           return {
                             ...p,
                             status: 'credited' as const,
-                            creditedDate: new Date().toISOString().split('T')[0],
+                            creditedDate: getLocalDateString(),
                             receivedAmount: p.amount,
                           };
                         }

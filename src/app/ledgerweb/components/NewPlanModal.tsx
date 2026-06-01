@@ -4,6 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { InvestmentPlan } from '../services/db';
 import { generatePayouts, calculateEndDate, recalculatePayouts } from '../utils/payoutGenerator';
 
+const getLocalDateString = (date = new Date()): string => {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 interface NewPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,8 +32,7 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
   const [monthlyPayoutDate, setMonthlyPayoutDate] = useState<number>(1);
   const [includeLastPayoutAfterEndDate, setIncludeLastPayoutAfterEndDate] = useState(false);
   const [startDate, setStartDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
+    return getLocalDateString();
   });
   
   // Duration settings
@@ -57,14 +63,14 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
         setPayoutType('daily');
         setDailySkipWeekends(false);
         setIncludeLastPayoutAfterEndDate(false);
-        const today = new Date();
-        setStartDate(today.toISOString().split('T')[0]);
+        setStartDate(getLocalDateString());
         setEndMethod('duration');
         setDurationValue(2);
         setDurationUnit('months');
         setPayoutAmount('');
-        setWeeklyPayoutDay(today.getDay());
-        setMonthlyPayoutDate(today.getDate());
+        const todayObj = new Date();
+        setWeeklyPayoutDay(todayObj.getDay());
+        setMonthlyPayoutDate(todayObj.getDate());
       }
     }
   }, [planToEdit, isOpen]);

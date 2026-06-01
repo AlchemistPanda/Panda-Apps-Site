@@ -8,6 +8,13 @@ import { NewPlanModal } from '../components/NewPlanModal';
 import { PlanCalendar } from '../components/PlanCalendar';
 import { SyncBanner, SyncStatus } from '../components/SyncBanner';
 
+const getLocalDateString = (date = new Date()): string => {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 export default function ProfitAnalyzer() {
   const [plans, setPlans] = useState<InvestmentPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
@@ -104,7 +111,7 @@ export default function ProfitAnalyzer() {
 
   const handleAutoCreditPastDue = () => {
     if (!activePlan) return;
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
     
     // Check if there are actually any past due uncredited payouts
     const hasPastDue = activePlan.payouts.some(
@@ -145,7 +152,7 @@ export default function ProfitAnalyzer() {
       return;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
     let grandInvested = 0;
     let grandExpected = 0;
     let grandCredited = 0;
@@ -246,7 +253,7 @@ export default function ProfitAnalyzer() {
 
   // Compute metrics
   const getPlanStats = (plan: InvestmentPlan) => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
     const totalInvested = plan.amount;
     
     let totalExpected = 0;
@@ -305,17 +312,17 @@ export default function ProfitAnalyzer() {
 
     return {
       totalInvested,
-      totalExpected,
-      totalCredited,
-      totalOverdue,
-      totalPending,
+      totalExpected: Math.round(totalExpected * 100) / 100,
+      totalCredited: Math.round(totalCredited * 100) / 100,
+      totalOverdue: Math.round(totalOverdue * 100) / 100,
+      totalPending: Math.round(totalPending * 100) / 100,
       creditedCount,
       holidayCount,
       totalPayouts: plan.payouts.length,
       roi,
       lateCount,
       avgDelay,
-      netProfit,
+      netProfit: Math.round(netProfit * 100) / 100,
       collectionRate,
       overdueCount,
       pendingCount,
@@ -364,7 +371,7 @@ export default function ProfitAnalyzer() {
         const isLate = p.creditedDate && p.creditedDate > p.date;
         statusStr = `CREDITED ✅ (Recv ₹${activeVal.toLocaleString('en-IN')}${isLate ? ` on ${p.creditedDate} LATE` : ''})`;
       }
-      else if (p.date < new Date().toISOString().split('T')[0]) statusStr = 'OVERDUE ⚠️';
+      else if (p.date < getLocalDateString()) statusStr = 'OVERDUE ⚠️';
       else statusStr = 'PENDING ⏳';
 
       textContent += `${p.date}   | ${p.amount.toString().padEnd(14)} | ${statusStr}\n`;
@@ -404,7 +411,7 @@ export default function ProfitAnalyzer() {
     
     let logged = 0;
     activePlan.payouts.forEach((p) => {
-      const isOverdue = p.status === 'uncredited' && p.date < new Date().toISOString().split('T')[0];
+      const isOverdue = p.status === 'uncredited' && p.date < getLocalDateString();
       if (p.status === 'credited' || isOverdue || p.isHoliday) {
         let statusEmoji = '✅';
         const activeVal = p.status === 'credited' && p.receivedAmount !== undefined ? p.receivedAmount : p.amount;
@@ -478,7 +485,7 @@ export default function ProfitAnalyzer() {
     let totalNonHolidayPayoutsUpToToday = 0;
     let totalCreditedCount = 0;
     let totalPayoutsCount = 0;
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
 
     plans.forEach((plan) => {
       const pStats = getPlanStats(plan);
@@ -1545,7 +1552,7 @@ export default function ProfitAnalyzer() {
                       const isLate = p.creditedDate && p.creditedDate > p.date;
                       statusLabel = `Credited${isLate ? ` Late (${p.creditedDate})` : ''}`;
                     }
-                    else if (p.date < new Date().toISOString().split('T')[0]) statusLabel = 'OVERDUE';
+                    else if (p.date < getLocalDateString()) statusLabel = 'OVERDUE';
 
                     return (
                       <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
