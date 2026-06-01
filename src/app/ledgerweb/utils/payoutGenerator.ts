@@ -16,7 +16,8 @@ export function generatePayouts(
   payoutAmount: number,
   dailySkipWeekends: boolean,
   weeklyPayoutDay?: number,
-  monthlyPayoutDate?: number
+  monthlyPayoutDate?: number,
+  includeLastPayoutAfterEndDate?: boolean
 ): Payout[] {
   const payouts: Payout[] = [];
   const start = new Date(startDateStr);
@@ -38,7 +39,11 @@ export function generatePayouts(
     // Start strictly after the day of investment (start date)
     current.setDate(current.getDate() + 1);
     
-    while (current <= end) {
+    let addedLastExtra = false;
+    while (current <= end || (includeLastPayoutAfterEndDate && !addedLastExtra)) {
+      if (current > end) {
+        addedLastExtra = true;
+      }
       const dayOfWeek = current.getDay(); // 0 = Sunday, 6 = Saturday
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       
@@ -52,6 +57,7 @@ export function generatePayouts(
           status: 'uncredited',
           isHoliday: false
         });
+        if (addedLastExtra) break;
       }
       current.setDate(current.getDate() + 1);
     }
@@ -66,7 +72,11 @@ export function generatePayouts(
       current.setDate(current.getDate() + 1);
     }
     
-    while (current <= end) {
+    let addedLastExtra = false;
+    while (current <= end || (includeLastPayoutAfterEndDate && !addedLastExtra)) {
+      if (current > end) {
+        addedLastExtra = true;
+      }
       const dateStr = formatLocalDate(current);
       payouts.push({
         id: `${dateStr}-weekly`,
@@ -76,6 +86,7 @@ export function generatePayouts(
         status: 'uncredited',
         isHoliday: false
       });
+      if (addedLastExtra) break;
       current.setDate(current.getDate() + 7);
     }
   } else if (payoutType === 'monthly') {
@@ -87,6 +98,7 @@ export function generatePayouts(
       monthOffset = 1;
     }
     
+    let addedLastExtra = false;
     while (true) {
       const expectedYear = start.getFullYear() + Math.floor((start.getMonth() + monthOffset) / 12);
       const expectedMonth = ((start.getMonth() + monthOffset) % 12 + 12) % 12;
@@ -101,7 +113,11 @@ export function generatePayouts(
       }
       
       if (nextDate > end) {
-        break;
+        if (includeLastPayoutAfterEndDate && !addedLastExtra) {
+          addedLastExtra = true;
+        } else {
+          break;
+        }
       }
       
       if (nextDate > start) {
@@ -114,6 +130,10 @@ export function generatePayouts(
           status: 'uncredited',
           isHoliday: false
         });
+      }
+      
+      if (addedLastExtra) {
+        break;
       }
       
       monthOffset++;

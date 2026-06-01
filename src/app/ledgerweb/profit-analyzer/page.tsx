@@ -959,6 +959,9 @@ export default function ProfitAnalyzer() {
                       {p.dailySkipWeekends && (
                         <span className="badge badge-holiday">Skipping Weekends</span>
                       )}
+                      {p.includeLastPayoutAfterEndDate && (
+                        <span className="badge badge-holiday">Including Last Extra Payout</span>
+                      )}
                     </div>
 
                     <div className="plan-progress-wrapper">
@@ -1325,6 +1328,12 @@ export default function ProfitAnalyzer() {
                     <>
                       <span style={{ margin: '0 8px', opacity: 0.3 }}>|</span>
                       <span>Skipping Weekends</span>
+                    </>
+                  )}
+                  {activePlan.includeLastPayoutAfterEndDate && (
+                    <>
+                      <span style={{ margin: '0 8px', opacity: 0.3 }}>|</span>
+                      <span>Including Last Extra Payout</span>
                     </>
                   )}
                 </div>

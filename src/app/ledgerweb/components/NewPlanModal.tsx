@@ -23,6 +23,7 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
   const [dailySkipWeekends, setDailySkipWeekends] = useState(false);
   const [weeklyPayoutDay, setWeeklyPayoutDay] = useState<number>(1);
   const [monthlyPayoutDate, setMonthlyPayoutDate] = useState<number>(1);
+  const [includeLastPayoutAfterEndDate, setIncludeLastPayoutAfterEndDate] = useState(false);
   const [startDate, setStartDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -45,6 +46,7 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
         setDailySkipWeekends(planToEdit.dailySkipWeekends || false);
         setWeeklyPayoutDay(planToEdit.weeklyPayoutDay !== undefined ? planToEdit.weeklyPayoutDay : 1);
         setMonthlyPayoutDate(planToEdit.monthlyPayoutDate !== undefined ? planToEdit.monthlyPayoutDate : 1);
+        setIncludeLastPayoutAfterEndDate(planToEdit.includeLastPayoutAfterEndDate || false);
         setStartDate(planToEdit.startDate);
         setEndDate(planToEdit.endDate);
         setEndMethod('date');
@@ -54,6 +56,7 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
         setAmount('');
         setPayoutType('daily');
         setDailySkipWeekends(false);
+        setIncludeLastPayoutAfterEndDate(false);
         const today = new Date();
         setStartDate(today.toISOString().split('T')[0]);
         setEndMethod('duration');
@@ -99,7 +102,8 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
       Number(payoutAmount),
       payoutType === 'daily' ? dailySkipWeekends : false,
       payoutType === 'weekly' ? weeklyPayoutDay : undefined,
-      payoutType === 'monthly' ? monthlyPayoutDate : undefined
+      payoutType === 'monthly' ? monthlyPayoutDate : undefined,
+      payoutType !== 'daily' ? includeLastPayoutAfterEndDate : false
     );
 
     // Merge status from old payouts if editing
@@ -129,6 +133,7 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
       dailySkipWeekends: payoutType === 'daily' ? dailySkipWeekends : false,
       weeklyPayoutDay: payoutType === 'weekly' ? weeklyPayoutDay : undefined,
       monthlyPayoutDate: payoutType === 'monthly' ? monthlyPayoutDate : undefined,
+      includeLastPayoutAfterEndDate: payoutType !== 'daily' ? includeLastPayoutAfterEndDate : false,
       startDate,
       endDate,
       payoutAmount: Number(payoutAmount),
@@ -144,6 +149,7 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
     setAmount('');
     setPayoutType('daily');
     setDailySkipWeekends(false);
+    setIncludeLastPayoutAfterEndDate(false);
     setPayoutAmount('');
     onClose();
   };
@@ -282,6 +288,23 @@ export const NewPlanModal: React.FC<NewPlanModalProps> = ({
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {payoutType !== 'daily' && (
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label className="switch-group">
+              <input
+                type="checkbox"
+                className="switch-checkbox"
+                checked={includeLastPayoutAfterEndDate}
+                onChange={(e) => setIncludeLastPayoutAfterEndDate(e.target.checked)}
+              />
+              <span className="switch-control" />
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Include last payout if it falls past the end date
+              </span>
+            </label>
           </div>
         )}
 
