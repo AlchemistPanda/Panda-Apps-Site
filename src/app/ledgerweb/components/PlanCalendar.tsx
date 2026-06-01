@@ -182,7 +182,7 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
       // because that is already rendered as the expected payout to avoid duplicates.
       const lateCredits = creditedPayouts.filter(p => p.date !== dateKey);
       
-      const inPlanRange = dateKey >= plan.startDate && dateKey <= plan.endDate;
+      const inPlanRange = (dateKey >= plan.startDate && dateKey <= plan.endDate) || !!payoutExpected;
       const isHoliday = plan.holidays?.includes(dateKey) || false;
       const isToday = dateKey === todayStr;
       
