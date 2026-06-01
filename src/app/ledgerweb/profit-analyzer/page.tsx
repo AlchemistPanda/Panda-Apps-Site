@@ -259,6 +259,7 @@ export default function ProfitAnalyzer() {
     let totalDelayDays = 0;
     let nonHolidayPayoutsUpToToday = 0;
     let overdueCount = 0;
+    let pendingCount = 0;
 
     plan.payouts.forEach((p) => {
       if (p.isHoliday) {
@@ -293,6 +294,7 @@ export default function ProfitAnalyzer() {
         overdueCount++;
       } else {
         totalPending += p.amount;
+        pendingCount++;
       }
     });
 
@@ -316,6 +318,8 @@ export default function ProfitAnalyzer() {
       netProfit,
       collectionRate,
       overdueCount,
+      pendingCount,
+      expectedCount: plan.payouts.length - holidayCount,
     };
   };
 
@@ -1374,6 +1378,9 @@ export default function ProfitAnalyzer() {
               <div className="stat-card expected">
                 <span className="stat-label">Expected Profit</span>
                 <span className="stat-value">₹{stats.totalExpected.toLocaleString('en-IN')}</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                  {stats.expectedCount} payouts expected
+                </span>
               </div>
               <div className="stat-card net-profit" style={{
                 borderLeft: '3px solid ' + (stats.netProfit >= 0 ? 'var(--color-success)' : 'var(--color-error)'),
@@ -1392,6 +1399,9 @@ export default function ProfitAnalyzer() {
               <div className="stat-card credited">
                 <span className="stat-label">Total Credited</span>
                 <span className="stat-value">₹{stats.totalCredited.toLocaleString('en-IN')}</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                  {stats.creditedCount} payouts completed
+                </span>
                 {stats.lateCount > 0 && (
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px' }}>
                     ⏱️ {stats.lateCount} late (avg. {stats.avgDelay.toFixed(1)}d delay)
@@ -1413,10 +1423,16 @@ export default function ProfitAnalyzer() {
               <div className="stat-card pending">
                 <span className="stat-label">Pending</span>
                 <span className="stat-value">₹{stats.totalPending.toLocaleString('en-IN')}</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                  {stats.pendingCount} payouts pending
+                </span>
               </div>
               <div className="stat-card overdue">
                 <span className="stat-label">Overdue</span>
                 <span className="stat-value">₹{stats.totalOverdue.toLocaleString('en-IN')}</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                  {stats.overdueCount} payouts overdue
+                </span>
               </div>
             </div>
 
