@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, Loader2, CheckCircle2, Heart, ExternalLink, Sparkles, Copy, X, FileImage, AlertTriangle, Download, QrCode
@@ -67,6 +67,97 @@ function ProgressBar({ step }: { step: number }) {
   );
 }
 
+function UpiQrCode({ amount }: { amount: number }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const qrRef = useRef<any>(null);
+  const initRef = useRef(false);
+
+  const upiUrl = `upi://pay?pa=sindhusudhakaransindhusudhakar-2@oksbi&pn=Sindhu%20Sudhakaran&am=${amount}&cu=INR`;
+
+  // Initialize QR code (client-only)
+  useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      const qr = new QRCodeStyling({
+        width: 300,
+        height: 300,
+        data: upiUrl,
+        dotsOptions: {
+          color: "#0f0a2a",
+          type: "rounded",
+        },
+        backgroundOptions: {
+          color: "#ffffff",
+        },
+        cornersSquareOptions: {
+          color: "#0f0a2a",
+          type: "extra-rounded",
+        },
+        cornersDotOptions: {
+          color: "#0f0a2a",
+          type: "dot",
+        },
+        qrOptions: {
+          errorCorrectionLevel: "Q",
+        },
+      });
+      qrRef.current = qr;
+      if (containerRef.current) {
+        containerRef.current.innerHTML = "";
+        qr.append(containerRef.current);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Update QR code when upiUrl changes
+  useEffect(() => {
+    if (qrRef.current) {
+      qrRef.current.update({
+        data: upiUrl,
+      });
+    }
+  }, [upiUrl]);
+
+  const handleDownload = () => {
+    if (qrRef.current) {
+      qrRef.current.download({
+        name: `sindhu_sudhakaran_upi_qr_${amount}`,
+        extension: "png",
+      });
+    }
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-4 rounded-2xl border border-[var(--a-line)]">
+      <div className="relative w-32 h-32 shrink-0 bg-white rounded-xl p-1.5 overflow-hidden border border-white/20 flex items-center justify-center">
+        <div
+          ref={containerRef}
+          className="w-full h-full flex items-center justify-center [&>canvas]:w-full [&>canvas]:h-full [&>canvas]:object-contain"
+        />
+      </div>
+      <div className="flex-1 text-center sm:text-left space-y-2">
+        <div className="flex items-center justify-center sm:justify-start gap-1 text-[11px] font-bold text-pink-400 uppercase tracking-wider">
+          <QrCode className="h-3.5 w-3.5 animate-pulse" />
+          <span>Scan QR Code to Pay</span>
+        </div>
+        <p className="text-[11px] leading-relaxed" style={{ color: "var(--a-ink-soft)" }}>
+          Pay <strong>₹{amount}</strong> directly to Sindhu Teacher. Scan this QR code or download it to pay using any UPI app (GPay, PhonePe, Paytm, etc.).
+        </p>
+        <button
+          type="button"
+          onClick={handleDownload}
+          className="inline-flex items-center gap-1.5 ai4all-btn ai4all-btn-glass py-1.5 px-3 text-xs cursor-pointer"
+        >
+          <Download className="h-3 w-3" /> Download QR Code
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function RegistrationFormClient({ sessionId }: Props) {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
@@ -106,7 +197,30 @@ export default function RegistrationFormClient({ sessionId }: Props) {
           setSessionError("This session has reached its maximum seat capacity. Please check back for upcoming sessions!");
         }
       })
-      .catch(() => setSessionError("Session not found."))
+      .catch(() => {
+        if (sessionId === "demo") {
+          setSession({
+            id: "demo",
+            title: "AI for Everyone Masterclass",
+            description: "Learn to build real-world AI applications from scratch.",
+            scheduledDate: new Date(Date.now() + 86400000 * 3).toISOString(),
+            durationMinutes: 120,
+            topics: ["Basics of AI", "Prompt Engineering", "Image Generation"],
+            isRegistrationOpen: true,
+            maxParticipants: 100,
+            whatsappLink: "https://chat.whatsapp.com/test",
+            appsToDownload: [],
+            coverImageUrl: "",
+            coverGradient: "from-violet-500 to-purple-600",
+            isPublished: true,
+            status: "open",
+            createdAt: new Date().toISOString(),
+            speaker: "Sindhu Teacher Support Team",
+          });
+        } else {
+          setSessionError("Session not found.");
+        }
+      })
       .finally(() => setSessionLoading(false));
   }, [sessionId]);
 
@@ -545,31 +659,7 @@ export default function RegistrationFormClient({ sessionId }: Props) {
                     </div>
 
                     {/* UPI QR Code Scanner & Download */}
-                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-4 rounded-2xl border border-[var(--a-line)]">
-                      <div className="relative w-32 h-32 shrink-0 bg-white rounded-xl p-1 overflow-hidden border border-white/20">
-                        <img
-                          src="/images/upi_qr_code.png"
-                          alt="UPI QR Code"
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <div className="flex-1 text-center sm:text-left space-y-2">
-                        <div className="flex items-center justify-center sm:justify-start gap-1 text-[11px] font-bold text-pink-400 uppercase tracking-wider">
-                          <QrCode className="h-3.5 w-3.5" />
-                          <span>Scan QR Code to Pay</span>
-                        </div>
-                        <p className="text-[11px]" style={{ color: "var(--a-ink-soft)" }}>
-                          You can download this QR code to scan it directly inside GPay, PhonePe, or Paytm on your phone.
-                        </p>
-                        <a
-                          href="/images/upi_qr_code.png"
-                          download="sindhu_sudhakaran_upi_qr.png"
-                          className="inline-flex items-center gap-1.5 ai4all-btn ai4all-btn-glass py-1.5 px-3 text-xs"
-                        >
-                          <Download className="h-3 w-3" /> Download QR Code
-                        </a>
-                      </div>
-                    </div>
+                    <UpiQrCode amount={form.donationAmount || 50} />
                   </div>
 
                   {/* Upload Screenshot */}
