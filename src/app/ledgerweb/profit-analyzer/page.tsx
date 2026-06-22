@@ -38,7 +38,74 @@ export default function ProfitAnalyzer() {
     setIsLoadingPlans(true);
     try {
       const loadedPlans = await db.getPlans();
-      setPlans(loadedPlans);
+      
+      // Auto-correct any plan where payoutAmount is around 2499 (which should be 2500)
+      let needsSave = false;
+      const correctedPlans = loadedPlans.map((plan) => {
+        let planChanged = false;
+        
+        const shouldCorrect = (val: number | undefined): boolean => {
+          if (val === undefined) return false;
+          return val >= 2498 && val < 2500;
+        };
+
+        let updatedPayoutAmount = plan.payoutAmount;
+        if (shouldCorrect(plan.payoutAmount)) {
+          updatedPayoutAmount = 2500;
+          planChanged = true;
+        }
+
+        const updatedPayouts = plan.payouts.map((p) => {
+          let payoutChanged = false;
+          let newOriginalAmount = p.originalAmount;
+          let newAmount = p.amount;
+          let newReceivedAmount = p.receivedAmount;
+
+          if (shouldCorrect(p.originalAmount)) {
+            newOriginalAmount = 2500;
+            payoutChanged = true;
+          }
+          if (shouldCorrect(p.amount)) {
+            newAmount = 2500;
+            payoutChanged = true;
+          }
+          if (shouldCorrect(p.receivedAmount)) {
+            newReceivedAmount = 2500;
+            payoutChanged = true;
+          }
+
+          if (payoutChanged) {
+            planChanged = true;
+            return {
+              ...p,
+              originalAmount: newOriginalAmount,
+              amount: newAmount,
+              receivedAmount: newReceivedAmount,
+            };
+          }
+          return p;
+        });
+
+        if (planChanged) {
+          needsSave = true;
+          const updatedPlan = {
+            ...plan,
+            payoutAmount: updatedPayoutAmount,
+            payouts: updatedPayouts,
+          };
+          return recalculatePayouts(updatedPlan);
+        }
+        return plan;
+      });
+
+      if (needsSave) {
+        // Save the corrected plans back to the db asynchronously
+        Promise.all(correctedPlans.map(p => db.savePlan(p))).catch(err => {
+          console.error('Failed to auto-correct plans in DB:', err);
+        });
+      }
+
+      setPlans(correctedPlans);
       // Stay on dashboard landing page by default
       setSelectedPlanId('');
       if (db.isConfigured()) {
