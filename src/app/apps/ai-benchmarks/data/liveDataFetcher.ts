@@ -21,6 +21,8 @@ const ARENA_ENDPOINTS = [
 
 /* ── Known model-key → our static ID map ── */
 const ARENA_ID_MAP: Record<string, string> = {
+  "claude-fable-5":           "claude-fable-5",
+  "claude-mythos-5":          "claude-mythos-5",
   "claude-opus-4-8":          "claude-opus-4-8",
   "claude-haiku-4-5":         "claude-haiku-4-5",
   "claude-opus-4-7":          "claude-opus-4-7",

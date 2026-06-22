@@ -28,6 +28,7 @@ export type BenchmarkModel = {
   canRunLocally: boolean;
   tags: ModelTag[];
   params?: string;
+  availabilityNote?: string;
   isAutoDiscovered?: boolean;          // true = found via Arena, not in static list
   gpqa: number | null;
   swe: number | null;
@@ -196,6 +197,62 @@ export const BENCHMARK_COLS = Object.values(BENCHMARK_SOURCES);
 
 export const MODELS: BenchmarkModel[] = [
   // ── Anthropic ───────────────────────────────────────────────────────────
+  {
+    id: "claude-fable-5",
+    name: "Claude Fable 5",
+    provider: "Anthropic",
+    providerColor: "text-orange-600 dark:text-orange-400",
+    releasedAt: "2026-06",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote: "Access suspended June 12, 2026; included for historical comparison.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: null,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: 20.0,
+    throughput: null,
+    ttft: null,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
+  {
+    id: "claude-mythos-5",
+    name: "Claude Mythos 5",
+    provider: "Anthropic",
+    providerColor: "text-orange-600 dark:text-orange-400",
+    releasedAt: "2026-06",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote: "Limited Project Glasswing model; access suspended June 12, 2026.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: null,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: 20.0,
+    throughput: null,
+    ttft: null,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
   {
     id: "claude-opus-4-8",
     name: "Claude Opus 4.8",

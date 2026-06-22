@@ -1211,6 +1211,12 @@ export default function AIBenchmarksClient({ models }: Props) {
                                     Paid
                                   </span>
                                 )}
+                                {m.availabilityNote && (
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold rounded-full px-1.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 w-fit">
+                                    <Lock className="h-2.5 w-2.5" />
+                                    Restricted
+                                  </span>
+                                )}
                               </div>
                             </td>
                           </tr>,
@@ -1265,7 +1271,7 @@ export default function AIBenchmarksClient({ models }: Props) {
                                       </span>
                                       <span>
                                         <span className="text-foreground font-medium">Access:</span>{" "}
-                                        {m.isFree ? "Free tier available" : "Paid API only"}
+                                        {m.availabilityNote ?? (m.isFree ? "Free tier available" : "Paid API only")}
                                       </span>
                                       {m.canRunLocally && (
                                         <span className="inline-flex items-center gap-0.5">
