@@ -21,8 +21,6 @@ const ARENA_ENDPOINTS = [
 
 /* ── Known model-key → our static ID map ── */
 const ARENA_ID_MAP: Record<string, string> = {
-  "claude-fable-5":           "claude-fable-5",
-  "claude-mythos-5":          "claude-mythos-5",
   "claude-opus-4-8":          "claude-opus-4-8",
   "claude-haiku-4-5":         "claude-haiku-4-5",
   "claude-opus-4-7":          "claude-opus-4-7",
@@ -287,7 +285,6 @@ async function fetchArenaLeaderboard(): Promise<ArenaResult | null> {
       const res = await fetch(url, {
         signal: AbortSignal.timeout(8000),
         headers: { Accept: "application/json" },
-        // @ts-expect-error Next.js ISR tag
         next: { revalidate: 86400 },
       });
       if (!res.ok) continue;
