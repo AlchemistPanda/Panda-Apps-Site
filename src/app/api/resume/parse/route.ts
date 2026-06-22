@@ -16,16 +16,20 @@ export async function POST(req: Request) {
 
     // List of models to try in order of preference (2026 latest models first)
     const modelsToTry = [
-      "gemini-3-flash",
-      "gemini-3-pro",
+      "gemini-3.5-flash",
       "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-1.5-flash",
-      "gemini-1.5-flash-latest"
     ];
 
     let lastError: Error | null = null;
     let responseText = "";
+
+    // Determine correct MIME type for the uploaded file
+    const mimeTypeMap: Record<string, string> = {
+      "application/pdf": "application/pdf",
+      "application/msword": "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    };
+    const resolvedMimeType = mimeTypeMap[fileType] || "application/pdf";
 
     for (const modelName of modelsToTry) {
       try {
@@ -42,7 +46,7 @@ export async function POST(req: Request) {
           RULES:
           1. If a field is not found, use an empty string "" or an empty array [].
           2. Dates should be in YYYY-MM or YYYY format if possible.
-          3. For multi-line descriptions, use \n for new lines.
+          3. For multi-line descriptions, use \\n for new lines.
           4. Ensure all IDs are unique strings (e.g. "exp1", "edu1").
           5. "current" field in experience/volunteer should be true if the end date is "Present" or empty.
           
@@ -92,7 +96,7 @@ export async function POST(req: Request) {
         const content = [
           {
             inlineData: {
-              mimeType: fileType === "application/pdf" ? "application/pdf" : "application/pdf", // Force PDF if not specified correctly
+              mimeType: resolvedMimeType,
               data: fileData,     
             },
           },
