@@ -21,6 +21,10 @@ const ARENA_ENDPOINTS = [
 
 /* ── Known model-key → our static ID map ── */
 const ARENA_ID_MAP: Record<string, string> = {
+  "claude-fable-5":           "claude-fable-5",
+  "claude-mythos-5":          "claude-mythos-5",
+  "claude-opus-4-8":          "claude-opus-4-8",
+  "claude-haiku-4-5":         "claude-haiku-4-5",
   "claude-opus-4-7":          "claude-opus-4-7",
   "claude-sonnet-4-7":        "claude-sonnet-4-7",
   "claude-opus-4-6":          "claude-opus-4-6",
@@ -34,11 +38,13 @@ const ARENA_ID_MAP: Record<string, string> = {
   "gemini-3-pro":             "gemini-3-pro",
   "gemini-3-flash":           "gemini-3-flash",
   "gpt-5.5":                  "gpt-5-5",
+  "gpt-5.5-pro":              "gpt-5-5-pro",
   "gpt-5.5-instant":          "gpt-5-5-instant",
   "gpt-5.2":                  "gpt-5-2",
   "gpt-5.1":                  "gpt-5-1",
   "o3":                       "o3",
   "grok-4.3":                 "grok-4-3",
+  "grok-build-0.1":           "grok-build-0-1",
   "grok-4.1":                 "grok-4-1",
   "glm-5":                    "glm-5",
   "qwen-3.7-max":             "qwen-3-7-max",
@@ -50,6 +56,7 @@ const ARENA_ID_MAP: Record<string, string> = {
   "deepseek-v3.2":            "deepseek-v3-2",
   "deepseek-r1-0528":         "deepseek-r1-0528",
   "minimax-m2.5":             "minimax-m2-5",
+  "mistral-medium-3.5":       "mistral-medium-3-5",
   "mistral-large-3":          "mistral-large-3",
   "llama-4-maverick":         "llama-4-maverick",
 };
@@ -280,7 +287,7 @@ async function fetchArenaLeaderboard(): Promise<ArenaResult | null> {
       const res = await fetch(url, {
         signal: AbortSignal.timeout(8000),
         headers: { Accept: "application/json" },
-        // @ts-ignore Next.js ISR tag
+        // @ts-expect-error Next.js ISR tag
         next: { revalidate: 86400 },
       });
       if (!res.ok) continue;
