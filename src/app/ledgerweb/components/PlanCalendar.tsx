@@ -31,6 +31,12 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
   const [actualCreditDate, setActualCreditDate] = useState<string>('');
   const [actualReceivedAmount, setActualReceivedAmount] = useState<number | ''>('');
 
+  const [filter, setFilter] = useState<'all' | 'credited' | 'pending' | 'overdue' | 'holiday'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Local state to track editing values before blur/save
+  const [editStates, setEditStates] = useState<Record<string, { creditedDate?: string; receivedAmount?: string }>>({});
+
   // Sync calendar view month when the plan changes
   useEffect(() => {
     setViewDate(new Date(plan.startDate));
@@ -169,6 +175,182 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
 
     onUpdatePlan(updatedPlan);
   };
+
+  const handleUpdatePayout = (
+    payoutDate: string,
+    fields: {
+      status?: 'credited' | 'uncredited' | 'holiday';
+      creditedDate?: string;
+      receivedAmount?: number;
+    }
+  ) => {
+    let newHolidays = plan.holidays ? [...plan.holidays] : [];
+    
+    if (fields.status === 'holiday') {
+      if (!newHolidays.includes(payoutDate)) {
+        newHolidays.push(payoutDate);
+      }
+    } else if (fields.status === 'credited' || fields.status === 'uncredited') {
+      newHolidays = newHolidays.filter(h => h !== payoutDate);
+    }
+
+    const updatedPayouts = plan.payouts.map((p) => {
+      if (p.date === payoutDate) {
+        if (fields.status === 'holiday') {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { creditedDate, receivedAmount, ...rest } = p;
+          return {
+            ...rest,
+            status: 'uncredited' as const,
+            isHoliday: true,
+            amount: plan.payoutType === 'daily' ? 0 : p.amount
+          };
+        } else if (fields.status === 'credited') {
+          const credDate = fields.creditedDate !== undefined ? fields.creditedDate : (p.creditedDate || p.date);
+          const recvAmt = fields.receivedAmount !== undefined ? fields.receivedAmount : (p.receivedAmount !== undefined ? p.receivedAmount : p.amount);
+          return {
+            ...p,
+            status: 'credited' as const,
+            isHoliday: false,
+            creditedDate: credDate,
+            receivedAmount: recvAmt
+          };
+        } else if (fields.status === 'uncredited') {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { creditedDate, receivedAmount, ...rest } = p;
+          return {
+            ...rest,
+            status: 'uncredited' as const,
+            isHoliday: false
+          };
+        } else {
+          const updatedPayout = { ...p };
+          if (fields.creditedDate !== undefined) {
+            updatedPayout.creditedDate = fields.creditedDate;
+          }
+          if (fields.receivedAmount !== undefined) {
+            updatedPayout.receivedAmount = fields.receivedAmount;
+          }
+          return updatedPayout;
+        }
+      }
+      return p;
+    });
+
+    const updatedPlan = {
+      ...plan,
+      holidays: newHolidays,
+      payouts: updatedPayouts
+    };
+
+    onUpdatePlan(recalculatePayouts(updatedPlan));
+  };
+
+  const saveRow = (payoutDate: string) => {
+    const state = editStates[payoutDate];
+    if (!state) return;
+
+    const updates: any = {};
+    if (state.creditedDate !== undefined) {
+      updates.creditedDate = state.creditedDate;
+    }
+    if (state.receivedAmount !== undefined) {
+      const val = state.receivedAmount === '' ? undefined : Number(state.receivedAmount);
+      updates.receivedAmount = val;
+    }
+
+    handleUpdatePayout(payoutDate, updates);
+
+    setEditStates((prev) => {
+      const copy = { ...prev };
+      delete copy[payoutDate];
+      return copy;
+    });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, payoutDate: string) => {
+    if (e.key === 'Enter') {
+      saveRow(payoutDate);
+      (e.target as HTMLElement).blur();
+    }
+  };
+
+  const formatWeekdayDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-IN', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const getDaysLateBadge = (payout: Payout) => {
+    const isHoliday = plan.holidays?.includes(payout.date) || false;
+    if (isHoliday) {
+      return <span style={{ color: 'var(--text-muted)' }}>-</span>;
+    }
+
+    if (payout.status === 'credited') {
+      const scheduled = new Date(payout.date);
+      const credited = new Date(payout.creditedDate || payout.date);
+      
+      if (isNaN(scheduled.getTime()) || isNaN(credited.getTime())) {
+        return <span style={{ color: 'var(--text-muted)' }}>-</span>;
+      }
+      
+      const diffMs = credited.getTime() - scheduled.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 0) {
+        return <span className="late-days-badge late">⏱️ {diffDays} days late</span>;
+      } else if (diffDays < 0) {
+        return <span className="late-days-badge early">🚀 {Math.abs(diffDays)} days early</span>;
+      } else {
+        return <span className="late-days-badge ontime">✅ On Time</span>;
+      }
+    } else {
+      if (payout.date < todayStr) {
+        const scheduled = new Date(payout.date);
+        const today = new Date(todayStr);
+        if (isNaN(scheduled.getTime()) || isNaN(today.getTime())) {
+          return <span style={{ color: 'var(--text-muted)' }}>-</span>;
+        }
+        const diffMs = today.getTime() - scheduled.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        return <span className="late-days-badge overdue">⚠️ {diffDays} days overdue</span>;
+      } else {
+        return <span style={{ color: 'var(--text-secondary)' }}>Not due yet</span>;
+      }
+    }
+  };
+
+  const filteredPayouts = plan.payouts.filter((p) => {
+    const isHoliday = plan.holidays?.includes(p.date) || false;
+    const isOverdue = !isHoliday && p.status === 'uncredited' && p.date < todayStr;
+    const isPending = !isHoliday && p.status === 'uncredited' && p.date >= todayStr;
+
+    if (filter === 'credited' && p.status !== 'credited') return false;
+    if (filter === 'pending' && !isPending) return false;
+    if (filter === 'overdue' && !isOverdue) return false;
+    if (filter === 'holiday' && !isHoliday) return false;
+
+    if (searchTerm) {
+      const formattedDate = new Date(p.date).toLocaleDateString('en-IN', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      }).toLowerCase();
+
+      const matchesDate = p.date.includes(searchTerm) || formattedDate.includes(searchTerm.toLowerCase());
+      const matchesAmount = String(p.amount).includes(searchTerm) || String(p.originalAmount).includes(searchTerm);
+      return matchesDate || matchesAmount;
+    }
+
+    return true;
+  });
 
   // Generate day cells
   const renderCells = () => {
@@ -585,6 +767,203 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
           flex-direction: column;
           gap: 12px;
         }
+
+        .payouts-table-container {
+          margin-top: 32px;
+          border-top: 1px solid var(--border-color);
+          padding-top: 24px;
+          width: 100%;
+        }
+
+        .table-header-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .table-header-row h4 {
+          font-size: 1.2rem;
+          margin: 0;
+          color: var(--text-primary);
+        }
+
+        .table-controls {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .table-filters {
+          display: flex;
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          padding: 2px;
+        }
+
+        .filter-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-secondary);
+          padding: 6px 12px;
+          font-size: 0.8rem;
+          font-family: var(--font-display);
+          font-weight: 500;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+          color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+          background: var(--accent-purple);
+          color: var(--text-primary);
+        }
+
+        .search-input-wrapper {
+          position: relative;
+        }
+
+        .table-search {
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border-color);
+          color: var(--text-primary);
+          border-radius: 6px;
+          padding: 6px 12px;
+          font-size: 0.8rem;
+          outline: none;
+          min-width: 180px;
+        }
+
+        .table-search:focus {
+          border-color: var(--border-focus);
+        }
+
+        .payouts-table-wrapper {
+          overflow-x: auto;
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-sm);
+          background: rgba(18, 22, 32, 0.4);
+          max-height: 400px;
+          overflow-y: auto;
+        }
+
+        .payouts-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.85rem;
+          text-align: left;
+        }
+
+        .payouts-table th {
+          background: rgba(0, 0, 0, 0.3);
+          padding: 12px 16px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          border-bottom: 1px solid var(--border-color);
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+
+        .payouts-table td {
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--border-color);
+          color: var(--text-primary);
+          vertical-align: middle;
+        }
+
+        .payouts-table tr:hover {
+          background: rgba(255, 255, 255, 0.01);
+        }
+
+        .payouts-table tr.row-holiday {
+          background: rgba(100, 116, 139, 0.03);
+        }
+
+        .payouts-table tr.row-holiday td {
+          color: var(--text-muted);
+        }
+
+        .payout-status-select {
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid var(--border-color);
+          color: var(--text-primary);
+          padding: 4px 8px;
+          font-size: 0.8rem;
+          border-radius: 4px;
+          outline: none;
+          cursor: pointer;
+        }
+
+        .payout-status-select:focus {
+          border-color: var(--border-focus);
+        }
+
+        .payout-date-input {
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid var(--border-color);
+          color: var(--text-primary);
+          padding: 4px 8px;
+          font-size: 0.8rem;
+          border-radius: 4px;
+          width: 125px;
+          outline: none;
+        }
+        
+        .payout-date-input:focus {
+          border-color: var(--border-focus);
+        }
+
+        .payout-amount-input {
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid var(--border-color);
+          color: var(--text-primary);
+          padding: 4px 8px;
+          font-size: 0.8rem;
+          border-radius: 4px;
+          width: 90px;
+          outline: none;
+        }
+        
+        .payout-amount-input:focus {
+          border-color: var(--border-focus);
+        }
+
+        .late-days-badge {
+          display: inline-block;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
+        .late-days-badge.late {
+          background: rgba(255, 59, 48, 0.1);
+          color: var(--color-error);
+        }
+
+        .late-days-badge.overdue {
+          background: rgba(255, 159, 10, 0.1);
+          color: var(--color-warning);
+        }
+
+        .late-days-badge.ontime {
+          background: rgba(0, 230, 118, 0.1);
+          color: var(--color-success);
+        }
+
+        .late-days-badge.early {
+          background: rgba(0, 180, 216, 0.1);
+          color: #00b4d8;
+        }
       `}</style>
 
       <div className="calendar-header">
@@ -638,6 +1017,176 @@ export const PlanCalendar: React.FC<PlanCalendarProps> = ({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <span style={{ color: '#00b4d8' }}>💳</span> Late Credit
+        </div>
+      </div>
+
+      <div className="payouts-table-container">
+        <div className="table-header-row">
+          <h4>Payouts Schedule Ledger</h4>
+          
+          <div className="table-controls">
+            <div className="table-filters">
+              {(['all', 'credited', 'pending', 'overdue', 'holiday'] as const).map((f) => {
+                const count = plan.payouts.filter((p) => {
+                  const isHoliday = plan.holidays?.includes(p.date) || false;
+                  const isOverdue = !isHoliday && p.status === 'uncredited' && p.date < todayStr;
+                  const isPending = !isHoliday && p.status === 'uncredited' && p.date >= todayStr;
+
+                  if (f === 'credited') return p.status === 'credited';
+                  if (f === 'pending') return isPending;
+                  if (f === 'overdue') return isOverdue;
+                  if (f === 'holiday') return isHoliday;
+                  return true;
+                }).length;
+
+                return (
+                  <button
+                    key={f}
+                    type="button"
+                    className={`filter-btn ${filter === f ? 'active' : ''}`}
+                    onClick={() => setFilter(f)}
+                  >
+                    <span style={{ textTransform: 'capitalize' }}>{f}</span> ({count})
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="search-input-wrapper">
+              <input
+                type="text"
+                className="table-search"
+                placeholder="Search date or amount..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="payouts-table-wrapper">
+          <table className="payouts-table">
+            <thead>
+              <tr>
+                <th>Scheduled Date</th>
+                <th>Status</th>
+                <th>Expected Amount</th>
+                <th>Actual Paid Date</th>
+                <th>Received Amount</th>
+                <th>Days Late</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPayouts.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                    No payouts match the filter.
+                  </td>
+                </tr>
+              ) : (
+                filteredPayouts.map((p) => {
+                  const isHoliday = plan.holidays?.includes(p.date) || false;
+                  const rowEditState = editStates[p.date] || {};
+                  
+                  const creditDateVal = rowEditState.creditedDate !== undefined 
+                    ? rowEditState.creditedDate 
+                    : (p.creditedDate || p.date);
+                    
+                  const receivedAmtVal = rowEditState.receivedAmount !== undefined
+                    ? rowEditState.receivedAmount
+                    : (p.receivedAmount !== undefined ? String(p.receivedAmount) : String(p.amount));
+
+                  const isPartial = p.status === 'credited' && p.receivedAmount !== undefined && p.receivedAmount !== p.amount;
+
+                  return (
+                    <tr key={p.id} className={isHoliday ? 'row-holiday' : ''}>
+                      <td style={{ fontWeight: 500 }}>
+                        {formatWeekdayDate(p.date)}
+                      </td>
+                      <td>
+                        <select
+                          className="payout-status-select"
+                          value={isHoliday ? 'holiday' : p.status}
+                          onChange={(e) => {
+                            const newStatus = e.target.value as 'credited' | 'uncredited' | 'holiday';
+                            handleUpdatePayout(p.date, { status: newStatus });
+                          }}
+                        >
+                          <option value="uncredited">⏳ Pending / Uncredited</option>
+                          <option value="credited">✅ Credited</option>
+                          <option value="holiday">🏖️ Holiday</option>
+                        </select>
+                      </td>
+                      <td style={{ fontWeight: 600 }}>
+                        ₹{p.amount.toLocaleString('en-IN')}
+                        {p.amount !== p.originalAmount && (
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>
+                            Orig: ₹{p.originalAmount.toLocaleString('en-IN')}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        {p.status === 'credited' && !isHoliday ? (
+                          <input
+                            type="date"
+                            className="payout-date-input"
+                            value={creditDateVal}
+                            onChange={(e) => {
+                              setEditStates((prev) => ({
+                                ...prev,
+                                [p.date]: {
+                                  ...prev[p.date],
+                                  creditedDate: e.target.value,
+                                },
+                              }));
+                            }}
+                            onBlur={() => saveRow(p.date)}
+                            onKeyDown={(e) => handleKeyDown(e, p.date)}
+                          />
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)' }}>-</span>
+                        )}
+                      </td>
+                      <td>
+                        {p.status === 'credited' && !isHoliday ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>₹</span>
+                            <input
+                              type="number"
+                              className="payout-amount-input"
+                              value={receivedAmtVal}
+                              onChange={(e) => {
+                                setEditStates((prev) => ({
+                                  ...prev,
+                                  [p.date]: {
+                                    ...prev[p.date],
+                                    receivedAmount: e.target.value,
+                                  },
+                                }));
+                              }}
+                              onBlur={() => saveRow(p.date)}
+                              onKeyDown={(e) => handleKeyDown(e, p.date)}
+                              placeholder={String(p.amount)}
+                            />
+                            {isPartial && (
+                              <span className="badge" style={{ fontSize: '0.65rem', padding: '2px 6px', background: 'rgba(255, 159, 10, 0.1)', color: 'var(--color-warning)', border: '1px solid rgba(255, 159, 10, 0.2)', marginLeft: '4px', textTransform: 'capitalize' }}>
+                                Partial
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)' }}>-</span>
+                        )}
+                      </td>
+                      <td>
+                        {getDaysLateBadge(p)}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
