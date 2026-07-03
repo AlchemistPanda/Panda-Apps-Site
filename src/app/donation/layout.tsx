@@ -43,12 +43,12 @@ export default function DonationLayout({
               </div>
             </Link>
 
-            {/* Link back to Main Hub */}
+            {/* Link back to Donation Landing Page */}
             <Link 
-              href="/"
+              href="/donation"
               className="text-xs font-semibold text-[#7f8c8d] hover:text-[#e8734a] transition-colors bg-[#faf6f0] border border-[#f0e6df] px-3.5 py-1.5 rounded-full"
             >
-              Main Site
+              Donations Home
             </Link>
           </div>
         </div>
