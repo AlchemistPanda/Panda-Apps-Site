@@ -60,7 +60,7 @@ export default function DonationLayout({
       </main>
 
       {/* Simple standalone footer for Donation Drive */}
-      <footer className="border-t border-[#f0e6df] bg-[#faf6f0]/50 py-8 px-4 text-center mt-auto relative z-10">
+      <footer className="border-t border-[#f0e6df] bg-[#faf6f0]/50 py-8 px-4 text-center mt-auto relative z-0">
         <p className="text-xs text-[#7f8c8d]">
           © {new Date().getFullYear()} Panda Apps. All rights reserved.
         </p>
