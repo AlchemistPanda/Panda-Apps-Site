@@ -53,14 +53,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid payload: names must be an array" }, { status: 400 });
     }
 
-    // Clean and de-duplicate names
-    const cleanedNames = Array.from(
-      new Set(
-        names
-          .map((n) => typeof n === "string" ? n.trim() : "")
-          .filter((n) => n.length > 0)
-      )
-    ).sort();
+    // Clean, standardise casing, and de-duplicate names case-insensitively
+    const seen = new Set<string>();
+    const cleanedNames: string[] = [];
+    for (const name of names) {
+      if (typeof name !== "string") continue;
+      const trimmed = name.trim();
+      if (!trimmed) continue;
+      
+      const lower = trimmed.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        // Format: "aarav sharma" -> "Aarav Sharma"
+        const formatted = trimmed
+          .split(/\s+/)
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(" ");
+        cleanedNames.push(formatted);
+      }
+    }
+    cleanedNames.sort();
 
     await redisCmd(["SET", "donation:names", JSON.stringify(cleanedNames)]);
 
