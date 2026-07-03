@@ -1,0 +1,261 @@
+/* Custom CSS styles for Donation Drive - Pleasant Clean Light Palette */
+
+:root {
+  --don-bg: #fcf9f6; /* Soft warm light cream background */
+  --don-foreground: #2d3436; /* Soft dark slate text */
+  --don-card-bg: #ffffff; /* White cards */
+  --don-card-hover: #faf6f0;
+  --don-border: #f0e6df; /* Soft warm border */
+  --don-primary: #e8734a; /* Warm coral primary accent */
+  --don-primary-hover: #d55f37;
+  --don-primary-light: #fbebe4;
+  --don-secondary: #5e8075; /* Sage green for success/delivered status */
+  --don-secondary-hover: #4e6b61;
+  --don-secondary-light: #edf3f1;
+  --don-warning: #d97706;
+  --don-warning-light: #fef3c7;
+  --don-muted: #7f8c8d; /* Muted grey text */
+  --don-shadow: 0 4px 20px -2px rgba(232, 115, 74, 0.05), 0 2px 8px -1px rgba(0, 0, 0, 0.02);
+  --don-shadow-lg: 0 10px 30px -4px rgba(232, 115, 74, 0.08), 0 4px 16px -2px rgba(0, 0, 0, 0.03);
+}
+
+.donation-theme {
+  background-color: var(--don-bg) !important;
+  color: var(--don-foreground) !important;
+  min-height: 100vh;
+  font-family: var(--font-nunito), system-ui, -apple-system, sans-serif;
+}
+
+/* Ensure background grid overlay matches the theme */
+.donation-theme .grid-pattern {
+  display: none !important; /* Hide default dark grid */
+}
+
+.donation-theme .gradient-bg {
+  display: none !important; /* Hide default dark gradient */
+}
+
+/* Custom warm grid overlay */
+.don-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(232, 115, 74, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 115, 74, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at 50% 30%, black 60%, transparent 100%);
+}
+
+/* Cards & Layout container */
+.don-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+.don-card {
+  background: var(--don-card-bg);
+  border: 1px solid var(--don-border);
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: var(--don-shadow);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.don-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--don-shadow-lg);
+  border-color: rgba(232, 115, 74, 0.2);
+}
+
+/* Buttons */
+.don-btn-primary {
+  background: var(--don-primary);
+  color: #ffffff;
+  border-radius: 9999px;
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.don-btn-primary:hover {
+  background: var(--don-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(232, 115, 74, 0.2);
+}
+
+.don-btn-secondary {
+  background: var(--don-primary-light);
+  color: var(--don-primary);
+  border-radius: 9999px;
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(232, 115, 74, 0.1);
+  cursor: pointer;
+}
+
+.don-btn-secondary:hover {
+  background: #fbe0d5;
+  color: var(--don-primary-hover);
+}
+
+.don-btn-sage {
+  background: var(--don-secondary-light);
+  color: var(--don-secondary);
+  border-radius: 9999px;
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(94, 128, 117, 0.1);
+  cursor: pointer;
+}
+
+.don-btn-sage:hover {
+  background: #e1ede9;
+}
+
+.don-btn-outline {
+  background: transparent;
+  color: var(--don-foreground);
+  border-radius: 9999px;
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--don-border);
+  cursor: pointer;
+}
+
+.don-btn-outline:hover {
+  background: var(--don-card-hover);
+  border-color: var(--don-muted);
+}
+
+/* Badges */
+.don-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.don-badge-primary {
+  background: var(--don-primary-light);
+  color: var(--don-primary);
+}
+
+.don-badge-sage {
+  background: var(--don-secondary-light);
+  color: var(--don-secondary);
+}
+
+.don-badge-warning {
+  background: var(--don-warning-light);
+  color: var(--don-warning);
+}
+
+/* Form Inputs */
+.don-input {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border-radius: 16px;
+  border: 1.5px solid var(--don-border);
+  background: #ffffff;
+  color: var(--don-foreground);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.don-input:focus {
+  border-color: var(--don-primary);
+  box-shadow: 0 0 0 4px rgba(232, 115, 74, 0.1);
+}
+
+.don-select {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border-radius: 16px;
+  border: 1.5px solid var(--don-border);
+  background: #ffffff;
+  color: var(--don-foreground);
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+/* Progress bar container */
+.don-progress-wrapper {
+  background: #f0e6df;
+  border-radius: 9999px;
+  overflow: hidden;
+  height: 12px;
+  position: relative;
+}
+
+.don-progress-bar {
+  background: linear-gradient(90deg, var(--don-primary), #ffa384);
+  border-radius: 9999px;
+  height: 100%;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Stepper Input */
+.don-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--don-border);
+  border-radius: 9999px;
+  padding: 0.25rem;
+  background: #ffffff;
+}
+
+.don-stepper-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--don-foreground);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.don-stepper-btn:hover {
+  background: var(--don-primary-light);
+  color: var(--don-primary);
+}
+
+.don-stepper-value {
+  width: 40px;
+  text-align: center;
+  font-weight: 600;
+}
