@@ -49,6 +49,7 @@ export default function MyPledgePage() {
       return;
     }
 
+    let active = true;
     async function loadPledge() {
       setFetchingPledge(true);
       setError('');
@@ -56,19 +57,28 @@ export default function MyPledgePage() {
         const res = await fetch(`/api/donation/pledges?donorName=${encodeURIComponent(selectedName)}`);
         if (!res.ok) throw new Error("Failed to load pledge");
         const data = await res.json();
-        if (data.length > 0) {
-          setPledge(data[0]);
-        } else {
-          setPledge(null);
+        if (active) {
+          if (data.length > 0) {
+            setPledge(data[0]);
+          } else {
+            setPledge(null);
+          }
         }
       } catch (err: any) {
-        setError(err.message || "Failed to fetch your pledge details.");
+        if (active) {
+          setError(err.message || "Failed to fetch your pledge details.");
+        }
       } finally {
-        setFetchingPledge(false);
+        if (active) {
+          setFetchingPledge(false);
+        }
       }
     }
 
     loadPledge();
+    return () => {
+      active = false;
+    };
   }, [selectedName]);
 
   // Compute enriched pledge with links from catalog

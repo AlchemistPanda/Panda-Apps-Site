@@ -56,6 +56,7 @@ export default function ExportButtons({ pledges }: ExportButtonsProps) {
   };
 
   const printPDF = () => {
+    if (pledges.length === 0) return;
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 

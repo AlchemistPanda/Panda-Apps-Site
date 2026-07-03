@@ -65,26 +65,34 @@ export default function PledgeConfirmPage() {
       return;
     }
 
+    let active = true;
     async function checkPledge() {
       setCheckingExisting(true);
       try {
         const res = await fetch(`/api/donation/pledges?donorName=${encodeURIComponent(selectedName)}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.length > 0) {
-            setExistingPledge(data[0]); // Pledge for this user
-          } else {
-            setExistingPledge(null);
+          if (active) {
+            if (data.length > 0) {
+              setExistingPledge(data[0]); // Pledge for this user
+            } else {
+              setExistingPledge(null);
+            }
           }
         }
       } catch (err) {
         console.error("Error checking existing pledge:", err);
       } finally {
-        setCheckingExisting(false);
+        if (active) {
+          setCheckingExisting(false);
+        }
       }
     }
 
     checkPledge();
+    return () => {
+      active = false;
+    };
   }, [selectedName]);
 
   const calculateTotalPacks = () => basket.reduce((sum, item) => sum + item.quantity, 0);
