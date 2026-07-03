@@ -2,24 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Gift, Loader2, AlertTriangle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, Gift, Loader2, AlertTriangle, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
 import NameSelector from '../components/NameSelector';
+import { DonationItem } from '../lib/types';
 
 interface BasketItem {
   itemId: string;
   itemName: string;
   quantity: number;
-  selectedLink: {
-    siteName: string;
-    url: string;
-    price?: number;
-  };
 }
 
 export default function PledgeConfirmPage() {
   const router = useRouter();
   const [basket, setBasket] = useState<BasketItem[]>([]);
   const [names, setNames] = useState<string[]>([]);
+  const [catalogItems, setCatalogItems] = useState<DonationItem[]>([]);
   const [selectedName, setSelectedName] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -27,7 +24,7 @@ export default function PledgeConfirmPage() {
   const [existingPledge, setExistingPledge] = useState<any>(null);
   const [error, setError] = useState('');
 
-  // 1. Load basket from sessionStorage
+  // 1. Load basket from sessionStorage and fetch databases
   useEffect(() => {
     const rawBasket = sessionStorage.getItem('donation_basket');
     if (!rawBasket) {
@@ -36,20 +33,29 @@ export default function PledgeConfirmPage() {
     }
     setBasket(JSON.parse(rawBasket));
 
-    // Fetch name list
-    async function fetchNames() {
+    async function initData() {
       try {
-        const res = await fetch('/api/donation/names');
-        if (!res.ok) throw new Error("Failed to load donor names list");
-        const data = await res.json();
-        setNames(data);
+        const [namesRes, itemsRes] = await Promise.all([
+          fetch('/api/donation/names'),
+          fetch('/api/donation/items')
+        ]);
+        
+        if (!namesRes.ok || !itemsRes.ok) {
+          throw new Error("Failed to load school registers and catalog");
+        }
+        
+        const namesData = await namesRes.json();
+        const itemsData = await itemsRes.json();
+        
+        setNames(namesData);
+        setCatalogItems(itemsData);
       } catch (err: any) {
-        setError(err.message || "Failed to load donor list.");
+        setError(err.message || "Failed to load donor database.");
       } finally {
         setLoading(false);
       }
     }
-    fetchNames();
+    initData();
   }, [router]);
 
   // 2. Check if a pledge already exists when name changes
@@ -82,13 +88,6 @@ export default function PledgeConfirmPage() {
   }, [selectedName]);
 
   const calculateTotalQuantity = () => basket.reduce((sum, item) => sum + item.quantity, 0);
-
-  const calculateTotalPrice = () => {
-    return basket.reduce((sum, item) => {
-      const price = item.selectedLink.price || 0;
-      return sum + (price * item.quantity);
-    }, 0);
-  };
 
   const handleConfirmPledge = async () => {
     if (!selectedName) {
@@ -134,8 +133,6 @@ export default function PledgeConfirmPage() {
       </div>
     );
   }
-
-  const hasPrices = basket.some(item => item.selectedLink.price && item.selectedLink.price > 0);
 
   return (
     <div className="don-container max-w-2xl mt-6">
@@ -207,43 +204,50 @@ export default function PledgeConfirmPage() {
               <table className="w-full text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-[#faf6f0] border-b border-[#f0e6df] text-[10px] sm:text-xs text-[#7f8c8d] font-bold">
-                    <th className="px-2 py-3 sm:px-4 text-left">Item Description</th>
-                    <th className="px-2 py-3 sm:px-4 text-center">Store Option</th>
-                    <th className="px-2 py-3 sm:px-4 text-center">Qty</th>
-                    {hasPrices && <th className="px-2 py-3 sm:px-4 text-right">Total</th>}
+                    <th className="px-3 py-3 text-left">Item Description</th>
+                    <th className="px-3 py-3 text-center">Store Links</th>
+                    <th className="px-3 py-3 text-center">Qty</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f0e6df] text-[#2d3436]">
-                  {basket.map((item) => (
-                    <tr key={item.itemId}>
-                      <td className="px-2 py-3 sm:px-4 sm:py-3.5 font-medium">{item.itemName}</td>
-                      <td className="px-2 py-3 sm:px-4 sm:py-3.5 text-center">
-                        <span className="don-badge don-badge-primary text-[9px] sm:text-[10px]">
-                          {item.selectedLink.siteName}
-                        </span>
-                      </td>
-                      <td className="px-2 py-3 sm:px-4 sm:py-3.5 text-center font-bold">{item.quantity}</td>
-                      {hasPrices && (
-                        <td className="px-2 py-3 sm:px-4 sm:py-3.5 text-right font-medium">
-                          {item.selectedLink.price 
-                            ? `₹${item.selectedLink.price * item.quantity}` 
-                            : '—'
-                          }
+                  {basket.map((item) => {
+                    // Look up corresponding item in the catalog to get links
+                    const catItem = catalogItems.find((c) => c.id === item.itemId);
+                    const itemLinks = catItem?.links || [];
+
+                    return (
+                      <tr key={item.itemId}>
+                        <td className="px-3 py-3 font-semibold">{item.itemName}</td>
+                        <td className="px-3 py-3 text-center">
+                          <div className="flex flex-wrap items-center justify-center gap-1.5">
+                            {itemLinks.length > 0 ? (
+                              itemLinks.map((link) => (
+                                <a
+                                  key={link.siteName}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-0.5 bg-white border border-[#f0e6df] px-2 py-1 rounded-lg text-[10px] text-[#2d3436] font-bold hover:border-[#e8734a]/30 hover:bg-[#faf6f0] transition-colors"
+                                >
+                                  <ShoppingBag className="w-3 h-3 text-[#e8734a]" />
+                                  <span>{link.siteName}</span>
+                                </a>
+                              ))
+                            ) : (
+                              <span className="text-[#7f8c8d] text-[10px]">No links</span>
+                            )}
+                          </div>
                         </td>
-                      )}
-                    </tr>
-                  ))}
+                        <td className="px-3 py-3 text-center font-bold">{item.quantity}</td>
+                      </tr>
+                    );
+                  })}
                   
                   {/* Summary Rows */}
                   <tr className="bg-[#faf6f0]/50 font-bold border-t border-[#f0e6df]">
-                    <td className="px-2 py-3 sm:px-4 text-left">Total Quantities</td>
-                    <td className="px-2 py-3 sm:px-4"></td>
-                    <td className="px-2 py-3 sm:px-4 text-center text-[#e8734a] text-sm sm:text-base">{calculateTotalQuantity()}</td>
-                    {hasPrices && (
-                      <td className="px-2 py-3 sm:px-4 text-right text-[#e8734a] text-sm sm:text-base">
-                        ₹{calculateTotalPrice()}
-                      </td>
-                    )}
+                    <td className="px-3 py-3 text-left">Total Quantities</td>
+                    <td className="px-3 py-3"></td>
+                    <td className="px-3 py-3 text-center text-[#e8734a] text-sm sm:text-base">{calculateTotalQuantity()}</td>
                   </tr>
                 </tbody>
               </table>

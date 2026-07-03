@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Gift, Search, Loader2, RefreshCw, ShoppingCart, ExternalLink, AlertCircle, CheckCircle, Package } from 'lucide-react';
 import NameSelector from '../components/NameSelector';
 import StatusBadge from '../components/StatusBadge';
-import WhatsAppShare from '../components/WhatsAppShare';
-import { Pledge } from '../lib/types';
+import WhatsAppShare, { ExtendedPledge } from '../components/WhatsAppShare';
+import { Pledge, DonationItem } from '../lib/types';
 
 export default function MyPledgePage() {
   const router = useRouter();
   const [names, setNames] = useState<string[]>([]);
+  const [catalogItems, setCatalogItems] = useState<DonationItem[]>([]);
   const [selectedName, setSelectedName] = useState('');
   const [pledge, setPledge] = useState<Pledge | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,21 +20,26 @@ export default function MyPledgePage() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // 1. Fetch Names list
+  // 1. Fetch Names list and Catalog
   useEffect(() => {
-    async function loadNames() {
+    async function loadData() {
       try {
-        const res = await fetch('/api/donation/names');
-        if (!res.ok) throw new Error("Failed to load names list");
-        const data = await res.json();
-        setNames(data);
+        const [namesRes, itemsRes] = await Promise.all([
+          fetch('/api/donation/names'),
+          fetch('/api/donation/items')
+        ]);
+        if (!namesRes.ok || !itemsRes.ok) throw new Error("Failed to load page parameters");
+        const namesData = await namesRes.json();
+        const itemsData = await itemsRes.json();
+        setNames(namesData);
+        setCatalogItems(itemsData);
       } catch (err: any) {
         setError(err.message || "Failed to initialize names selector");
       } finally {
         setLoading(false);
       }
     }
-    loadNames();
+    loadData();
   }, []);
 
   // 2. Fetch pledge details when name selected
@@ -64,6 +70,21 @@ export default function MyPledgePage() {
 
     loadPledge();
   }, [selectedName]);
+
+  // Compute enriched pledge with links from catalog
+  const enrichedPledge = useMemo<ExtendedPledge | null>(() => {
+    if (!pledge) return null;
+    return {
+      ...pledge,
+      items: pledge.items.map((item) => {
+        const catItem = catalogItems.find(c => c.id === item.itemId);
+        return {
+          ...item,
+          links: catItem?.links || []
+        };
+      })
+    };
+  }, [pledge, catalogItems]);
 
   const updateItemStatus = async (itemId: string, status: 'pledged' | 'ordered' | 'delivered') => {
     if (!pledge) return;
@@ -185,7 +206,7 @@ export default function MyPledgePage() {
             <Loader2 className="w-8 h-8 text-[#e8734a] animate-spin" />
             <span className="text-xs text-[#7f8c8d] font-semibold">Fetching pledge details...</span>
           </div>
-        ) : selectedName && !pledge ? (
+        ) : selectedName && !enrichedPledge ? (
           /* Empty Pledge State */
           <div className="text-center py-12 border border-dashed border-[#f0e6df] rounded-2xl bg-[#fcf9f6]">
             <Gift className="w-10 h-10 text-[#7f8c8d] mx-auto mb-2 opacity-50" />
@@ -200,7 +221,7 @@ export default function MyPledgePage() {
               Pledge a Donation
             </button>
           </div>
-        ) : pledge ? (
+        ) : enrichedPledge ? (
           /* Pledge Display */
           <div className="space-y-6">
             <div className="p-4 bg-[#fcf9f6] border border-[#f0e6df] rounded-2xl flex items-center justify-between gap-4">
@@ -209,7 +230,7 @@ export default function MyPledgePage() {
                   Pledge Registered
                 </span>
                 <span className="block text-xs text-[#2d3436] font-bold mt-0.5">
-                  {new Date(pledge.createdAt).toLocaleString()}
+                  {new Date(enrichedPledge.createdAt).toLocaleString()}
                 </span>
               </div>
               <button
@@ -228,7 +249,7 @@ export default function MyPledgePage() {
                 Your Pledged Items
               </span>
 
-              {pledge.items.map((item) => {
+              {enrichedPledge.items.map((item) => {
                 const isUpdating = updatingItemId === item.itemId;
                 return (
                   <div
@@ -242,18 +263,24 @@ export default function MyPledgePage() {
                         </h4>
                         <StatusBadge status={item.status} />
                       </div>
-                      <div className="flex items-center gap-4 mt-1 text-[11px] text-[#7f8c8d]">
-                        <span>Quantity: <strong className="text-[#2d3436]">{item.quantity}</strong></span>
-                        {item.selectedLink && (
-                          <a
-                            href={item.selectedLink.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-0.5 text-[#e8734a] hover:underline font-semibold"
-                          >
-                            <span>Buy on {item.selectedLink.siteName}</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
+                      <div className="mt-1 text-[11px] text-[#7f8c8d] space-y-1.5">
+                        <span className="block">Quantity: <strong className="text-[#2d3436]">{item.quantity}</strong></span>
+                        
+                        {item.links && item.links.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {item.links.map((link) => (
+                              <a
+                                key={link.siteName}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-0.5 bg-[#faf6f0] border border-[#f0e6df] px-2 py-1 rounded-lg text-[9px] text-[#2d3436] font-bold hover:border-[#e8734a]/30 transition-colors"
+                              >
+                                <span>Buy on {link.siteName}</span>
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -306,7 +333,7 @@ export default function MyPledgePage() {
               <span className="block text-xs font-semibold text-[#7f8c8d] uppercase tracking-wide">
                 Options
               </span>
-              <WhatsAppShare pledge={pledge} btnText="Re-share links to my WhatsApp" />
+              <WhatsAppShare pledge={enrichedPledge} btnText="Re-share links to my WhatsApp" />
             </div>
           </div>
         ) : (

@@ -19,7 +19,6 @@ export default function DonationLandingPage() {
 
   const [loading, setLoading] = useState(true);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [selectedLinks, setSelectedLinks] = useState<Record<string, ItemLink>>({});
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -41,15 +40,6 @@ export default function DonationLandingPage() {
         const enabledItems = itemsData.filter((i: DonationItem) => i.enabled);
         setItems(enabledItems);
         setStats(statsData);
-
-        // Pre-populate default store links
-        const initialLinks: Record<string, ItemLink> = {};
-        enabledItems.forEach((item: DonationItem) => {
-          if (item.links && item.links.length > 0) {
-            initialLinks[item.id] = item.links[0];
-          }
-        });
-        setSelectedLinks(initialLinks);
       } catch (err: any) {
         setError(err.message || "An error occurred while loading content.");
       } finally {
@@ -64,10 +54,6 @@ export default function DonationLandingPage() {
     setQuantities(prev => ({ ...prev, [itemId]: q }));
   };
 
-  const handleLinkSelect = (itemId: string, link: ItemLink) => {
-    setSelectedLinks(prev => ({ ...prev, [itemId]: link }));
-  };
-
   const totalItemsSelected = Object.values(quantities).reduce((a, b) => a + b, 0);
 
   const handlePledgeSubmit = () => {
@@ -76,8 +62,7 @@ export default function DonationLandingPage() {
       .map(item => ({
         itemId: item.id,
         itemName: item.name,
-        quantity: quantities[item.id],
-        selectedLink: selectedLinks[item.id]
+        quantity: quantities[item.id]
       }));
 
     if (selectedItems.length === 0) {
@@ -192,9 +177,7 @@ export default function DonationLandingPage() {
                   key={item.id}
                   item={item}
                   quantity={quantities[item.id] || 0}
-                  selectedLink={selectedLinks[item.id] || null}
                   onQuantityChange={(q) => handleQuantityChange(item.id, q)}
-                  onLinkSelect={(link) => handleLinkSelect(item.id, link)}
                   totalPledgedSoFar={pledgedSoFar}
                 />
               );

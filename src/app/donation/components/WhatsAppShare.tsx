@@ -2,10 +2,29 @@
 
 import React from 'react';
 import { MessageSquare } from 'lucide-react';
-import { Pledge } from '../lib/types';
+import { Pledge, ItemLink } from '../lib/types';
+
+// Extend PledgeItem to allow custom links
+export interface ExtendedPledgeItem {
+  itemId: string;
+  itemName: string;
+  quantity: number;
+  status: 'pledged' | 'ordered' | 'delivered';
+  selectedLink?: ItemLink; // for legacy
+  links?: ItemLink[]; // mapped from catalog
+}
+
+export interface ExtendedPledge {
+  id: string;
+  donorName: string;
+  items: ExtendedPledgeItem[];
+  totalQuantity: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface WhatsAppShareProps {
-  pledge: Pledge;
+  pledge: ExtendedPledge;
   btnText?: string;
   btnClassName?: string;
 }
@@ -21,7 +40,12 @@ export default function WhatsAppShare({
     
     pledge.items.forEach((item, index) => {
       text += `${index + 1}. *${item.itemName}* (Qty: ${item.quantity})\n`;
-      if (item.selectedLink) {
+      
+      if (item.links && item.links.length > 0) {
+        item.links.forEach((l) => {
+          text += `   🛒 Buy via ${l.siteName}: ${l.url}\n`;
+        });
+      } else if (item.selectedLink) {
         text += `   🛒 Buy via ${item.selectedLink.siteName}: ${item.selectedLink.url}\n`;
       }
       text += `\n`;
