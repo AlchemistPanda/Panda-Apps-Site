@@ -6,7 +6,7 @@ import { Github, Twitter, Heart } from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname.startsWith("/apps/") || pathname.startsWith("/ledgerweb")) return null;
+  if (pathname.startsWith("/apps/") || pathname.startsWith("/ledgerweb") || pathname.startsWith("/donation")) return null;
 
   return (
     <footer className="relative z-10 border-t border-border/50 bg-background/80">

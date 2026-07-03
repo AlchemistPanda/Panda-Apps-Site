@@ -204,27 +204,27 @@ export default function PledgeConfirmPage() {
               Selected Stationery Items
             </span>
             <div className="border border-[#f0e6df] rounded-2xl overflow-hidden bg-[#fcf9f6]">
-              <table className="w-full text-sm">
+              <table className="w-full text-xs sm:text-sm">
                 <thead>
-                  <tr className="bg-[#faf6f0] border-b border-[#f0e6df] text-xs text-[#7f8c8d] font-bold">
-                    <th className="px-4 py-3 text-left">Item Description</th>
-                    <th className="px-4 py-3 text-center">Store Option</th>
-                    <th className="px-4 py-3 text-center">Qty</th>
-                    {hasPrices && <th className="px-4 py-3 text-right">Total</th>}
+                  <tr className="bg-[#faf6f0] border-b border-[#f0e6df] text-[10px] sm:text-xs text-[#7f8c8d] font-bold">
+                    <th className="px-2 py-3 sm:px-4 text-left">Item Description</th>
+                    <th className="px-2 py-3 sm:px-4 text-center">Store Option</th>
+                    <th className="px-2 py-3 sm:px-4 text-center">Qty</th>
+                    {hasPrices && <th className="px-2 py-3 sm:px-4 text-right">Total</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f0e6df] text-[#2d3436]">
                   {basket.map((item) => (
                     <tr key={item.itemId}>
-                      <td className="px-4 py-3.5 font-medium">{item.itemName}</td>
-                      <td className="px-4 py-3.5 text-center">
-                        <span className="don-badge don-badge-primary text-[10px]">
+                      <td className="px-2 py-3 sm:px-4 sm:py-3.5 font-medium">{item.itemName}</td>
+                      <td className="px-2 py-3 sm:px-4 sm:py-3.5 text-center">
+                        <span className="don-badge don-badge-primary text-[9px] sm:text-[10px]">
                           {item.selectedLink.siteName}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-center font-bold">{item.quantity}</td>
+                      <td className="px-2 py-3 sm:px-4 sm:py-3.5 text-center font-bold">{item.quantity}</td>
                       {hasPrices && (
-                        <td className="px-4 py-3.5 text-right font-medium">
+                        <td className="px-2 py-3 sm:px-4 sm:py-3.5 text-right font-medium">
                           {item.selectedLink.price 
                             ? `₹${item.selectedLink.price * item.quantity}` 
                             : '—'
@@ -236,11 +236,11 @@ export default function PledgeConfirmPage() {
                   
                   {/* Summary Rows */}
                   <tr className="bg-[#faf6f0]/50 font-bold border-t border-[#f0e6df]">
-                    <td className="px-4 py-3 text-left">Total Quantities</td>
-                    <td className="px-4 py-3"></td>
-                    <td className="px-4 py-3 text-center text-[#e8734a] text-base">{calculateTotalQuantity()}</td>
+                    <td className="px-2 py-3 sm:px-4 text-left">Total Quantities</td>
+                    <td className="px-2 py-3 sm:px-4"></td>
+                    <td className="px-2 py-3 sm:px-4 text-center text-[#e8734a] text-sm sm:text-base">{calculateTotalQuantity()}</td>
                     {hasPrices && (
-                      <td className="px-4 py-3 text-right text-[#e8734a] text-base">
+                      <td className="px-2 py-3 sm:px-4 text-right text-[#e8734a] text-sm sm:text-base">
                         ₹{calculateTotalPrice()}
                       </td>
                     )}
