@@ -259,3 +259,39 @@
   text-align: center;
   font-weight: 600;
 }
+
+/* UI/UX Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom premium scrollbar for scrollable containers */
+.donation-theme *::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.donation-theme *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.donation-theme *::-webkit-scrollbar-thumb {
+  background: var(--don-border);
+  border-radius: 9999px;
+}
+
+.donation-theme *::-webkit-scrollbar-thumb:hover {
+  background: var(--don-muted);
+}
+

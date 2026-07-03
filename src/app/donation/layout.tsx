@@ -25,7 +25,7 @@ export default function DonationLayout({
       <div className="don-grid" />
       
       {/* Simple standalone header for Donation Drive */}
-      <header className="bg-white border-b border-[#f0e6df] sticky top-0 z-50 shadow-[0_2px_8px_-1px_rgba(0,0,0,0.01)] relative">
+      <header className="bg-white border-b border-[#f0e6df] sticky top-0 z-50 shadow-[0_2px_8px_-1px_rgba(0,0,0,0.01)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo and Subtitle */}
