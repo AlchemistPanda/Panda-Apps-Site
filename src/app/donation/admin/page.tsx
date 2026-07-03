@@ -36,6 +36,7 @@ function AdminDashboardContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
   // Item form states
   const [editingItem, setEditingItem] = useState<DonationItem | null>(null);
@@ -218,12 +219,15 @@ function AdminDashboardContent() {
       { siteName: 'Amazon', url: '', price: undefined },
       { siteName: 'Flipkart', url: '', price: undefined }
     ]);
+    // Smooth scroll to the top of the editing form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteItem = async (id: string) => {
     if (!confirm("Are you sure you want to delete this stationery item?")) return;
     setError('');
     setSuccess('');
+    setUpdatingItemId(id);
     try {
       const res = await fetch(`/api/donation/items/${id}`, {
         method: 'DELETE',
@@ -231,15 +235,18 @@ function AdminDashboardContent() {
       });
       if (!res.ok) throw new Error("Failed to delete item");
       setSuccess("Item deleted successfully.");
-      fetchData();
+      await fetchData();
     } catch (err: any) {
       setError(err.message || "Failed to delete item.");
+    } finally {
+      setUpdatingItemId(null);
     }
   };
 
   const handleToggleItemEnabled = async (item: DonationItem) => {
     setError('');
     setSuccess('');
+    setUpdatingItemId(item.id);
     const updated = { ...item, enabled: !item.enabled };
     try {
       const res = await fetch(`/api/donation/items/${item.id}`, {
@@ -252,9 +259,11 @@ function AdminDashboardContent() {
       });
       if (!res.ok) throw new Error("Failed to toggle item state");
       setSuccess(`Item status updated to ${updated.enabled ? 'Enabled' : 'Disabled'}`);
-      fetchData();
+      await fetchData();
     } catch (err: any) {
       setError(err.message || "Failed to update item enabled status.");
+    } finally {
+      setUpdatingItemId(null);
     }
   };
 
@@ -813,21 +822,27 @@ function AdminDashboardContent() {
                         <button
                           type="button"
                           onClick={() => handleToggleItemEnabled(item)}
+                          disabled={updatingItemId !== null}
                           className={`don-btn-outline p-2.5 text-[10px] h-8 flex items-center gap-1 font-bold ${
                             item.enabled 
                               ? 'border-amber-100 hover:bg-amber-50 text-amber-600'
                               : 'border-emerald-100 hover:bg-emerald-50 text-emerald-600'
-                          }`}
+                          } disabled:opacity-50`}
                           title={item.enabled ? "Disable this item in landing catalog" : "Enable this item"}
                         >
-                          <Power className="w-3.5 h-3.5" />
+                          {updatingItemId === item.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Power className="w-3.5 h-3.5" />
+                          )}
                           <span>{item.enabled ? "Disable" : "Enable"}</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleEditItemClick(item)}
-                          className="don-btn-outline p-2.5 text-[10px] h-8 flex items-center gap-1 border-blue-100 hover:bg-blue-50 text-blue-600 font-bold"
+                          disabled={updatingItemId !== null}
+                          className="don-btn-outline p-2.5 text-[10px] h-8 flex items-center gap-1 border-blue-100 hover:bg-blue-50 text-blue-600 font-bold disabled:opacity-50"
                           title="Modify item specifications"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -837,10 +852,15 @@ function AdminDashboardContent() {
                         <button
                           type="button"
                           onClick={() => handleDeleteItem(item.id)}
-                          className="don-btn-outline p-2.5 text-[10px] h-8 flex items-center gap-1 border-red-100 hover:bg-red-50 text-red-600 font-bold"
+                          disabled={updatingItemId !== null}
+                          className="don-btn-outline p-2.5 text-[10px] h-8 flex items-center gap-1 border-red-100 hover:bg-red-50 text-red-600 font-bold disabled:opacity-50"
                           title="Delete Item"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          {updatingItemId === item.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
                         </button>
                       </div>
                     </div>
