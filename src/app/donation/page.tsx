@@ -147,6 +147,17 @@ export default function DonationLandingPage() {
         </div>
       )}
 
+      {/* Informational Callout */}
+      <div className="max-w-xl mx-auto bg-amber-50 border border-amber-200/50 rounded-3xl p-5 mb-12 text-xs text-[#2d3436] flex items-start gap-3">
+        <span className="text-lg">⚠️</span>
+        <div className="leading-relaxed">
+          <p className="font-bold text-amber-800">Can I buy from local stores?</p>
+          <p className="text-[#7f8c8d] mt-1">
+            Yes, you can purchase these products from **any local store or website**! However, please ensure the **brand, model, and color are exactly identical** to the linked products. When distributing items in LP schools, children can feel left out or sad if they receive items that look different from their peers.
+          </p>
+        </div>
+      </div>
+
       {/* Item Catalog Grid */}
       <div>
         <div className="flex items-center justify-between mb-8">

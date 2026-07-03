@@ -200,6 +200,15 @@ export default function PledgeConfirmPage() {
             <span className="block text-sm font-bold text-[#2d3436] mb-3 uppercase tracking-wide">
               Selected Stationery Items
             </span>
+            <div className="p-4 bg-amber-50 border border-amber-200/50 rounded-2xl mb-4 text-xs text-[#2d3436] flex items-start gap-2.5">
+              <span className="text-sm">⚠️</span>
+              <div>
+                <p className="font-bold text-amber-800">Important Brand & Color Consistency Policy</p>
+                <p className="text-[#7f8c8d] mt-1 leading-relaxed">
+                  You can purchase these items from **local stores or other sites**. However, please verify that the **brand, model, and color are exactly identical** to the ones in the links. When we distribute stationery in LP schools, children can feel very left out or sad if they receive items that look different or have different colors.
+                </p>
+              </div>
+            </div>
             <div className="border border-[#f0e6df] rounded-2xl overflow-hidden bg-[#fcf9f6]">
               <table className="w-full text-xs sm:text-sm">
                 <thead>

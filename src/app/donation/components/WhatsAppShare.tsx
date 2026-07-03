@@ -51,7 +51,7 @@ export default function WhatsAppShare({
       text += `\n`;
     });
     
-    text += `Please save this message or use the links above to complete the order. Once ordered, please mark them as ordered on the website! ❤️`;
+    text += `Please save this message or use the links above to complete the order. Once ordered, please mark them as ordered on the website! ❤️\n\n*Note:* You can also purchase these items from local shops. Please verify that the *brand, model, and color are identical* to the products in the links so that children receive uniform items and do not feel left out.`;
     
     const encodedText = encodeURIComponent(text);
     return `https://api.whatsapp.com/send?text=${encodedText}`;
