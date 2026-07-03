@@ -19,8 +19,6 @@ export default function ExportButtons({ pledges }: ExportButtonsProps) {
       "Donor Name",
       "Item Name",
       "Quantity Pledged",
-      "Selected Store",
-      "Store Link",
       "Status",
       "Pledged Date",
       "Last Updated"
@@ -35,8 +33,6 @@ export default function ExportButtons({ pledges }: ExportButtonsProps) {
           p.donorName,
           item.itemName,
           item.quantity.toString(),
-          item.selectedLink?.siteName || "N/A",
-          item.selectedLink?.url || "N/A",
           item.status,
           new Date(p.createdAt).toLocaleDateString(),
           new Date(p.updatedAt).toLocaleDateString()
@@ -69,7 +65,6 @@ export default function ExportButtons({ pledges }: ExportButtonsProps) {
           <td>${p.donorName}</td>
           <td>${item.itemName}</td>
           <td>${item.quantity}</td>
-          <td>${item.selectedLink?.siteName || 'N/A'}</td>
           <td><span class="status-badge status-${item.status}">${item.status.toUpperCase()}</span></td>
           <td>${new Date(p.createdAt).toLocaleDateString()}</td>
         </tr>
@@ -106,7 +101,6 @@ export default function ExportButtons({ pledges }: ExportButtonsProps) {
                 <th>Donor Name</th>
                 <th>Item Pledged</th>
                 <th>Qty</th>
-                <th>Store</th>
                 <th>Status</th>
                 <th>Date Pledged</th>
               </tr>

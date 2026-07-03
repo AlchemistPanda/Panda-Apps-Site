@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Home, ExternalLink, ShoppingCart, Loader2, AlertCircle } from 'lucide-react';
-import { Pledge, DonationItem } from '../lib/types';
+import { Pledge, DonationItem, getCleanSiteName } from '../lib/types';
 import WhatsAppShare, { ExtendedPledge } from '../components/WhatsAppShare';
 
 export default function ThankYouPage() {
@@ -82,7 +82,7 @@ export default function ThankYouPage() {
           Pledge Confirmed!
         </h1>
         <p className="text-[#7f8c8d] text-sm mt-2 max-w-md mx-auto">
-          Thank you so much, <span className="font-bold text-[#2d3436]">{pledge.donorName}</span>. Your pledge for <span className="font-bold text-[#e8734a]">{pledge.totalQuantity} items</span> has been recorded.
+          Thank you so much, <span className="font-bold text-[#2d3436]">{pledge.donorName}</span>. Your pledge for <span className="font-bold text-[#e8734a]">{pledge.totalQuantity} units</span> has been recorded.
         </p>
 
         {/* Action Prompt */}
@@ -107,7 +107,15 @@ export default function ThankYouPage() {
                       {item.itemName}
                     </span>
                     <span className="text-[#7f8c8d] text-[10px]">
-                      Quantity: <span className="font-bold text-[#2d3436]">{item.quantity}</span>
+                      Quantity: <span className="font-bold text-[#2d3436]">
+                        {(() => {
+                          const catItem = catalogItems.find(c => c.id === item.itemId);
+                          const packSize = catItem?.packSize || 1;
+                          return packSize > 1 
+                            ? `${item.quantity} pack${item.quantity > 1 ? 's' : ''} (${item.quantity * packSize} units)` 
+                            : `${item.quantity} unit${item.quantity > 1 ? 's' : ''}`;
+                        })()}
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -129,7 +137,7 @@ export default function ThankYouPage() {
                           rel="noopener noreferrer"
                           className="don-btn-secondary px-3 py-1.5 text-[10px] h-7 font-bold flex items-center gap-1 shrink-0"
                         >
-                          <span>{link.siteName}</span>
+                          <span>{getCleanSiteName(link)}</span>
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       ))}

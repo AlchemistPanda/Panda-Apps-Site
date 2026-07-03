@@ -65,7 +65,21 @@ export async function POST(req: NextRequest) {
     }
 
     const pledgeId = existingPledgeId || `pledge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const totalQuantity = items.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+    // Fetch catalog items to calculate unit-based totalQuantity (quantity * packSize)
+    const itemIds = ((await redisCmd(["LRANGE", "donation:item_ids", "0", "-1"])) as string[]) ?? [];
+    const catalogItems: any[] = [];
+    for (const itemId of itemIds) {
+      const rawItem = await redisCmd(["GET", `donation:item:${itemId}`]);
+      if (rawItem) {
+        catalogItems.push(JSON.parse(rawItem as string));
+      }
+    }
+
+    const totalQuantity = items.reduce((sum: number, item: any) => {
+      const catItem = catalogItems.find(c => c.id === item.itemId);
+      const packSize = catItem?.packSize || 1;
+      return sum + ((item.quantity || 0) * packSize);
+    }, 0);
 
     const now = new Date().toISOString();
     

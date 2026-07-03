@@ -23,7 +23,7 @@ import {
 import PasswordGate from '../components/PasswordGate';
 import ExportButtons from '../components/ExportButtons';
 import StatusBadge from '../components/StatusBadge';
-import { DonationItem, Pledge, ItemLink } from '../lib/types';
+import { DonationItem, Pledge, ItemLink, getCleanSiteName } from '../lib/types';
 
 function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'pledges' | 'items' | 'names'>('dashboard');
@@ -45,6 +45,7 @@ function AdminDashboardContent() {
   const [itemIcon, setItemIcon] = useState('📓');
   const [itemCategory, setItemCategory] = useState('Writing');
   const [itemGoal, setItemGoal] = useState<number | ''>('');
+  const [itemPackSize, setItemPackSize] = useState<number | ''>('');
   
   // Multiple links state for item form
   const [itemLinks, setItemLinks] = useState<{ siteName: string; url: string; price?: number }[]>([
@@ -154,6 +155,7 @@ function AdminDashboardContent() {
     setItemIcon('📓');
     setItemCategory('Writing');
     setItemGoal('');
+    setItemPackSize('');
     setItemLinks([
       { siteName: 'Amazon', url: '', price: undefined },
       { siteName: 'Flipkart', url: '', price: undefined }
@@ -181,6 +183,7 @@ function AdminDashboardContent() {
       enabled: editingItem ? editingItem.enabled : true,
       category: itemCategory,
       goalQuantity: itemGoal ? Number(itemGoal) : undefined,
+      packSize: itemPackSize ? Number(itemPackSize) : undefined,
       links: filteredLinks,
       createdAt: editingItem ? editingItem.createdAt : new Date().toISOString()
     };
@@ -215,6 +218,7 @@ function AdminDashboardContent() {
     setItemIcon(item.icon);
     setItemCategory(item.category || 'Writing');
     setItemGoal(item.goalQuantity || '');
+    setItemPackSize(item.packSize || '');
     setItemLinks(item.links && item.links.length > 0 ? item.links : [
       { siteName: 'Amazon', url: '', price: undefined },
       { siteName: 'Flipkart', url: '', price: undefined }
@@ -606,7 +610,7 @@ function AdminDashboardContent() {
                                   <thead className="bg-[#faf6f0] font-bold text-[#7f8c8d]">
                                     <tr>
                                       <th className="p-3">Item</th>
-                                      <th className="p-3 text-center">Store Chosen</th>
+                                      <th className="p-3 text-center">Store Links</th>
                                       <th className="p-3 text-center">Qty</th>
                                       <th className="p-3 text-center">Status</th>
                                     </tr>
@@ -616,18 +620,40 @@ function AdminDashboardContent() {
                                       <tr key={item.itemId || idx}>
                                         <td className="p-3 font-semibold">{item.itemName}</td>
                                         <td className="p-3 text-center">
-                                          {item.selectedLink ? (
-                                            <a 
-                                              href={item.selectedLink.url} 
-                                              target="_blank" 
-                                              rel="noopener noreferrer"
-                                              className="inline-flex items-center gap-0.5 text-[#e8734a] hover:underline font-bold"
-                                            >
-                                              <span>{item.selectedLink.siteName}</span>
-                                            </a>
-                                          ) : '—'}
+                                          <div className="flex flex-wrap items-center justify-center gap-1">
+                                            {(() => {
+                                              const catItem = items.find(c => c.id === item.itemId);
+                                              const itemLinks = catItem?.links || [];
+                                              return itemLinks.length > 0 ? (
+                                                itemLinks.map((link) => (
+                                                  <a
+                                                    key={link.siteName}
+                                                    href={link.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-0.5 bg-white border border-[#f0e6df] px-1.5 py-0.5 rounded text-[9px] text-[#2d3436] font-bold hover:border-[#e8734a]/30 transition-colors"
+                                                  >
+                                                    <span>{getCleanSiteName(link)}</span>
+                                                  </a>
+                                                ))
+                                              ) : (
+                                                <span className="text-[#7f8c8d] text-[10px]">No links</span>
+                                              );
+                                            })()}
+                                          </div>
                                         </td>
-                                        <td className="p-3 text-center font-bold">{item.quantity}</td>
+                                        <td className="p-3 text-center font-bold">
+                                          {item.quantity}
+                                          {(() => {
+                                            const catItem = items.find(c => c.id === item.itemId);
+                                            const packSize = catItem?.packSize || 1;
+                                            return packSize > 1 ? (
+                                              <span className="block text-[9px] text-[#e8734a] font-normal mt-0.5">
+                                                ({item.quantity * packSize} units)
+                                              </span>
+                                            ) : null;
+                                          })()}
+                                        </td>
                                         <td className="p-3 text-center">
                                           <StatusBadge status={item.status} />
                                         </td>
@@ -684,7 +710,7 @@ function AdminDashboardContent() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-[#2d3436] uppercase tracking-wide mb-2">
                         Category Grouping
@@ -706,6 +732,18 @@ function AdminDashboardContent() {
                         placeholder="e.g. 100"
                         value={itemGoal}
                         onChange={(e) => setItemGoal(e.target.value === '' ? '' : Number(e.target.value))}
+                        className="don-input"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#2d3436] uppercase tracking-wide mb-2">
+                        Pack Size (Optional)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 5 or 10"
+                        value={itemPackSize}
+                        onChange={(e) => setItemPackSize(e.target.value === '' ? '' : Number(e.target.value))}
                         className="don-input"
                       />
                     </div>
@@ -812,7 +850,7 @@ function AdminDashboardContent() {
                             )}
                           </div>
                           <span className="text-[10px] text-[#7f8c8d]">
-                            Category: <strong>{item.category || 'N/A'}</strong> | Links: <strong>{item.links?.length || 0}</strong> | Goal: <strong>{item.goalQuantity || 'None'}</strong>
+                            Category: <strong>{item.category || 'N/A'}</strong> | Pack Size: <strong>{item.packSize || 1}</strong> | Links: <strong>{item.links?.length || 0}</strong> | Goal: <strong>{item.goalQuantity || 'None'}</strong>
                           </span>
                         </div>
                       </div>

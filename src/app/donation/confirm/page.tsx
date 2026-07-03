@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Gift, Loader2, AlertTriangle, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
 import NameSelector from '../components/NameSelector';
-import { DonationItem } from '../lib/types';
+import { DonationItem, getCleanSiteName } from '../lib/types';
 
 interface BasketItem {
   itemId: string;
@@ -87,7 +87,15 @@ export default function PledgeConfirmPage() {
     checkPledge();
   }, [selectedName]);
 
-  const calculateTotalQuantity = () => basket.reduce((sum, item) => sum + item.quantity, 0);
+  const calculateTotalPacks = () => basket.reduce((sum, item) => sum + item.quantity, 0);
+
+  const calculateTotalUnits = () => {
+    return basket.reduce((sum, item) => {
+      const catItem = catalogItems.find(c => c.id === item.itemId);
+      const packSize = catItem?.packSize || 1;
+      return sum + (item.quantity * packSize);
+    }, 0);
+  };
 
   const handleConfirmPledge = async () => {
     if (!selectedName) {
@@ -239,7 +247,7 @@ export default function PledgeConfirmPage() {
                                   className="inline-flex items-center gap-0.5 bg-white border border-[#f0e6df] px-2 py-1 rounded-lg text-[10px] text-[#2d3436] font-bold hover:border-[#e8734a]/30 hover:bg-[#faf6f0] transition-colors"
                                 >
                                   <ShoppingBag className="w-3 h-3 text-[#e8734a]" />
-                                  <span>{link.siteName}</span>
+                                  <span>{getCleanSiteName(link)}</span>
                                 </a>
                               ))
                             ) : (
@@ -247,16 +255,27 @@ export default function PledgeConfirmPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-3 py-3 text-center font-bold">{item.quantity}</td>
+                        <td className="px-3 py-3 text-center font-bold">
+                          {item.quantity}
+                          {catItem?.packSize && catItem.packSize > 1 && (
+                            <span className="block text-[10px] text-[#e8734a] font-normal mt-0.5">
+                              ({item.quantity * catItem.packSize} units)
+                            </span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
                   
                   {/* Summary Rows */}
                   <tr className="bg-[#faf6f0]/50 font-bold border-t border-[#f0e6df]">
-                    <td className="px-3 py-3 text-left">Total Quantities</td>
-                    <td className="px-3 py-3"></td>
-                    <td className="px-3 py-3 text-center text-[#e8734a] text-sm sm:text-base">{calculateTotalQuantity()}</td>
+                    <td className="px-3 py-3 text-left">Total Selection</td>
+                    <td className="px-3 py-3 text-center text-xs text-[#7f8c8d] font-normal">
+                      ({calculateTotalPacks()} packs)
+                    </td>
+                    <td className="px-3 py-3 text-center text-[#e8734a] text-sm sm:text-base">
+                      {calculateTotalUnits()} units
+                    </td>
                   </tr>
                 </tbody>
               </table>

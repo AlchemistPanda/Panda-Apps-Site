@@ -6,7 +6,7 @@ import { ChevronLeft, Gift, Search, Loader2, RefreshCw, ShoppingCart, ExternalLi
 import NameSelector from '../components/NameSelector';
 import StatusBadge from '../components/StatusBadge';
 import WhatsAppShare, { ExtendedPledge } from '../components/WhatsAppShare';
-import { Pledge, DonationItem } from '../lib/types';
+import { Pledge, DonationItem, getCleanSiteName } from '../lib/types';
 
 export default function MyPledgePage() {
   const router = useRouter();
@@ -264,7 +264,17 @@ export default function MyPledgePage() {
                         <StatusBadge status={item.status} />
                       </div>
                       <div className="mt-1 text-[11px] text-[#7f8c8d] space-y-1.5">
-                        <span className="block">Quantity: <strong className="text-[#2d3436]">{item.quantity}</strong></span>
+                        <span className="block">
+                          Quantity: <strong className="text-[#2d3436]">
+                            {(() => {
+                              const catItem = catalogItems.find(c => c.id === item.itemId);
+                              const packSize = catItem?.packSize || 1;
+                              return packSize > 1 
+                                ? `${item.quantity} pack${item.quantity > 1 ? 's' : ''} (${item.quantity * packSize} units)` 
+                                : `${item.quantity} unit${item.quantity > 1 ? 's' : ''}`;
+                            })()}
+                          </strong>
+                        </span>
                         
                         {item.links && item.links.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -276,7 +286,7 @@ export default function MyPledgePage() {
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-0.5 bg-[#faf6f0] border border-[#f0e6df] px-2 py-1 rounded-lg text-[9px] text-[#2d3436] font-bold hover:border-[#e8734a]/30 transition-colors"
                               >
-                                <span>Buy on {link.siteName}</span>
+                                <span>Buy on {getCleanSiteName(link)}</span>
                                 <ExternalLink className="w-2.5 h-2.5" />
                               </a>
                             ))}

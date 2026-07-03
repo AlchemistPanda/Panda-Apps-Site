@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ShoppingBag, Plus, Minus, ExternalLink } from 'lucide-react';
-import { DonationItem } from '../lib/types';
+import { ShoppingBag, Plus, Minus } from 'lucide-react';
+import { DonationItem, getCleanSiteName } from '../lib/types';
 
 interface ItemCardProps {
   item: DonationItem;
@@ -18,6 +18,7 @@ export default function ItemCard({
   totalPledgedSoFar = 0
 }: ItemCardProps) {
   const hasQuantity = quantity > 0;
+  const packSize = item.packSize || 1;
 
   const progressPercent = item.goalQuantity && item.goalQuantity > 0
     ? Math.min(Math.round((totalPledgedSoFar / item.goalQuantity) * 100), 100)
@@ -43,11 +44,16 @@ export default function ItemCard({
           <h3 className="font-bold text-[#2d3436] text-lg leading-tight truncate">
             {item.name}
           </h3>
-          {item.goalQuantity ? (
-            <div className="mt-1 text-xs text-[#7f8c8d]">
-              Pledged: <span className="font-semibold text-[#2d3436]">{totalPledgedSoFar}</span> / {item.goalQuantity}
-            </div>
-          ) : null}
+          <div className="mt-1 text-xs text-[#7f8c8d]">
+            {item.goalQuantity ? (
+              <span>Pledged: <span className="font-semibold text-[#2d3436]">{totalPledgedSoFar}</span> / {item.goalQuantity} units</span>
+            ) : null}
+            {packSize > 1 && (
+              <span className="block text-[10px] text-[#e8734a] font-bold mt-0.5">
+                Pack of {packSize} units
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -84,7 +90,7 @@ export default function ItemCard({
                 >
                   <div className="flex items-center gap-1">
                     <ShoppingBag className="w-3.5 h-3.5 text-[#e8734a]" />
-                    <span className="group-hover/link:underline">{link.siteName}</span>
+                    <span className="group-hover/link:underline">{getCleanSiteName(link)}</span>
                   </div>
                   {link.price && (
                     <span className="text-[10px] text-[#7f8c8d]">
@@ -98,29 +104,38 @@ export default function ItemCard({
         )}
 
         {/* Quantity Controls */}
-        <div className="flex items-center justify-between gap-4 border-t border-[#f0e6df] pt-4">
-          <span className="text-sm font-semibold text-[#2d3436]">
-            Pledge Quantity
-          </span>
-          <div className="don-stepper">
-            <button
-              type="button"
-              onClick={() => onQuantityChange(Math.max(0, quantity - 1))}
-              disabled={quantity === 0}
-              className="don-stepper-btn disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <Minus className="w-4 h-4" />
-            </button>
-            <span className="don-stepper-value text-[#2d3436]">
-              {quantity}
-            </span>
-            <button
-              type="button"
-              onClick={() => onQuantityChange(quantity + 1)}
-              className="don-stepper-btn"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+        <div className="border-t border-[#f0e6df] pt-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-[#2d3436]">
+                Pledge Quantity
+              </span>
+              {packSize > 1 && quantity > 0 && (
+                <span className="text-[10px] text-[#e8734a] font-bold mt-0.5 animate-fade-in-up">
+                  {quantity} {quantity === 1 ? 'pack' : 'packs'} ({quantity} x {packSize} = {quantity * packSize} units)
+                </span>
+              )}
+            </div>
+            <div className="don-stepper">
+              <button
+                type="button"
+                onClick={() => onQuantityChange(Math.max(0, quantity - 1))}
+                disabled={quantity === 0}
+                className="don-stepper-btn disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className="don-stepper-value text-[#2d3436]">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                onClick={() => onQuantityChange(quantity + 1)}
+                className="don-stepper-btn"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
