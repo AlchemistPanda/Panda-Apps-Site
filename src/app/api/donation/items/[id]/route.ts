@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 function verifyAdmin(req: NextRequest): boolean {
   const auth = req.headers.get("x-admin-password");
-  return auth === "panda@9010";
+  return auth === (process.env.DONATION_ADMIN_PASSWORD || "panda@9010");
 }
 
 // DELETE /api/donation/items/[id]

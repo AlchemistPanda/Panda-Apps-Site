@@ -213,7 +213,7 @@ export default function PledgeConfirmPage() {
               <div>
                 <p className="font-bold text-amber-800">Important Brand & Color Consistency Policy</p>
                 <p className="text-[#7f8c8d] mt-1 leading-relaxed">
-                  You can purchase these items from **local stores or other sites**. However, please verify that the **brand, model, and color are exactly identical** to the ones in the links. When we distribute stationery in LP schools, children can feel very left out or sad if they receive items that look different or have different colors.
+                  You can purchase these items from <strong>local stores or other sites</strong>. However, please verify that the <strong>brand, model, and color are exactly identical</strong> to the ones in the links. When we distribute stationery in LP schools, children can feel very left out or sad if they receive items that look different or have different colors.
                 </p>
               </div>
             </div>

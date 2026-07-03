@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lock, AlertCircle, Loader2 } from 'lucide-react';
-import { ADMIN_PASSWORD } from '../lib/types';
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [checking, setChecking] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const sessionAuth = sessionStorage.getItem('donation_admin_auth');
@@ -18,14 +18,27 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     setChecking(false);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem('donation_admin_auth', 'true');
-      setIsAuthenticated(true);
-      setError('');
-    } else {
-      setError('Incorrect password. Please try again.');
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/donation/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      if (res.ok) {
+        sessionStorage.setItem('donation_admin_auth', 'true');
+        sessionStorage.setItem('donation_admin_pwd', password);
+        setIsAuthenticated(true);
+      } else {
+        setError('Incorrect password. Please try again.');
+      }
+    } catch {
+      setError('Failed to verify password. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -69,8 +82,15 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
               </div>
             )}
 
-            <button type="submit" className="don-btn-primary w-full py-3.5 mt-2">
-              Unlock Panel
+            <button type="submit" disabled={submitting} className="don-btn-primary w-full py-3.5 mt-2 flex items-center justify-center gap-2 disabled:opacity-50">
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Verifying...</span>
+                </>
+              ) : (
+                <span>Unlock Panel</span>
+              )}
             </button>
           </form>
         </div>

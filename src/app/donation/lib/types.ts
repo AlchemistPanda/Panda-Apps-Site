@@ -33,7 +33,7 @@ export interface Pledge {
   updatedAt: string;
 }
 
-export const ADMIN_PASSWORD = "panda@9010";
+
 
 // Helper to parse/extract a clean domain name from a URL if siteName is blank or a full URL
 export function getCleanSiteName(link: { siteName: string; url: string }): string {

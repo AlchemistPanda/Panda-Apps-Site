@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // Helper to check admin password from headers
 function verifyAdmin(req: NextRequest): boolean {
   const auth = req.headers.get("x-admin-password");
-  return auth === "panda@9010";
+  return auth === (process.env.DONATION_ADMIN_PASSWORD || "panda@9010");
 }
 
 // Initial pre-seed items
@@ -99,11 +99,20 @@ export async function GET(req: NextRequest) {
     
     // Seed default items if the list is empty
     if (ids.length === 0) {
-      for (const item of DEFAULT_ITEMS) {
+      const now = new Date();
+      const itemsToSeed = DEFAULT_ITEMS.map((item, index) => {
+        // Stagger by 1 minute for each item to ensure stable and consistent sorting
+        const createdDate = new Date(now.getTime() - index * 60 * 1000);
+        return {
+          ...item,
+          createdAt: createdDate.toISOString()
+        };
+      });
+      for (const item of itemsToSeed) {
         await redisCmd(["SET", `donation:item:${item.id}`, JSON.stringify(item)]);
         await redisCmd(["RPUSH", "donation:item_ids", item.id]);
       }
-      return NextResponse.json(DEFAULT_ITEMS);
+      return NextResponse.json(itemsToSeed);
     }
 
     const items: DonationItem[] = [];

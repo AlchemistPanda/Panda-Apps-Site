@@ -130,8 +130,9 @@ export default function ItemCard({
               </span>
               <button
                 type="button"
-                onClick={() => onQuantityChange(quantity + 1)}
-                className="don-stepper-btn"
+                onClick={() => onQuantityChange(Math.min(99, quantity + 1))}
+                disabled={quantity >= 99}
+                className="don-stepper-btn disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" />
               </button>

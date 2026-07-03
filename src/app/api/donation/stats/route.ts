@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // Populate counts from pledges
+    // Populate counts from pledges (multiply by packSize for unit-based counting)
     for (const pledge of pledges) {
       for (const pledgeItem of pledge.items) {
         const id = pledgeItem.itemId;
@@ -95,13 +95,17 @@ export async function GET(req: NextRequest) {
         }
 
         const stats = itemStatsMap[id];
-        stats.totalPledged += pledgeItem.quantity;
+        const itemMeta = itemsMap.get(id);
+        const packSize = itemMeta?.packSize || 1;
+        const unitCount = pledgeItem.quantity * packSize;
+        
+        stats.totalPledged += unitCount;
         stats.pledgeCount += 1;
         
         if (pledgeItem.status === 'ordered') {
-          stats.orderedCount += pledgeItem.quantity;
+          stats.orderedCount += unitCount;
         } else if (pledgeItem.status === 'delivered') {
-          stats.deliveredCount += pledgeItem.quantity;
+          stats.deliveredCount += unitCount;
         }
       }
     }

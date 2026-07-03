@@ -42,12 +42,15 @@ export async function POST(req: NextRequest) {
 
     const { donorName, items } = body;
 
-    // Check if donorName is in allowed names
+    // Check if donorName is in allowed names (case-insensitive)
     const rawNames = await redisCmd(["GET", "donation:names"]);
     const names = rawNames ? (JSON.parse(rawNames as string) as string[]) : [];
-    if (!names.includes(donorName)) {
+    const matchedName = names.find(n => n.toLowerCase() === donorName.toLowerCase());
+    if (!matchedName) {
       return NextResponse.json({ error: "Donor name not registered in name list" }, { status: 400 });
     }
+
+    const canonicalDonorName = matchedName;
 
     // Search for existing pledge for this donor to avoid duplicates or update it
     const ids = ((await redisCmd(["LRANGE", "donation:pledge_ids", "0", "-1"])) as string[]) ?? [];
@@ -57,7 +60,7 @@ export async function POST(req: NextRequest) {
       const raw = await redisCmd(["GET", `donation:pledge:${id}`]);
       if (raw) {
         const p = JSON.parse(raw as string) as Pledge;
-        if (p.donorName.toLowerCase() === donorName.toLowerCase()) {
+        if (p.donorName.toLowerCase() === canonicalDonorName.toLowerCase()) {
           existingPledgeId = id;
           break;
         }
@@ -75,25 +78,41 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const totalQuantity = items.reduce((sum: number, item: any) => {
-      const catItem = catalogItems.find(c => c.id === item.itemId);
+    // Validate items: must have valid itemId, positive quantity, and exist in catalog
+    const validatedItems = [];
+    for (const item of items) {
+      if (!item.itemId || !item.itemName) {
+        return NextResponse.json({ error: "Each item must have an itemId and itemName" }, { status: 400 });
+      }
+      const quantity = Number(item.quantity);
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        return NextResponse.json({ error: `Invalid quantity for item '${item.itemName}'` }, { status: 400 });
+      }
+      const catItem = catalogItems.find((c: any) => c.id === item.itemId);
+      if (!catItem) {
+        return NextResponse.json({ error: `Item '${item.itemName}' not found in catalog` }, { status: 400 });
+      }
+      if (!catItem.enabled) {
+        return NextResponse.json({ error: `Item '${item.itemName}' is currently disabled` }, { status: 400 });
+      }
+      validatedItems.push({ ...item, quantity });
+    }
+
+    const totalQuantity = validatedItems.reduce((sum: number, item: any) => {
+      const catItem = catalogItems.find((c: any) => c.id === item.itemId);
       const packSize = catItem?.packSize || 1;
-      return sum + ((item.quantity || 0) * packSize);
+      return sum + (item.quantity * packSize);
     }, 0);
 
     const now = new Date().toISOString();
     
-    // If it's a new pledge, we use the items passed. If updating, we overwrite or append? The user said:
-    // "warn before creating a new one (option to update existing)"
-    // We will handle the confirmation client-side. If the user confirms, we just overwrite the pledge.
     const pledge: Pledge = {
       id: pledgeId,
-      donorName,
-      items: items.map((item: any) => ({
+      donorName: canonicalDonorName,
+      items: validatedItems.map((item: any) => ({
         itemId: item.itemId,
         itemName: item.itemName,
         quantity: item.quantity,
-        selectedLink: item.selectedLink,
         status: item.status || 'pledged'
       })),
       totalQuantity,

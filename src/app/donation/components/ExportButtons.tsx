@@ -42,7 +42,7 @@ export default function ExportButtons({ pledges }: ExportButtonsProps) {
 
     const csvContent = [
       headers.join(","),
-      ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+      ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""').replace(/\n/g, ' ').replace(/\r/g, '')}"`).join(","))
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

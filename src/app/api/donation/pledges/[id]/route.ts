@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redisCmd } from "@/lib/ai4all";
-import { Pledge } from "@/app/donation/lib/types";
+import { Pledge, DonationItem } from "@/app/donation/lib/types";
 
 export const dynamic = "force-dynamic";
+
+function verifyAdmin(req: NextRequest): boolean {
+  const auth = req.headers.get("x-admin-password");
+  return auth === (process.env.DONATION_ADMIN_PASSWORD || "panda@9010");
+}
 
 // GET /api/donation/pledges/[id]
 export async function GET(
@@ -64,8 +69,21 @@ export async function PATCH(
 
     pledge.updatedAt = new Date().toISOString();
     
-    // Recalculate total quantity
-    pledge.totalQuantity = pledge.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    // Recalculate total quantity with packSize from catalog
+    const itemIds = ((await redisCmd(["LRANGE", "donation:item_ids", "0", "-1"])) as string[]) ?? [];
+    const catalogItems: DonationItem[] = [];
+    for (const itemId of itemIds) {
+      const rawItem = await redisCmd(["GET", `donation:item:${itemId}`]);
+      if (rawItem) {
+        catalogItems.push(JSON.parse(rawItem as string));
+      }
+    }
+
+    pledge.totalQuantity = pledge.items.reduce((sum, item) => {
+      const catItem = catalogItems.find(c => c.id === item.itemId);
+      const packSize = catItem?.packSize || 1;
+      return sum + ((item.quantity || 0) * packSize);
+    }, 0);
 
     // Save to Redis
     await redisCmd(["SET", `donation:pledge:${id}`, JSON.stringify(pledge)]);
@@ -82,6 +100,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!verifyAdmin(req)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     if (!id) {
       return NextResponse.json({ error: "Missing ID parameter" }, { status: 400 });

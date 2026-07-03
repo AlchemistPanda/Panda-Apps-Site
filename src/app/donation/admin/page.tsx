@@ -57,12 +57,18 @@ function AdminDashboardContent() {
   const [expandedPledges, setExpandedPledges] = useState<Record<string, boolean>>({});
   const [searchFilter, setSearchFilter] = useState('');
 
+  // Helper to get admin password from session
+  const getAdminHeaders = () => {
+    const pwd = sessionStorage.getItem('donation_admin_pwd') || '';
+    return { 'x-admin-password': pwd };
+  };
+
   // Fetch admin data
   const fetchData = async () => {
     setLoading(true);
     setError('');
     try {
-      const headers = { 'x-admin-password': 'panda@9010' };
+      const headers = getAdminHeaders();
       const [itemsRes, pledgesRes, namesRes, statsRes] = await Promise.all([
         fetch('/api/donation/items', { headers }),
         fetch('/api/donation/pledges', { headers }),
@@ -97,6 +103,7 @@ function AdminDashboardContent() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('donation_admin_auth');
+    sessionStorage.removeItem('donation_admin_pwd');
     window.location.reload();
   };
 
@@ -114,7 +121,7 @@ function AdminDashboardContent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-password': 'panda@9010'
+          ...getAdminHeaders()
         },
         body: JSON.stringify({ names: parsedNames })
       });
@@ -196,7 +203,7 @@ function AdminDashboardContent() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-password': 'panda@9010'
+          ...getAdminHeaders()
         },
         body: JSON.stringify(itemPayload)
       });
@@ -235,7 +242,7 @@ function AdminDashboardContent() {
     try {
       const res = await fetch(`/api/donation/items/${id}`, {
         method: 'DELETE',
-        headers: { 'x-admin-password': 'panda@9010' }
+        headers: getAdminHeaders()
       });
       if (!res.ok) throw new Error("Failed to delete item");
       setSuccess("Item deleted successfully.");
@@ -257,7 +264,7 @@ function AdminDashboardContent() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-password': 'panda@9010'
+          ...getAdminHeaders()
         },
         body: JSON.stringify(updated)
       });
@@ -279,7 +286,7 @@ function AdminDashboardContent() {
     try {
       const res = await fetch(`/api/donation/pledges/${pledgeId}`, {
         method: 'DELETE',
-        headers: { 'x-admin-password': 'panda@9010' }
+        headers: getAdminHeaders()
       });
       if (!res.ok) throw new Error("Failed to delete pledge");
       setSuccess("Pledge deleted successfully.");
@@ -451,7 +458,7 @@ function AdminDashboardContent() {
                     Total Donors List
                   </span>
                   <span className="text-3xl font-black text-[#2d3436] mt-2 block">
-                    {namesCount} Students
+                    {stats.totalNamesCount} Students
                   </span>
                   <span className="text-[10px] text-[#7f8c8d] mt-4 block font-semibold">
                     Verified names loaded in system
@@ -470,8 +477,9 @@ function AdminDashboardContent() {
                 ) : (
                   <div className="space-y-4">
                     {stats.itemStats.map((item: any) => {
-                      const itemGoalVal = item.goalQuantity || 100; // Fallback helper
-                      const pledgePercent = Math.min(Math.round((item.totalPledged / itemGoalVal) * 100), 100);
+                      const hasGoal = item.goalQuantity > 0;
+                      const itemGoalVal = hasGoal ? item.goalQuantity : item.totalPledged || 1;
+                      const pledgePercent = hasGoal ? Math.min(Math.round((item.totalPledged / itemGoalVal) * 100), 100) : 0;
                       const deliveredPercent = item.totalPledged > 0 ? Math.round((item.deliveredCount / item.totalPledged) * 100) : 0;
                       
                       return (

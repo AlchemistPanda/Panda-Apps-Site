@@ -56,6 +56,12 @@ export default function DonationLandingPage() {
 
   const totalItemsSelected = Object.values(quantities).reduce((a, b) => a + b, 0);
 
+  const totalUnitsSelected = Object.entries(quantities).reduce((sum, [id, q]) => {
+    const item = items.find(i => i.id === id);
+    const packSize = item?.packSize || 1;
+    return sum + (q * packSize);
+  }, 0);
+
   const handlePledgeSubmit = () => {
     const selectedItems = items
       .filter(item => quantities[item.id] > 0)
@@ -153,7 +159,7 @@ export default function DonationLandingPage() {
         <div className="leading-relaxed">
           <p className="font-bold text-amber-800">Can I buy from local stores?</p>
           <p className="text-[#7f8c8d] mt-1">
-            Yes, you can purchase these products from **any local store or website**! However, please ensure the **brand, model, and color are exactly identical** to the linked products. When distributing items in LP schools, children can feel left out or sad if they receive items that look different from their peers.
+          Yes, you can purchase these products from <strong>any local store or website</strong>! However, please ensure the <strong>brand, model, and color are exactly identical</strong> to the linked products. When distributing items in LP schools, children can feel left out or sad if they receive items that look different from their peers.
           </p>
         </div>
       </div>
@@ -206,7 +212,7 @@ export default function DonationLandingPage() {
                 Your Donation Selection
               </span>
               <span className="text-base font-bold text-[#2d3436]">
-                {totalItemsSelected} {totalItemsSelected === 1 ? 'item' : 'items'} selected
+                {totalItemsSelected} {totalItemsSelected === 1 ? 'pack/item' : 'packs/items'} ({totalUnitsSelected} {totalUnitsSelected === 1 ? 'unit' : 'units'}) selected
               </span>
             </div>
             <button
