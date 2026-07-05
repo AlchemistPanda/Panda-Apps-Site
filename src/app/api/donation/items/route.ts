@@ -21,8 +21,8 @@ const DEFAULT_ITEMS: DonationItem[] = [
     category: "Writing",
     description: "Apsara Platinum Extra Dark Pencils. Pack of 20 pencils (usually 2 standard boxes of 10 pencils each). Includes 2 erasers and 2 sharpeners.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=Apsara+Platinum+Extra+Dark+Pencils+Pack+of+20", price: 110 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=Apsara+Platinum+Extra+Dark+Pencils+Pack+of+20", price: 100 }
+      { siteName: "Amazon", url: "https://www.amazon.in/Apsara-Platinum-Extra-Dark-Pencils/dp/B07Y36NVGT/", price: 120 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/apsara-platinum-value-pack-pencils/p/itm5316db1e8a4a5", price: 100 }
     ],
     createdAt: new Date().toISOString()
   },
@@ -35,8 +35,8 @@ const DEFAULT_ITEMS: DonationItem[] = [
     category: "Writing",
     description: "Apsara Non-Dust Erasers. Pack of 20 erasers. High-quality erasers that leave minimal residue and prevent tearing of paper.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=Apsara+Non+Dust+Erasers+pack+of+20", price: 60 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=Apsara+Non+Dust+Erasers+pack+of+20", price: 55 }
+      { siteName: "Amazon", url: "https://www.amazon.in/Apsara-Non-Dust-Erasers-Pack-20/dp/B00LQJ04WS/", price: 60 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/apsara-non-dust-erasers-pack-20/p/itmdyrygng7w7ygh", price: 55 }
     ],
     createdAt: new Date().toISOString()
   },
@@ -49,8 +49,8 @@ const DEFAULT_ITEMS: DonationItem[] = [
     category: "Writing",
     description: "Apsara Long Point Sharpeners. Pack of 20 sharpeners. Scientifically angled blades for clean, sharp pencil points without breaking.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=Apsara+Long+Point+Sharpeners+pack+of+20", price: 70 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=Apsara+Long+Point+Sharpeners+pack+of+20", price: 65 }
+      { siteName: "Amazon", url: "https://www.amazon.in/Apsara-Long-Point-Sharpeners-Pack/dp/B00LQJ00J0/", price: 70 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/apsara-long-point-sharpeners-pack-20/p/itmdyrygph7zyghf", price: 65 }
     ],
     createdAt: new Date().toISOString()
   },
@@ -63,8 +63,8 @@ const DEFAULT_ITEMS: DonationItem[] = [
     category: "Art",
     description: "DOMS Aqua Water Color Sketch Pens. Pack of 12 vibrant colors. Non-toxic ink with durable fiber tips for smooth drawing and sketching.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=DOMS+Sketch+Pens+pack+of+12", price: 30 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=DOMS+Sketch+Pens+pack+of+12", price: 25 }
+      { siteName: "Amazon", url: "https://www.amazon.in/DOMS-Aqua-Water-Colour-Pen/dp/B00LQJ07EM/", price: 35 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/doms-aqua-water-colour-pens-12-shades/p/itmdyrygwh9zyghc", price: 30 }
     ],
     createdAt: new Date().toISOString()
   },
@@ -77,8 +77,8 @@ const DEFAULT_ITEMS: DonationItem[] = [
     category: "Art",
     description: "DOMS Wax Crayons. Pack of 12 bright colors. Smooth, smudge-free flow, completely non-toxic and child-safe.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=DOMS+Wax+Crayons+pack+of+12", price: 20 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=DOMS+Wax+Crayons+pack+of+12", price: 15 }
+      { siteName: "Amazon", url: "https://www.amazon.in/DOMS-Wax-Crayons-12-Shades/dp/B00LQJ09X6/", price: 20 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/doms-wax-crayons-12-shades/p/itmdyrygzh9zyghd", price: 15 }
     ],
     createdAt: new Date().toISOString()
   },
@@ -91,8 +91,8 @@ const DEFAULT_ITEMS: DonationItem[] = [
     category: "Writing",
     description: "Apsara Platinum Extra Dark Pencils. Combo of 5 boxes (10 pencils per box, total 50 pencils). Includes 5 erasers and 5 sharpeners.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=Apsara+Platinum+Extra+Dark+Pencils+Pack+of+5+boxes", price: 275 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=Apsara+Platinum+Extra+Dark+Pencils+Pack+of+5+boxes", price: 250 }
+      { siteName: "Amazon", url: "https://www.amazon.in/Apsara-Platinum-Pencils-Value-Pack/dp/B00VA7YYUO/", price: 260 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/apsara-platinum-value-pack-pencils/p/itm5316db1e8a4a5", price: 250 }
     ],
     createdAt: new Date().toISOString()
   },
@@ -105,8 +105,8 @@ const DEFAULT_ITEMS: DonationItem[] = [
     category: "Instruments",
     description: "DOMS Transparent Rulers. Pack of 10 scales (15cm / 6 inch). Durable and clear plastic scales with bold markings.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=DOMS+ruler+15cm+pack+of+10", price: 50 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=DOMS+ruler+15cm+pack+of+10", price: 45 }
+      { siteName: "Amazon", url: "https://www.amazon.in/DOMS-Non-Scaling-Ruler-15cm-Pack/dp/B00LQJ0BUE/", price: 50 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/doms-ruler-15cm-pack-10/p/itmdyrygdh9zyghc", price: 45 }
     ],
     createdAt: new Date().toISOString()
   }
