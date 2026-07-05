@@ -46,6 +46,7 @@ function AdminDashboardContent() {
   const [itemCategory, setItemCategory] = useState('Writing');
   const [itemGoal, setItemGoal] = useState<number | ''>('');
   const [itemPackSize, setItemPackSize] = useState<number | ''>('');
+  const [itemDescription, setItemDescription] = useState('');
   
   // Multiple links state for item form
   const [itemLinks, setItemLinks] = useState<{ siteName: string; url: string; price?: number }[]>([
@@ -163,6 +164,7 @@ function AdminDashboardContent() {
     setItemCategory('Writing');
     setItemGoal('');
     setItemPackSize('');
+    setItemDescription('');
     setItemLinks([
       { siteName: 'Amazon', url: '', price: undefined },
       { siteName: 'Flipkart', url: '', price: undefined }
@@ -192,6 +194,7 @@ function AdminDashboardContent() {
       goalQuantity: itemGoal ? Number(itemGoal) : undefined,
       packSize: itemPackSize ? Number(itemPackSize) : undefined,
       links: filteredLinks,
+      description: itemDescription || undefined,
       createdAt: editingItem ? editingItem.createdAt : new Date().toISOString()
     };
 
@@ -226,6 +229,7 @@ function AdminDashboardContent() {
     setItemCategory(item.category || 'Writing');
     setItemGoal(item.goalQuantity || '');
     setItemPackSize(item.packSize || '');
+    setItemDescription(item.description || '');
     setItemLinks(item.links && item.links.length > 0 ? item.links : [
       { siteName: 'Amazon', url: '', price: undefined },
       { siteName: 'Flipkart', url: '', price: undefined }
@@ -251,6 +255,26 @@ function AdminDashboardContent() {
       setError(err.message || "Failed to delete item.");
     } finally {
       setUpdatingItemId(null);
+    }
+  };
+
+  const handleResetCatalog = async () => {
+    if (!confirm("Are you sure you want to reset the catalog? All current items will be deleted, and defaults will be restored.")) return;
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/donation/items/reset', {
+        method: 'POST',
+        headers: getAdminHeaders()
+      });
+      if (!res.ok) throw new Error("Failed to reset catalog");
+      setSuccess("Catalog reset to defaults successfully.");
+      await fetchData();
+    } catch (err: any) {
+      setError(err.message || "Failed to reset catalog.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -757,6 +781,19 @@ function AdminDashboardContent() {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-bold text-[#2d3436] uppercase tracking-wide mb-2">
+                      Description (Brand & Quantity Details)
+                    </label>
+                    <textarea
+                      placeholder="e.g. Apsara Platinum Extra Dark, Pack of 20 pencils. Includes erasers and sharpeners."
+                      value={itemDescription}
+                      onChange={(e) => setItemDescription(e.target.value)}
+                      className="don-input min-h-[70px] py-2"
+                      rows={2}
+                    />
+                  </div>
+
                   {/* Links Manager */}
                   <div className="border border-[#f0e6df] rounded-2xl p-4 bg-[#fcf9f6]">
                     <div className="flex items-center justify-between mb-4">
@@ -832,9 +869,20 @@ function AdminDashboardContent() {
 
               {/* Items Catalog List */}
               <div className="bg-white border border-[#f0e6df] rounded-2xl p-6 shadow-sm">
-                <span className="block text-sm font-bold text-[#2d3436] mb-6 uppercase tracking-wide">
-                  Configured Stationery Catalog ({items.length})
-                </span>
+                <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+                  <span className="block text-sm font-bold text-[#2d3436] uppercase tracking-wide">
+                    Configured Stationery Catalog ({items.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleResetCatalog}
+                    className="don-btn-outline px-4 py-2 text-xs border-red-200 text-red-600 hover:bg-red-50 font-bold flex items-center gap-1.5"
+                    title="Reset catalog items to defaults"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Reset to Defaults</span>
+                  </button>
+                </div>
 
                 <div className="space-y-4">
                   {items.map((item) => (
@@ -860,6 +908,11 @@ function AdminDashboardContent() {
                           <span className="text-[10px] text-[#7f8c8d]">
                             Category: <strong>{item.category || 'N/A'}</strong> | Pack Size: <strong>{item.packSize || 1}</strong> | Links: <strong>{item.links?.length || 0}</strong> | Goal: <strong>{item.goalQuantity || 'None'}</strong>
                           </span>
+                          {item.description && (
+                            <p className="text-[11px] text-gray-500 mt-1 max-w-xl leading-relaxed italic">
+                              {item.description}
+                            </p>
+                          )}
                         </div>
                       </div>
 

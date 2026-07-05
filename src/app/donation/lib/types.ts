@@ -15,6 +15,7 @@ export interface DonationItem {
   packSize?: number; // optional pack size, e.g. 5 or 10, default is 1
   category?: string; // optional grouping
   createdAt: string;
+  description?: string; // optional description with brand & qty details
 }
 
 export interface PledgeItem {

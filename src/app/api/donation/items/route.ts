@@ -13,80 +13,100 @@ function verifyAdmin(req: NextRequest): boolean {
 // Initial pre-seed items
 const DEFAULT_ITEMS: DonationItem[] = [
   {
-    id: "notebook-single-line",
-    name: "Single Line Notebook (200 pages)",
-    icon: "📓",
+    id: "pencil-apsara-20",
+    name: "Apsara Platinum Pencils (Box of 20)",
+    icon: "✏️",
     enabled: true,
     goalQuantity: 100,
-    category: "Books",
-    links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=classmate+notebooks+200+pages", price: 45 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=classmate+notebook+200+pages", price: 42 }
-    ],
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: "ball-pen-set",
-    name: "Ball Pen Set (Pack of 5)",
-    icon: "🖊️",
-    enabled: true,
-    goalQuantity: 50,
     category: "Writing",
+    description: "Apsara Platinum Extra Dark Pencils. Pack of 20 pencils (usually 2 standard boxes of 10 pencils each). Includes 2 erasers and 2 sharpeners.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=ball+pen+set+pack+of+5", price: 50 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=ball+pen+set+pack+of+5", price: 48 }
+      { siteName: "Amazon", url: "https://www.amazon.in/s?k=Apsara+Platinum+Extra+Dark+Pencils+Pack+of+20", price: 110 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=Apsara+Platinum+Extra+Dark+Pencils+Pack+of+20", price: 100 }
     ],
     createdAt: new Date().toISOString()
   },
   {
-    id: "pencil-box-set",
-    name: "Pencil & Eraser Set",
-    icon: "✏️",
+    id: "eraser-apsara-20",
+    name: "Apsara Non-Dust Erasers (Pack of 20)",
+    icon: "🧼",
     enabled: true,
     goalQuantity: 80,
     category: "Writing",
+    description: "Apsara Non-Dust Erasers. Pack of 20 erasers. High-quality erasers that leave minimal residue and prevent tearing of paper.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=apsara+pencil+box", price: 60 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=apsara+pencil+box", price: 55 }
+      { siteName: "Amazon", url: "https://www.amazon.in/s?k=Apsara+Non+Dust+Erasers+pack+of+20", price: 60 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=Apsara+Non+Dust+Erasers+pack+of+20", price: 55 }
     ],
     createdAt: new Date().toISOString()
   },
   {
-    id: "geometry-box",
-    name: "Geometry Box",
-    icon: "📐",
+    id: "sharpener-apsara-20",
+    name: "Apsara Long Point Sharpeners (Pack of 20)",
+    icon: "⚙️",
     enabled: true,
-    goalQuantity: 30,
-    category: "Instruments",
+    goalQuantity: 80,
+    category: "Writing",
+    description: "Apsara Long Point Sharpeners. Pack of 20 sharpeners. Scientifically angled blades for clean, sharp pencil points without breaking.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=camel+geometry+box", price: 120 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=camel+geometry+box", price: 110 }
+      { siteName: "Amazon", url: "https://www.amazon.in/s?k=Apsara+Long+Point+Sharpeners+pack+of+20", price: 70 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=Apsara+Long+Point+Sharpeners+pack+of+20", price: 65 }
     ],
     createdAt: new Date().toISOString()
   },
   {
-    id: "color-pencils",
-    name: "Color Pencil Pack",
+    id: "sketch-doms-12",
+    name: "DOMS Aqua Water Color Pens (Pack of 12)",
+    icon: "🖍️",
+    enabled: true,
+    goalQuantity: 80,
+    category: "Art",
+    description: "DOMS Aqua Water Color Sketch Pens. Pack of 12 vibrant colors. Non-toxic ink with durable fiber tips for smooth drawing and sketching.",
+    links: [
+      { siteName: "Amazon", url: "https://www.amazon.in/s?k=DOMS+Sketch+Pens+pack+of+12", price: 30 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=DOMS+Sketch+Pens+pack+of+12", price: 25 }
+    ],
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "crayons-doms-12",
+    name: "DOMS Wax Crayons (Pack of 12)",
     icon: "🎨",
     enabled: true,
-    goalQuantity: 40,
+    goalQuantity: 80,
     category: "Art",
+    description: "DOMS Wax Crayons. Pack of 12 bright colors. Smooth, smudge-free flow, completely non-toxic and child-safe.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=doms+color+pencils", price: 100 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=doms+color+pencils", price: 95 }
+      { siteName: "Amazon", url: "https://www.amazon.in/s?k=DOMS+Wax+Crayons+pack+of+12", price: 20 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=DOMS+Wax+Crayons+pack+of+12", price: 15 }
     ],
     createdAt: new Date().toISOString()
   },
   {
-    id: "school-bag",
-    name: "School Bag",
-    icon: "🎒",
+    id: "pencil-apsara-5boxes",
+    name: "Apsara Platinum Pencils (5 Boxes Combo)",
+    icon: "✏️",
     enabled: true,
-    goalQuantity: 20,
-    category: "Bags",
+    goalQuantity: 50,
+    category: "Writing",
+    description: "Apsara Platinum Extra Dark Pencils. Combo of 5 boxes (10 pencils per box, total 50 pencils). Includes 5 erasers and 5 sharpeners.",
     links: [
-      { siteName: "Amazon", url: "https://www.amazon.in/s?k=school+bag+kids", price: 399 },
-      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=school+bag+kids", price: 380 }
+      { siteName: "Amazon", url: "https://www.amazon.in/s?k=Apsara+Platinum+Extra+Dark+Pencils+Pack+of+5+boxes", price: 275 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=Apsara+Platinum+Extra+Dark+Pencils+Pack+of+5+boxes", price: 250 }
+    ],
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: "ruler-doms-10",
+    name: "DOMS Ruler 15cm (Pack of 10)",
+    icon: "📏",
+    enabled: true,
+    goalQuantity: 80,
+    category: "Instruments",
+    description: "DOMS Transparent Rulers. Pack of 10 scales (15cm / 6 inch). Durable and clear plastic scales with bold markings.",
+    links: [
+      { siteName: "Amazon", url: "https://www.amazon.in/s?k=DOMS+ruler+15cm+pack+of+10", price: 50 },
+      { siteName: "Flipkart", url: "https://www.flipkart.com/search?q=DOMS+ruler+15cm+pack+of+10", price: 45 }
     ],
     createdAt: new Date().toISOString()
   }

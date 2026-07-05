@@ -44,6 +44,11 @@ export default function ItemCard({
           <h3 className="font-bold text-[#2d3436] text-lg leading-tight truncate">
             {item.name}
           </h3>
+          {item.description && (
+            <p className="text-xs text-[#7f8c8d] mt-1 leading-relaxed">
+              {item.description}
+            </p>
+          )}
           <div className="mt-1 text-xs text-[#7f8c8d]">
             {item.goalQuantity ? (
               <span>Pledged: <span className="font-semibold text-[#2d3436]">{totalPledgedSoFar}</span> / {item.goalQuantity} units</span>
