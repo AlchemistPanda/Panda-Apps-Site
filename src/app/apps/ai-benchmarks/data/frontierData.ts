@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Frontier AI Model Benchmark Data — 27 July 2026
+// Frontier AI Model Benchmark Data — 15 August 2026
 //
 // All scores independently verified from official leaderboards:
 //   Arena ELO      – arena.ai  Text Arena overall  (March 2, 2026 snapshot)
@@ -8,20 +8,31 @@
 //   GPQA Diamond   – artificialanalysis.ai / official model reports
 //   AA Index       – artificialanalysis.ai  Intelligence Index v4.0/4.1
 //   LiveCodeBench  – livecodebench.github.io  code generation (Mar 2026)
-//   TerminalBench  – tbench.ai  TerminalBench 2.0/2.1  (Jul 2026)
+//   TerminalBench  – tbench.ai  TerminalBench 2.0/2.1  (Aug 2026)
 //   τ-Bench        – taubench.com  retail domain  (Mar 2026)
 //   SciCode        – scicode-bench.github.io  with background  (Feb 2026)
 //
-// Newer entries (Sonnet 5, Opus 5, GPT-5.6 family, Gemini 3.6 Flash / 3.5
-// Flash-Lite, Grok 4.5, Kimi K3, GLM-5.2, MiniMax M3, Muse Spark 1.1,
-// Nemotron 3 Ultra) were added 27 Jul 2026. Several of their benchmark
-// fields are left null where official/first-party numbers were not
-// published yet, or where only conflicting single-source figures existed —
-// see notes field on each model for caveats. costPer1M for the July batch
-// is computed from list pricing using a 3:1 input:output blend where an
-// official blended figure wasn't published directly.
+// ── 15 Aug 2026 refresh ──────────────────────────────────────────────────
+// Added: Gemini 3.7 Flash, Grok 4.6, GPT-5.6 Cyber, GLM-5.3, Qwen3.8-Max,
+// Qwen3.8-27B, Qwen3.7 Flash, DeepSeek V4 Pro 0813, Muse Spark 1.2,
+// Muse Glimmer 30B, Seed 2.1 Turbo (ByteDance — new provider).
+// Removed: "Claude Sonnet 4.7" — no such model exists in Anthropic's
+// published catalogue (Sonnet line goes 4.5 → 4.6 → 5); the row was bad data.
+// Repriced: Claude Sonnet 5 ($2/$10 list), GPT-5.6 Luna (−80%, now
+// $0.20/$1.20) and GPT-5.6 Terra (−20%, now $2/$12) after OpenAI's
+// 30 Jul 2026 cut.
 //
-// Last verified: 27 July 2026
+// AA Index values are the vendor's default/high effort tier where a model
+// publishes several; some models score higher at xhigh/max.
+// Benchmark fields are left null where official/first-party numbers were not
+// published yet, where only conflicting single-source figures existed, or
+// where the vendor reported a *different revision* of the benchmark than the
+// column tracks (e.g. Terminal-Bench 3.0 scores are not comparable to the
+// 2.0/2.1 column) — see the notes field on each model for caveats.
+// costPer1M is computed from list pricing using a 3:1 input:output blend
+// where an official blended figure wasn't published directly.
+//
+// Last verified: 15 August 2026
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ModelTag = "coding" | "reasoning" | "multimodal" | "chat";
@@ -300,6 +311,7 @@ export const MODELS: BenchmarkModel[] = [
     isFree: true,
     canRunLocally: false,
     tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote: "List price $2/$10 per MTok; AA scores Sonnet 5 at 55 on its max effort tier.",
     gpqa: null,
     swe: null,
     arcagi2: null,
@@ -309,7 +321,7 @@ export const MODELS: BenchmarkModel[] = [
     terminalbench: 80.4,
     taubench: null,
     scicode: null,
-    costPer1M: 3.0,
+    costPer1M: 4.0,
     throughput: 76.1,
     ttft: null,
     contextWindow: 1000,
@@ -453,33 +465,6 @@ export const MODELS: BenchmarkModel[] = [
     gdpVal: 1780,
   },
   {
-    id: "claude-sonnet-4-7",
-    name: "Claude Sonnet 4.7",
-    provider: "Anthropic",
-    providerColor: "text-orange-600 dark:text-orange-400",
-    releasedAt: "2026-04",
-    isOpenSource: false,
-    isFree: true,
-    canRunLocally: false,
-    tags: ["coding", "reasoning", "multimodal", "chat"],
-    gpqa: null,
-    swe: 82.1,
-    arcagi2: 68.2,
-    arenaElo: 1488,
-    aaIndex: 58,
-    livecodebench: null,
-    terminalbench: 84.0,
-    taubench: null,
-    scicode: null,
-    costPer1M: 3.0,
-    throughput: 95,
-    ttft: 0.3,
-    contextWindow: 1000,
-    hle: null,
-    frontierMath: null,
-    gdpVal: null,
-  },
-  {
     id: "claude-opus-4-5",
     name: "Claude Opus 4.5",
     provider: "Anthropic",
@@ -534,6 +519,35 @@ export const MODELS: BenchmarkModel[] = [
     gdpVal: null,
   },
   // ── Google ──────────────────────────────────────────────────────────────
+  {
+    id: "gemini-3-7-flash",
+    name: "Gemini 3.7 Flash",
+    provider: "Google",
+    providerColor: "text-blue-600 dark:text-blue-400",
+    releasedAt: "2026-08",
+    isOpenSource: false,
+    isFree: true,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote:
+      "Promotional pricing ($0.75/$3.75 per MTok) through 31 Dec 2026, then doubles. AA has no SWE-bench/LiveCodeBench/MMLU-Pro run — circulating figures are Google's own charts.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: 56,
+    livecodebench: null,
+    terminalbench: 85.8,
+    taubench: null,
+    scicode: null,
+    costPer1M: 1.5,
+    throughput: 340.1,
+    ttft: 9.83,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
   {
     id: "gemini-3-6-flash",
     name: "Gemini 3.6 Flash",
@@ -726,6 +740,35 @@ export const MODELS: BenchmarkModel[] = [
   },
   // ── OpenAI ─────────────────────────────────────────────────────────────
   {
+    id: "gpt-5-6-cyber",
+    name: "GPT-5.6 Cyber",
+    provider: "OpenAI",
+    providerColor: "text-green-600 dark:text-green-400",
+    releasedAt: "2026-08",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["reasoning", "coding", "chat"],
+    availabilityNote:
+      "Gated behind OpenAI's Daybreak Red approval for authorised security teams. Reported at 95% completion on advanced cybersecurity tasks; no general academic benchmarks published.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: null,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: 28.13,
+    throughput: null,
+    ttft: null,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
+  {
     id: "gpt-5-6-sol",
     name: "GPT-5.6 Sol",
     provider: "OpenAI",
@@ -763,6 +806,7 @@ export const MODELS: BenchmarkModel[] = [
     isFree: false,
     canRunLocally: false,
     tags: ["coding", "multimodal", "chat"],
+    availabilityNote: "Repriced 30 Jul 2026: −20% to $2/$12 per MTok.",
     gpqa: null,
     swe: null,
     arcagi2: null,
@@ -772,7 +816,7 @@ export const MODELS: BenchmarkModel[] = [
     terminalbench: null,
     taubench: null,
     scicode: null,
-    costPer1M: 5.63,
+    costPer1M: 4.5,
     throughput: 137.2,
     ttft: null,
     contextWindow: 1000,
@@ -790,6 +834,7 @@ export const MODELS: BenchmarkModel[] = [
     isFree: true,
     canRunLocally: false,
     tags: ["coding", "chat"],
+    availabilityNote: "Repriced 30 Jul 2026: −80% to $0.20/$1.20 per MTok — the cheapest frontier-adjacent tier.",
     gpqa: null,
     swe: 93.0,
     arcagi2: null,
@@ -799,7 +844,7 @@ export const MODELS: BenchmarkModel[] = [
     terminalbench: null,
     taubench: null,
     scicode: null,
-    costPer1M: 2.25,
+    costPer1M: 0.45,
     throughput: 188.2,
     ttft: null,
     contextWindow: 1000,
@@ -971,6 +1016,35 @@ export const MODELS: BenchmarkModel[] = [
   },
   // ── xAI ─────────────────────────────────────────────────────────────────
   {
+    id: "grok-4-6",
+    name: "Grok 4.6",
+    provider: "xAI",
+    providerColor: "text-purple-600 dark:text-purple-400",
+    releasedAt: "2026-08",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["reasoning", "coding", "chat"],
+    availabilityNote:
+      "Ties GPT-5.6 Sol on the AA index at a third of the price. Vendor benchmarks are the newer suite (APEX-SWE 56.4, deepSWE 65.9, Terminal-Bench 3.0 26.5) — not comparable to the SWE-bench / TB 2.x columns, so those are left blank.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: 61,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: 3.0,
+    throughput: 66,
+    ttft: null,
+    contextWindow: 500,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
+  {
     id: "grok-4-5",
     name: "Grok 4.5",
     provider: "xAI",
@@ -1082,6 +1156,36 @@ export const MODELS: BenchmarkModel[] = [
   },
   // ── Z.ai ────────────────────────────────────────────────────────────────
   {
+    id: "glm-5-3",
+    name: "GLM-5.3",
+    provider: "Z.ai",
+    providerColor: "text-teal-600 dark:text-teal-400",
+    releasedAt: "2026-08",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "chat"],
+    params: "743B (MoE) — same base as GLM-5.2, post-training only",
+    availabilityNote:
+      "Weights and wider API access staged ~2 weeks post-launch pending safety review — unusually for Z.ai, not open at release. Vendor scores use the newer suite (CyberGym 84.5, DeepSWE 66.9, Terminal-Bench 3.0 28.3, HLE-with-tools 62.5) which the columns here don't track.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: null,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: null,
+    throughput: null,
+    ttft: null,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
+  {
     id: "glm-5-2",
     name: "GLM-5.2",
     provider: "Z.ai",
@@ -1139,6 +1243,95 @@ export const MODELS: BenchmarkModel[] = [
     gdpVal: null,
   },
   // ── Alibaba ──────────────────────────────────────────────────────────────
+  {
+    id: "qwen-3-8-max",
+    name: "Qwen3.8-Max",
+    provider: "Alibaba",
+    providerColor: "text-amber-600 dark:text-amber-400",
+    releasedAt: "2026-08",
+    isOpenSource: true,
+    isFree: true,
+    canRunLocally: false,
+    tags: ["reasoning", "coding", "multimodal", "chat"],
+    params: "2.4T (MoE, 95B active)",
+    availabilityNote:
+      "Apache-2.0 weights landed on Hugging Face / ModelScope 14 Aug 2026, but 2.4T params puts local inference out of consumer reach. Headline vendor claims: OSWorld-Verified 86.1, PaperBench 93.0.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: 58,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: 1.13,
+    throughput: 47,
+    ttft: null,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
+  {
+    id: "qwen-3-8-27b",
+    name: "Qwen3.8-27B",
+    provider: "Alibaba",
+    providerColor: "text-amber-600 dark:text-amber-400",
+    releasedAt: "2026-08",
+    isOpenSource: true,
+    isFree: true,
+    canRunLocally: true,
+    tags: ["coding", "reasoning", "chat"],
+    params: "27B (dense)",
+    availabilityNote:
+      "Apache 2.0, 262K native context (1M via YaRN). The run-it-yourself tier — reported ahead of Muse Glimmer 30B on most benchmarks.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: null,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: null,
+    throughput: null,
+    ttft: null,
+    contextWindow: 262,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
+  {
+    id: "qwen-3-7-flash",
+    name: "Qwen3.7 Flash",
+    provider: "Alibaba",
+    providerColor: "text-amber-600 dark:text-amber-400",
+    releasedAt: "2026-07",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["multimodal", "chat"],
+    availabilityNote:
+      "Proprietary native vision-language model (text/image/video in) at $0.03/$0.13 per MTok — positioned as the cheap subagent tier.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: null,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: 0.06,
+    throughput: null,
+    ttft: null,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
   {
     id: "qwen-3-7-max",
     name: "Qwen 3.7 Max",
@@ -1281,6 +1474,36 @@ export const MODELS: BenchmarkModel[] = [
     gdpVal: null,
   },
   // ── DeepSeek ─────────────────────────────────────────────────────────────
+  {
+    id: "deepseek-v4-pro-0813",
+    name: "DeepSeek V4 Pro 0813",
+    provider: "DeepSeek",
+    providerColor: "text-indigo-600 dark:text-indigo-400",
+    releasedAt: "2026-08",
+    isOpenSource: true,
+    isFree: true,
+    canRunLocally: false,
+    tags: ["reasoning", "coding", "chat"],
+    params: "1.6T (MoE, ~49B active)",
+    availabilityNote:
+      "GA build of the V4 Pro preview. Every vendor figure (DeepSWE 62.7, CyberGym 83.3, Terminal-Bench 2.1 87.9) is unreplicated by third parties as of 15 Aug; only the AA index is independent. DeepSeek introduces peak/off-peak pricing 17 Aug — rates rise up to 12×.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: 53,
+    livecodebench: null,
+    terminalbench: 87.9,
+    taubench: null,
+    scicode: null,
+    costPer1M: 0.25,
+    throughput: 90,
+    ttft: null,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
   {
     id: "deepseek-v4-pro",
     name: "DeepSeek V4 Pro",
@@ -1505,6 +1728,65 @@ export const MODELS: BenchmarkModel[] = [
   },
   // ── Meta ─────────────────────────────────────────────────────────────────
   {
+    id: "meta-muse-spark-1-2",
+    name: "Muse Spark 1.2",
+    provider: "Meta",
+    providerColor: "text-sky-600 dark:text-sky-400",
+    releasedAt: "2026-08",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "chat"],
+    availabilityNote:
+      "AA index 54 at default effort, 57 at xhigh. DeepSWE 1.1 59.3 — second only to Claude Opus 5. $1.25/$4.25 per MTok.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: 54,
+    livecodebench: null,
+    terminalbench: 82.9,
+    taubench: null,
+    scicode: null,
+    costPer1M: 2.0,
+    throughput: null,
+    ttft: null,
+    contextWindow: 1000,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
+  {
+    id: "meta-muse-glimmer-30b",
+    name: "Muse Glimmer 30B",
+    provider: "Meta",
+    providerColor: "text-sky-600 dark:text-sky-400",
+    releasedAt: "2026-08",
+    isOpenSource: true,
+    isFree: true,
+    canRunLocally: true,
+    tags: ["multimodal", "chat"],
+    params: "29.6B (dense)",
+    availabilityNote:
+      "Apache-2.0 multimodal model distilled from Muse Spark for local agentic work — Meta's return to open weights after the Llama 4 line. 21 AA points above Llama 4 Maverick.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: 35,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: null,
+    throughput: null,
+    ttft: null,
+    contextWindow: 262,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
+  {
     id: "meta-muse-spark-1-1",
     name: "Muse Spark 1.1",
     provider: "Meta",
@@ -1590,6 +1872,36 @@ export const MODELS: BenchmarkModel[] = [
     frontierMath: null,
     gdpVal: null,
   },
+  // ── ByteDance ────────────────────────────────────────────────────────────
+  {
+    id: "seed-2-1-turbo",
+    name: "Seed 2.1 Turbo",
+    provider: "ByteDance",
+    providerColor: "text-teal-600 dark:text-teal-400",
+    releasedAt: "2026-06",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "multimodal", "chat"],
+    availabilityNote:
+      "Low-cost sibling of Seed 2.1 Pro for high-frequency enterprise workloads; reached Western gateways Aug 2026. ByteDance publishes benchmarks for Pro only.",
+    gpqa: null,
+    swe: null,
+    arcagi2: null,
+    arenaElo: null,
+    aaIndex: null,
+    livecodebench: null,
+    terminalbench: null,
+    taubench: null,
+    scicode: null,
+    costPer1M: 1.0,
+    throughput: null,
+    ttft: null,
+    contextWindow: 262,
+    hle: null,
+    frontierMath: null,
+    gdpVal: null,
+  },
 ];
 
-export const DATA_DATE = "27 July 2026";
+export const DATA_DATE = "15 August 2026";

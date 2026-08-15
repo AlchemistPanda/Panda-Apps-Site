@@ -48,6 +48,8 @@ const PCOLOR: Record<string, string> = {
   MiniMax: "#f43f5e",
   Mistral: "#ec4899",
   Meta: "#0ea5e9",
+  NVIDIA: "#76b900",
+  InclusionAI: "#d946ef",
   "Black Forest Labs": "#8b5cf6",
   Midjourney: "#06b6d4",
   "Stability AI": "#f43f5e",
