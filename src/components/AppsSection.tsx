@@ -2,22 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus, GraduationCap, FileUp, Gift
+  QrCode, Image, FileText, Palette, Lock, Calculator, GitCompare, Search, X, Sparkles, Coins, TrendingUp, Fuel, Bot, Braces, FileJson, Gem, FileUser, Users, Newspaper, ImagePlus, GraduationCap, FileUp
 } from "lucide-react";
 import AppCard from "@/components/AppCard";
 
 const apps = [
-  {
-    title: "Stationery Donation Drive",
-    description:
-      "Support local students for the upcoming term. Pledge stationery items, choose store links on Amazon/Flipkart, and track delivery progress to the school office.",
-    href: "/donation",
-    icon: Gift,
-    gradient: "from-orange-500 to-amber-500",
-    category: "Community",
-    isNew: true,
-    isFeatured: true,
-  },
   {
     title: "AI for Everyone",
     description:
