@@ -47,7 +47,7 @@ export default function HelpTip({ label, tip, extra, size = 12, side = "top" }: 
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
         aria-label="Help"
-        className="text-muted/50 hover:text-muted transition-colors align-middle"
+        className="text-muted/70 hover:text-foreground transition-colors align-middle"
         style={{ lineHeight: 0 }}
       >
         <HelpCircle style={{ width: size, height: size }} />
@@ -61,7 +61,7 @@ export default function HelpTip({ label, tip, extra, size = 12, side = "top" }: 
           onMouseLeave={() => setOpen(false)}
         >
           {label && (
-            <p className="text-[10px] font-bold text-violet-400 uppercase tracking-wider mb-1">{label}</p>
+            <p className="text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider mb-1">{label}</p>
           )}
           <p className="text-xs text-foreground/90 leading-relaxed">{tip}</p>
           {extra && <div className="mt-2 pt-2 border-t border-border/40">{extra}</div>}

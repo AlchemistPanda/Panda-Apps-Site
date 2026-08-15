@@ -9,6 +9,7 @@
   --foreground: #fafafa;
   --card: #18181b;
   --card-hover: #27272a;
+  --popover: #1f1f23;
   --border: #27272a;
   --accent: #22c55e;
   --accent-light: #4ade80;
@@ -26,6 +27,7 @@ html.light {
   --foreground: #0f172a;
   --card: #ffffff;
   --card-hover: #f1f5f9;
+  --popover: #ffffff;
   --border: #e2e8f0;
   --accent: #16a34a;
   --accent-light: #22c55e;
@@ -47,6 +49,7 @@ html.dark {
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-hover: var(--card-hover);
+  --color-popover: var(--popover);
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-light: var(--accent-light);

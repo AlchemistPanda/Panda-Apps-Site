@@ -40,12 +40,12 @@ type MatchResult = {
 };
 
 const MATCH_COLORS = [
-  { bg: "bg-violet-500/30",  text: "text-violet-300",  badge: "bg-violet-500/20 text-violet-300" },
-  { bg: "bg-blue-500/30",    text: "text-blue-300",    badge: "bg-blue-500/20 text-blue-300" },
-  { bg: "bg-emerald-500/30", text: "text-emerald-300", badge: "bg-emerald-500/20 text-emerald-300" },
-  { bg: "bg-amber-500/30",   text: "text-amber-300",   badge: "bg-amber-500/20 text-amber-300" },
-  { bg: "bg-rose-500/30",    text: "text-rose-300",    badge: "bg-rose-500/20 text-rose-300" },
-  { bg: "bg-cyan-500/30",    text: "text-cyan-300",    badge: "bg-cyan-500/20 text-cyan-300" },
+  { bg: "bg-violet-400/40 dark:bg-violet-500/30",  text: "text-violet-950 dark:text-violet-100",  badge: "bg-violet-500/15 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300" },
+  { bg: "bg-blue-400/40 dark:bg-blue-500/30",      text: "text-blue-950 dark:text-blue-100",      badge: "bg-blue-500/15 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300" },
+  { bg: "bg-emerald-400/40 dark:bg-emerald-500/30", text: "text-emerald-950 dark:text-emerald-100", badge: "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300" },
+  { bg: "bg-amber-400/45 dark:bg-amber-500/30",    text: "text-amber-950 dark:text-amber-100",    badge: "bg-amber-500/20 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300" },
+  { bg: "bg-rose-400/40 dark:bg-rose-500/30",      text: "text-rose-950 dark:text-rose-100",      badge: "bg-rose-500/15 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300" },
+  { bg: "bg-cyan-400/40 dark:bg-cyan-500/30",      text: "text-cyan-950 dark:text-cyan-100",      badge: "bg-cyan-500/15 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-300" },
 ];
 
 const CHEAT_SHEET: [string, string][] = [
@@ -115,10 +115,10 @@ function HighlightTextarea({ value, onChange, segments, placeholder, rows = 14 }
                   {seg.text}
                 </mark>
               ) : (
-                <span key={i} className="text-foreground/80">{seg.text}</span>
+                <span key={i} className="text-foreground">{seg.text}</span>
               );
             })
-          : <span className="text-transparent" aria-hidden="true">{value}</span>
+          : <span className="text-foreground">{value}</span>
         }
         {"\n"}
       </div>
@@ -130,8 +130,8 @@ function HighlightTextarea({ value, onChange, segments, placeholder, rows = 14 }
         spellCheck={false}
         rows={rows}
         placeholder={placeholder}
-        className="relative w-full bg-transparent px-4 py-3 font-mono text-sm leading-relaxed focus:outline-none resize-none placeholder:text-muted"
-        style={{ color: "transparent", caretColor: "#c4b5fd", minHeight: `${rows * 1.625}rem` }}
+        className="relative w-full bg-transparent px-4 py-3 font-mono text-sm leading-relaxed focus:outline-none resize-none caret-violet-600 dark:caret-violet-300 placeholder:text-muted selection:bg-violet-500/30"
+        style={{ color: "transparent", wordBreak: "break-all", minHeight: `${rows * 1.625}rem` }}
       />
     </div>
   );
@@ -234,9 +234,9 @@ export default function RegexTesterClient() {
           <Link href="/" className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors">
             <ChevronLeft className="h-4 w-4" /> Back
           </Link>
-          <span className="text-border/60">&middot;</span>
+          <span className="text-muted/60">&middot;</span>
           <span className="flex items-center gap-1.5 text-sm font-medium">
-            <span className="text-violet-500 font-mono font-bold text-base">/ab/</span>
+            <span className="text-violet-600 dark:text-violet-500 font-mono font-bold text-base">/ab/</span>
             Regex Tester
           </span>
           <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted">
@@ -257,15 +257,15 @@ export default function RegexTesterClient() {
         </div>
 
         {/* ── Pattern Input ── */}
-        <div className="rounded-2xl border border-border/40 bg-card/30 p-4 space-y-3">
+        <div className="rounded-2xl border border-border dark:border-border/40 bg-card/80 dark:bg-card/30 p-4 space-y-3">
           {/* Input row */}
           <div className="flex gap-2">
             <div
               className={`flex flex-1 items-center rounded-xl border ${
-                error ? "border-red-500/60" : "border-border/50"
-              } bg-background/60 focus-within:border-violet-500/60 transition-colors overflow-hidden`}
+                error ? "border-red-500/60" : "border-border dark:border-border/50"
+              } bg-background dark:bg-background/60 focus-within:border-violet-500/60 transition-colors overflow-hidden`}
             >
-              <span className="px-3 text-violet-400 font-mono text-xl font-bold select-none leading-none">/</span>
+              <span className="px-3 text-violet-600 dark:text-violet-400 font-mono text-xl font-bold select-none leading-none">/</span>
               <input
                 ref={patternRef}
                 value={pattern}
@@ -274,7 +274,7 @@ export default function RegexTesterClient() {
                 spellCheck={false}
                 className="flex-1 bg-transparent py-2.5 font-mono text-sm text-foreground placeholder:text-muted focus:outline-none"
               />
-              <span className="pl-0.5 pr-1 text-violet-400 font-mono text-xl font-bold select-none leading-none">/{flagStr}</span>
+              <span className="pl-0.5 pr-1 text-violet-600 dark:text-violet-400 font-mono text-xl font-bold select-none leading-none">/{flagStr}</span>
               {pattern && (
                 <button onClick={() => setPattern("")} className="px-2 text-muted hover:text-foreground transition-colors">
                   <X className="h-3.5 w-3.5" />
@@ -284,7 +284,7 @@ export default function RegexTesterClient() {
             <button
               onClick={() => copy(`/${pattern}/${flagStr}`, "pattern")}
               title="Copy as /pattern/flags"
-              className="flex items-center gap-1.5 px-3 rounded-xl border border-border/40 text-xs text-muted hover:text-foreground hover:border-border transition-all shrink-0"
+              className="flex items-center gap-1.5 px-3 rounded-xl border border-border text-xs text-muted hover:text-foreground hover:border-violet-500/50 transition-all shrink-0"
             >
               {copied === "pattern" ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
               <span className="hidden sm:inline">Copy</span>
@@ -293,7 +293,7 @@ export default function RegexTesterClient() {
 
           {/* Error */}
           {error && (
-            <div className="flex items-start gap-2 text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
+            <div className="flex items-start gap-2 text-xs text-red-700 dark:text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
               <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
               <span className="font-mono break-all">{error}</span>
             </div>
@@ -309,23 +309,23 @@ export default function RegexTesterClient() {
                   className={`px-2 py-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                     flags.has(f)
                       ? "bg-violet-500 border-violet-500 text-white shadow-sm"
-                      : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                      : "border-border text-muted hover:text-foreground hover:border-violet-500/50"
                   }`}
                 >
                   {f}
                 </button>
                 <HelpTip label={label} tip={tip} extra={example ? (
-                  <code className="text-[10px] font-mono text-violet-300 bg-violet-500/10 rounded px-1.5 py-0.5 block">{example}</code>
+                  <code className="text-[10px] font-mono text-violet-700 dark:text-violet-300 bg-violet-500/10 rounded px-1.5 py-0.5 block">{example}</code>
                 ) : undefined} />
               </div>
             ))}
-            <div className="ml-auto flex rounded-lg border border-border/40 overflow-hidden shrink-0">
+            <div className="ml-auto flex rounded-lg border border-border overflow-hidden shrink-0">
               {(["match", "replace"] as Mode[]).map(m => (
                 <div key={m} className="flex items-center">
                   <button
                     onClick={() => setMode(m)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
-                      mode === m ? "bg-violet-500 text-white" : "text-muted hover:text-foreground hover:bg-muted/10"
+                      mode === m ? "bg-violet-500 text-white" : "text-muted hover:text-foreground hover:bg-muted/15"
                     }`}
                   >
                     {m === "replace" ? <Replace className="h-3 w-3" /> : <span className="font-mono font-bold text-[11px]">/ab/</span>}
@@ -343,9 +343,9 @@ export default function RegexTesterClient() {
 
           {/* Match count */}
           {pattern && !error && testStr && (
-            <div className={`text-[10px] flex items-center gap-1.5 ${matches.length > 0 ? "text-violet-400" : "text-muted"}`}>
+            <div className={`text-[10px] flex items-center gap-1.5 ${matches.length > 0 ? "text-violet-700 dark:text-violet-400" : "text-muted"}`}>
               {matches.length > 0
-                ? <><Check className="h-3 w-3 text-emerald-400" /><span className="font-bold">{matches.length}</span> match{matches.length !== 1 ? "es" : ""}</>
+                ? <><Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /><span className="font-bold">{matches.length}</span> match{matches.length !== 1 ? "es" : ""}</>
                 : <><AlertCircle className="h-3 w-3" /> No matches</>
               }
             </div>
@@ -356,8 +356,8 @@ export default function RegexTesterClient() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left: test input */}
           <div className="space-y-3">
-            <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/30">
+            <div className="rounded-2xl border border-border dark:border-border/40 bg-card/80 dark:bg-card/30 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-border dark:border-border/30">
                 <span className="text-xs font-semibold text-muted uppercase tracking-wider">Test String</span>
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] text-muted tabular-nums">{testStr.length} chars · {testStr.split("\n").length} lines</span>
@@ -380,8 +380,8 @@ export default function RegexTesterClient() {
 
             {/* Replace input */}
             {mode === "replace" && (
-              <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
-                <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border/30">
+              <div className="rounded-2xl border border-border dark:border-border/40 bg-card/80 dark:bg-card/30 overflow-hidden">
+                <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border dark:border-border/30">
                   <span className="text-xs font-semibold text-muted uppercase tracking-wider">Replace With</span>
                   <HelpTip
                     label="Substitution syntax"
@@ -390,7 +390,7 @@ export default function RegexTesterClient() {
                       <div className="space-y-1">
                         {[["$&", "Entire match"], ["$1 $2", "Numbered capture groups"], ["$<name>", "Named capture group"]].map(([t, d]) => (
                           <div key={t} className="flex gap-2">
-                            <code className="text-violet-300 text-[10px] font-mono shrink-0">{t}</code>
+                            <code className="text-violet-700 dark:text-violet-300 text-[10px] font-mono shrink-0">{t}</code>
                             <span className="text-[10px] text-muted/80">{d}</span>
                           </div>
                         ))}
@@ -414,23 +414,23 @@ export default function RegexTesterClient() {
           <div className="space-y-3">
             {mode === "match" ? (
               matches.length > 0 ? (
-                <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-border/30 flex items-center justify-between">
+                <div className="rounded-2xl border border-border dark:border-border/40 bg-card/80 dark:bg-card/30 overflow-hidden">
+                  <div className="px-4 py-2.5 border-b border-border dark:border-border/30 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-muted uppercase tracking-wider">Match Details</span>
                       <HelpTip
                         label="Match details"
                         tip="Each match shows its text, position (start–end index), and any capture groups."
-                        extra={<p className="text-[10px] text-muted">Capture group: <code className="font-mono text-violet-300">(...)</code> &nbsp; Named: <code className="font-mono text-violet-300">(?&lt;name&gt;...)</code></p>}
+                        extra={<p className="text-[10px] text-muted">Capture group: <code className="font-mono text-violet-700 dark:text-violet-300">(...)</code> &nbsp; Named: <code className="font-mono text-violet-700 dark:text-violet-300">(?&lt;name&gt;...)</code></p>}
                       />
                     </div>
-                    <span className="text-[10px] font-bold text-violet-400">{matches.length} match{matches.length !== 1 ? "es" : ""}</span>
+                    <span className="text-[10px] font-bold text-violet-700 dark:text-violet-400">{matches.length} match{matches.length !== 1 ? "es" : ""}</span>
                   </div>
-                  <div className="max-h-72 overflow-y-auto divide-y divide-border/20">
+                  <div className="max-h-72 overflow-y-auto divide-y divide-border dark:divide-border/20">
                     {matches.map((m, i) => {
                       const col = MATCH_COLORS[i % MATCH_COLORS.length];
                       return (
-                        <div key={i} className="px-4 py-2.5 hover:bg-muted/5 transition-colors">
+                        <div key={i} className="px-4 py-2.5 hover:bg-muted/10 dark:hover:bg-muted/5 transition-colors">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
                               <span className={`text-[9px] font-bold rounded-full px-1.5 py-0.5 shrink-0 ${col.badge}`}>#{i + 1}</span>
@@ -441,7 +441,7 @@ export default function RegexTesterClient() {
                           {m.groups.filter(g => g !== undefined).length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1.5">
                               {m.groups.map((g, gi) => (
-                                <span key={gi} className="text-[10px] bg-muted/15 rounded px-1.5 py-0.5 font-mono">
+                                <span key={gi} className="text-[10px] bg-muted/20 dark:bg-muted/15 rounded px-1.5 py-0.5 font-mono">
                                   <span className="text-muted">${gi + 1}:</span>{" "}
                                   <span className="text-foreground">{g ?? "—"}</span>
                                 </span>
@@ -452,7 +452,7 @@ export default function RegexTesterClient() {
                             <div className="flex flex-wrap gap-1 mt-1">
                               {Object.entries(m.namedGroups).map(([k, v]) => (
                                 <span key={k} className="text-[10px] bg-violet-500/10 rounded px-1.5 py-0.5 font-mono">
-                                  <span className="text-violet-400">{k}:</span>{" "}
+                                  <span className="text-violet-700 dark:text-violet-400">{k}:</span>{" "}
                                   <span className="text-foreground">{v}</span>
                                 </span>
                               ))}
@@ -464,19 +464,19 @@ export default function RegexTesterClient() {
                   </div>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-border/40 bg-card/30 px-4 py-12 text-center">
+                <div className="rounded-2xl border border-border dark:border-border/40 bg-card/80 dark:bg-card/30 px-4 py-12 text-center">
                   <p className="text-3xl mb-2">🐼</p>
                   <p className="text-sm font-medium text-muted">
                     {pattern && !error && testStr ? "No matches found" : "Match details appear here"}
                   </p>
-                  <p className="text-xs text-muted/60 mt-1">
+                  <p className="text-xs text-muted mt-1">
                     {pattern && !error && testStr ? "Try adjusting your pattern or flags" : "Write a pattern and paste your test string"}
                   </p>
                 </div>
               )
             ) : (
-              <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/30">
+              <div className="rounded-2xl border border-border dark:border-border/40 bg-card/80 dark:bg-card/30 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-border dark:border-border/30">
                   <span className="text-xs font-semibold text-muted uppercase tracking-wider">Replace Result</span>
                   {replaceResult !== null && (
                     <button onClick={() => copy(replaceResult, "replace")} className="flex items-center gap-1 text-[10px] text-muted hover:text-foreground">
@@ -485,14 +485,14 @@ export default function RegexTesterClient() {
                     </button>
                   )}
                 </div>
-                <div className="px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-wrap break-all min-h-48 max-h-96 overflow-y-auto text-emerald-400">
+                <div className="px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-wrap break-all min-h-48 max-h-96 overflow-y-auto text-emerald-700 dark:text-emerald-400">
                   {replaceResult !== null ? replaceResult : <span className="text-muted italic">Result will appear here…</span>}
                 </div>
               </div>
             )}
 
             {/* Cheat Sheet */}
-            <div className="rounded-2xl border border-border/40 bg-card/30 p-4">
+            <div className="rounded-2xl border border-border dark:border-border/40 bg-card/80 dark:bg-card/30 p-4">
               <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-3">Cheat Sheet — click a token to append</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {CHEAT_SHEET.map(([tok, desc]) => (
@@ -500,7 +500,7 @@ export default function RegexTesterClient() {
                     <code
                       onClick={() => { setPattern(p => p + tok); patternRef.current?.focus(); }}
                       title="Click to append to pattern"
-                      className="shrink-0 font-mono text-[11px] font-bold text-violet-400 bg-violet-500/10 rounded px-1 py-0.5 cursor-pointer hover:bg-violet-500/25 transition-colors select-none"
+                      className="shrink-0 font-mono text-[11px] font-bold text-violet-700 dark:text-violet-400 bg-violet-500/10 rounded px-1 py-0.5 cursor-pointer hover:bg-violet-500/25 transition-colors select-none"
                     >
                       {tok}
                     </code>
@@ -513,35 +513,35 @@ export default function RegexTesterClient() {
         </div>
 
         {/* Pattern Library */}
-        <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
+        <div className="rounded-2xl border border-border dark:border-border/40 bg-card/80 dark:bg-card/30 overflow-hidden">
           <button
             onClick={() => setShowLib(r => !r)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/5 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/10 dark:hover:bg-muted/5 transition-colors"
           >
             <span className="flex items-center gap-2 text-sm font-semibold">
-              <BookOpen className="h-4 w-4 text-violet-500" />
+              <BookOpen className="h-4 w-4 text-violet-600 dark:text-violet-500" />
               Pattern Library
               <span className="text-[10px] font-normal text-muted">{QUICK_PATTERNS.length} patterns — click any to load</span>
             </span>
             {showLib ? <ChevronUp className="h-4 w-4 text-muted" /> : <ChevronDown className="h-4 w-4 text-muted" />}
           </button>
           {showLib && (
-            <div className="border-t border-border/30 p-4">
+            <div className="border-t border-border dark:border-border/30 p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {QUICK_PATTERNS.map(p => (
                   <button
                     key={p.label}
                     onClick={() => loadPattern(p)}
-                    className="text-left rounded-xl border border-border/40 bg-background/60 px-3 py-2.5 hover:border-violet-500/40 hover:bg-violet-500/5 transition-all group"
+                    className="text-left rounded-xl border border-border bg-background dark:bg-background/60 px-3 py-2.5 hover:border-violet-500/40 hover:bg-violet-500/5 transition-all group"
                   >
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-xs font-bold text-violet-400 group-hover:underline">{p.label}</span>
+                      <span className="text-xs font-bold text-violet-700 dark:text-violet-400 group-hover:underline">{p.label}</span>
                       {p.flags && (
-                        <span className="text-[9px] font-mono text-muted bg-muted/10 rounded px-1 py-0.5">/{p.flags}/</span>
+                        <span className="text-[9px] font-mono text-muted bg-muted/20 dark:bg-muted/10 rounded px-1 py-0.5">/{p.flags}/</span>
                       )}
                     </div>
-                    <code className="text-[10px] font-mono text-muted block truncate">{p.pattern}</code>
-                    <p className="text-[10px] text-muted/60 mt-0.5">{p.description}</p>
+                    <code className="text-[10px] font-mono text-foreground/70 block truncate">{p.pattern}</code>
+                    <p className="text-[10px] text-muted mt-0.5">{p.description}</p>
                   </button>
                 ))}
               </div>
