@@ -208,6 +208,7 @@ interface LivePrices {
   silver:    { usdPerOz: number; inrPerGram: number };
   usdInr:    number;
   updatedAt: string;
+  isLive:    boolean;
 }
 
 export default function GoldSilverClient() {
@@ -220,7 +221,7 @@ export default function GoldSilverClient() {
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data: LivePrices) => {
         setLive(data);
-        setLiveStatus("live");
+        setLiveStatus(data.isLive ? "live" : "static");
       })
       .catch(() => setLiveStatus("static"));
   }, []);
@@ -299,7 +300,9 @@ export default function GoldSilverClient() {
                 Live prices
               </span>
             ) : liveStatus === "static" ? (
-              <span className="text-muted/60">Updated {DATA_DATE}</span>
+              <span className="text-muted/60">
+                Estimated prices — {live ? `updated ${new Date(live.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : `updated ${DATA_DATE}`}
+              </span>
             ) : (
               <span className="text-muted/40">Loading live prices…</span>
             )}
@@ -490,10 +493,12 @@ export default function GoldSilverClient() {
           <p className="text-xs text-muted leading-relaxed">
             <span className="font-semibold text-amber-600 dark:text-amber-400">Prices are indicative.</span>{" "}
             {liveStatus === "live" && live
-              ? <><strong className="text-green-400">Live prices active</strong> — auto-refreshes hourly via GoldAPI.
+              ? <><strong className="text-green-400">Live prices active</strong> — auto-refreshes hourly via a live market API.
                 {" "}Last fetched: {new Date(live.updatedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}.
               </>
-              : <>Data was last updated on <strong className="text-foreground">{DATA_DATE}</strong>.</>
+              : live
+                ? <>Live market APIs are unavailable right now — showing an estimated price as of <strong className="text-foreground">{new Date(live.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</strong>.</>
+                : <>Data was last updated on <strong className="text-foreground">{DATA_DATE}</strong>.</>
             }
             {" "}Live spot prices fluctuate continuously — check{" "}
             <a href="https://www.mcxindia.com" target="_blank" rel="noopener noreferrer"

@@ -37,25 +37,25 @@ export async function GET() {
       }
     }
 
-    // Fallback: Try metals.live API (free, no key required)
+    // Fallback: Try gold-api.com (free, no key required)
     if (!goldUsdPerOz) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
         const [goldRes, silverRes] = await Promise.all([
-          fetch("https://api.metals.live/v1/spot/gold", { 
+          fetch("https://api.gold-api.com/price/XAU", {
             signal: controller.signal,
-            next: { revalidate: 1800 } 
+            next: { revalidate: 1800 },
           }).catch(err => {
-            console.warn("[/api/metals] metals.live gold fetch failed:", err.message);
+            console.warn("[/api/metals] gold-api.com gold fetch failed:", err.message);
             return null;
           }),
-          fetch("https://api.metals.live/v1/spot/silver", { 
+          fetch("https://api.gold-api.com/price/XAG", {
             signal: controller.signal,
-            next: { revalidate: 1800 } 
+            next: { revalidate: 1800 },
           }).catch(err => {
-            console.warn("[/api/metals] metals.live silver fetch failed:", err.message);
+            console.warn("[/api/metals] gold-api.com silver fetch failed:", err.message);
             return null;
           }),
         ]);
@@ -69,10 +69,10 @@ export async function GET() {
           ]);
           if (goldData?.price) goldUsdPerOz = goldData.price;
           if (silverData?.price) silverUsdPerOz = silverData.price;
-          if (goldUsdPerOz > 0) source = "metals.live";
+          if (goldUsdPerOz > 0) source = "gold-api.com";
         }
       } catch (err) {
-        console.warn("[/api/metals] metals.live fallback failed:", err);
+        console.warn("[/api/metals] gold-api.com fallback failed:", err);
       }
     }
 
@@ -96,14 +96,13 @@ export async function GET() {
       console.warn("[/api/metals] forex fetch failed:", err);
     }
 
-    // If we still don't have prices, use values calculated for ₹15,547/gram target in India
+    // Last resort: both live sources failed. Use a rough static estimate
+    // (updated 15 Aug 2026) rather than pretending this is a live quote.
     if (!goldUsdPerOz) {
-      // Target: ₹15,547/gram for gold in India
-      // Calculate USD/oz based on current USD/INR rate: USD/oz = Target INR × 31.1035 grams/oz ÷ USD/INR rate
-      goldUsdPerOz = (15547 * TROY_OZ_TO_G) / usdInr; // Dynamically calculated for current FX rate
-      silverUsdPerOz = goldUsdPerOz / 90; // ~56-60 range depending on FX
-      source = "fallback (India ₹15,547/gram target)";
-      console.warn("[/api/metals] Using fallback prices. Live API sources unavailable. Calculated for ₹15,547/gram target.");
+      goldUsdPerOz = 4377.6;
+      silverUsdPerOz = 64.83;
+      source = "static estimate (updated 15 Aug 2026, live sources unavailable)";
+      console.warn("[/api/metals] Using static estimate. Live API sources (goldapi.io, gold-api.com) both unavailable.");
     }
 
     // Sanity-check silver: gold/silver ratio should be 30–150
@@ -111,6 +110,8 @@ export async function GET() {
     if (ratio < 30 || ratio > 150) {
       silverUsdPerOz = goldUsdPerOz / 90; // fallback to ~ratio 90
     }
+
+    const isLive = source === "goldapi.io" || source === "gold-api.com";
 
     // INR per gram = usd_per_oz / troy_oz_per_gram * usd_inr
     const goldInrPerGram = (goldUsdPerOz / TROY_OZ_TO_G) * usdInr;
@@ -121,20 +122,22 @@ export async function GET() {
       silver: { usdPerOz: silverUsdPerOz, inrPerGram: Math.round(silverInrPerGram * 100) / 100 },
       usdInr,
       updatedAt: new Date().toISOString(),
+      isLive,
       source: `${source} + frankfurter.dev`,
     });
   } catch (err) {
     console.error("[/api/metals] Unexpected error:", err);
-    // Return a safe fallback
+    // Return a safe static fallback (updated 15 Aug 2026)
     const TROY_OZ_TO_G = 31.1035;
-    const usdInr = 92.15;
-    const goldUsdPerOz = 5237;
-    const silverUsdPerOz = 59;
+    const usdInr = 95.43;
+    const goldUsdPerOz = 4377.6;
+    const silverUsdPerOz = 64.83;
     return NextResponse.json({
       gold: { usdPerOz: goldUsdPerOz, inrPerGram: Math.round((goldUsdPerOz / TROY_OZ_TO_G) * usdInr) },
       silver: { usdPerOz: silverUsdPerOz, inrPerGram: Math.round(((silverUsdPerOz / TROY_OZ_TO_G) * usdInr) * 100) / 100 },
       usdInr,
       updatedAt: new Date().toISOString(),
+      isLive: false,
       source: "fallback (emergency)",
       note: "Live API sources unavailable - using fallback prices"
     });
