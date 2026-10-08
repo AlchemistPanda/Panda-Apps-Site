@@ -153,7 +153,7 @@ const apps = [
   {
     title: "AI Model Benchmarks",
     description:
-      "Compare 20+ frontier AI models across 5 benchmarks — GPQA, SWE-bench, ARC-AGI 2, Arena ELO, AA Index. Live daily updates with auto-discovery of new models.",
+      "Compare 70+ frontier AI models across key benchmarks — GPQA, SWE-bench, ARC-AGI 2, Arena ELO, AA Index, TerminalBench. Live daily updates with auto-discovery of new models.",
     href: "/apps/ai-benchmarks",
     icon: Bot,
     gradient: "from-violet-500 to-indigo-600",

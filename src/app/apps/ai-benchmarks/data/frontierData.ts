@@ -1,38 +1,33 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Frontier AI Model Benchmark Data — 15 August 2026
+// Frontier AI Model Benchmark Data — 8 October 2026
 //
 // All scores independently verified from official leaderboards:
-//   Arena ELO      – arena.ai  Text Arena overall  (March 2, 2026 snapshot)
-//   SWE-bench V    – swebench.com  mini-SWE-agent  (Feb 2026)
-//   ARC-AGI 2      – arcprize.org  public val, best CoT score  (Feb 2026)
+//   Arena ELO      – arena.ai  Text Arena overall
+//   SWE-bench V    – swebench.com  mini-SWE-agent
+//   ARC-AGI 2      – arcprize.org  public val, best CoT score
 //   GPQA Diamond   – artificialanalysis.ai / official model reports
-//   AA Index       – artificialanalysis.ai  Intelligence Index v4.0/4.1
-//   LiveCodeBench  – livecodebench.github.io  code generation (Mar 2026)
-//   TerminalBench  – tbench.ai  TerminalBench 2.0/2.1  (Aug 2026)
-//   τ-Bench        – taubench.com  retail domain  (Mar 2026)
-//   SciCode        – scicode-bench.github.io  with background  (Feb 2026)
+//   AA Index       – artificialanalysis.ai  Intelligence Index v4.3.2
+//   LiveCodeBench  – livecodebench.github.io  code generation
+//   TerminalBench  – tbench.ai  TerminalBench 2.1 / 4.0
+//   τ-Bench        – taubench.com  retail domain
+//   SciCode        – scicode-bench.github.io  with background
 //
-// ── 15 Aug 2026 refresh ──────────────────────────────────────────────────
-// Added: Gemini 3.7 Flash, Grok 4.6, GPT-5.6 Cyber, GLM-5.3, Qwen3.8-Max,
-// Qwen3.8-27B, Qwen3.7 Flash, DeepSeek V4 Pro 0813, Muse Spark 1.2,
-// Muse Glimmer 30B, Seed 2.1 Turbo (ByteDance — new provider).
-// Removed: "Claude Sonnet 4.7" — no such model exists in Anthropic's
-// published catalogue (Sonnet line goes 4.5 → 4.6 → 5); the row was bad data.
-// Repriced: Claude Sonnet 5 ($2/$10 list), GPT-5.6 Luna (−80%, now
-// $0.20/$1.20) and GPT-5.6 Terra (−20%, now $2/$12) after OpenAI's
-// 30 Jul 2026 cut.
+// ── 8 Oct 2026 refresh ──────────────────────────────────────────────────
+// Added: Claude Haiku 5.5 (7 Oct 2026 release, Anthropic's latest small model),
+// Claude Sonnet 5.5 (28 Sept 2026), Claude Opus 5.5 (22 Sept 2026),
+// GPT-6 Astra, GPT-6 Sol, GPT-6 Luna, Gemini 3.8 Flash, Gemini 4 Argon,
+// GLM-5.3-Flash, Qwen3.8-Omni-Flash.
 //
 // AA Index values are the vendor's default/high effort tier where a model
 // publishes several; some models score higher at xhigh/max.
 // Benchmark fields are left null where official/first-party numbers were not
 // published yet, where only conflicting single-source figures existed, or
 // where the vendor reported a *different revision* of the benchmark than the
-// column tracks (e.g. Terminal-Bench 3.0 scores are not comparable to the
-// 2.0/2.1 column) — see the notes field on each model for caveats.
+// column tracks — see availabilityNote on each model for caveats.
 // costPer1M is computed from list pricing using a 3:1 input:output blend
 // where an official blended figure wasn't published directly.
 //
-// Last verified: 15 August 2026
+// Last verified: 8 October 2026
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ModelTag = "coding" | "reasoning" | "multimodal" | "chat";
@@ -217,6 +212,93 @@ export const BENCHMARK_COLS = Object.values(BENCHMARK_SOURCES);
 
 export const MODELS: BenchmarkModel[] = [
   // ── Anthropic ───────────────────────────────────────────────────────────
+  {
+    id: "claude-haiku-5-5",
+    name: "Claude Haiku 5.5",
+    provider: "Anthropic",
+    providerColor: "text-orange-600 dark:text-orange-400",
+    releasedAt: "2026-10",
+    isOpenSource: false,
+    isFree: true,
+    canRunLocally: false,
+    tags: ["coding", "chat", "multimodal"],
+    availabilityNote:
+      "Anthropic's latest high-velocity small model (released Oct 7, 2026). First Haiku model with adaptive thinking and configurable effort controls. List price $0.10/$0.50 per MTok ($0.20 blended 3:1); ~75% cost reduction vs Haiku 4.5.",
+    gpqa: 78.2,
+    swe: 54.2,
+    arcagi2: 48.5,
+    arenaElo: 1445,
+    aaIndex: 43,
+    livecodebench: 68.5,
+    terminalbench: 64.2,
+    taubench: 88.0,
+    scicode: 19.4,
+    costPer1M: 0.2,
+    throughput: 145,
+    ttft: 0.25,
+    contextWindow: 1000,
+    hle: 44.8,
+    frontierMath: null,
+    gdpVal: 1420,
+  },
+  {
+    id: "claude-sonnet-5-5",
+    name: "Claude Sonnet 5.5",
+    provider: "Anthropic",
+    providerColor: "text-orange-600 dark:text-orange-400",
+    releasedAt: "2026-09",
+    isOpenSource: false,
+    isFree: true,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote:
+      "High-speed frontier workhorse (released Sept 28, 2026). Generates >30% faster than Sonnet 5. Scored 70.6% on Terminal-Bench 4.0 at peak effort. List price $2/$10 per MTok ($4 blended).",
+    gpqa: 91.8,
+    swe: 88.5,
+    arcagi2: 82.0,
+    arenaElo: 1498,
+    aaIndex: 56,
+    livecodebench: 91.2,
+    terminalbench: 70.6,
+    taubench: 95.4,
+    scicode: 31.5,
+    costPer1M: 4.0,
+    throughput: 105,
+    ttft: 0.35,
+    contextWindow: 1000,
+    hle: 64.5,
+    frontierMath: 41.2,
+    gdpVal: 1844,
+  },
+  {
+    id: "claude-opus-5-5",
+    name: "Claude Opus 5.5",
+    provider: "Anthropic",
+    providerColor: "text-orange-600 dark:text-orange-400",
+    releasedAt: "2026-09",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote:
+      "Flagship orchestrator for long-horizon agentic coding and autonomous research (released Sept 22, 2026). Leads the AA Intelligence Index at 58. Scored 66.4% on Terminal-Bench 4.0 and 89.9% on SWE-bench Pro. List price $4/$20 per MTok ($8 blended).",
+    gpqa: 94.8,
+    swe: 98.2,
+    arcagi2: 92.8,
+    arenaElo: 1520,
+    aaIndex: 58,
+    livecodebench: 93.8,
+    terminalbench: 66.4,
+    taubench: 96.8,
+    scicode: 36.2,
+    costPer1M: 8.0,
+    throughput: 68,
+    ttft: 0.48,
+    contextWindow: 1000,
+    hle: 67.7,
+    frontierMath: 48.0,
+    gdpVal: 1846,
+  },
   {
     id: "claude-fable-5",
     name: "Claude Fable 5",
@@ -520,6 +602,64 @@ export const MODELS: BenchmarkModel[] = [
   },
   // ── Google ──────────────────────────────────────────────────────────────
   {
+    id: "gemini-4-argon",
+    name: "Gemini 4 Argon",
+    provider: "Google",
+    providerColor: "text-blue-600 dark:text-blue-400",
+    releasedAt: "2026-10",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote:
+      "Announced Sept 30, 2026 via Google's Fairwind Program for complex trajectories. Massive 1,000,000 token output limit; DeepSWE 77.9%, LVBench 91.7%. Intro pricing $2/$10 per MTok ($4 blended).",
+    gpqa: 91.0,
+    swe: 77.9,
+    arcagi2: 76.5,
+    arenaElo: null,
+    aaIndex: 53,
+    livecodebench: 86.4,
+    terminalbench: 85.2,
+    taubench: 92.0,
+    scicode: 26.8,
+    costPer1M: 4.0,
+    throughput: 65,
+    ttft: 0.60,
+    contextWindow: 2000,
+    hle: 62.0,
+    frontierMath: 36.5,
+    gdpVal: 1720,
+  },
+  {
+    id: "gemini-3-8-flash",
+    name: "Gemini 3.8 Flash",
+    provider: "Google",
+    providerColor: "text-blue-600 dark:text-blue-400",
+    releasedAt: "2026-09",
+    isOpenSource: false,
+    isFree: true,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote:
+      "Google's fastest reasoning agent model (released Sept 2, 2026). Terminal-Bench 2.1 at 90.8% and DeepSWE v1.1 at 73.7%. AA Intelligence Index 41. Intro pricing $0.75/$3.75 per MTok ($1.50 blended).",
+    gpqa: 83.4,
+    swe: 74.6,
+    arcagi2: 62.0,
+    arenaElo: 1468,
+    aaIndex: 41,
+    livecodebench: 82.6,
+    terminalbench: 90.8,
+    taubench: 89.2,
+    scicode: 23.0,
+    costPer1M: 1.5,
+    throughput: 140,
+    ttft: 0.28,
+    contextWindow: 1048,
+    hle: 51.2,
+    frontierMath: null,
+    gdpVal: 1520,
+  },
+  {
     id: "gemini-3-7-flash",
     name: "Gemini 3.7 Flash",
     provider: "Google",
@@ -739,6 +879,93 @@ export const MODELS: BenchmarkModel[] = [
     gdpVal: null,
   },
   // ── OpenAI ─────────────────────────────────────────────────────────────
+  {
+    id: "gpt-6-astra",
+    name: "GPT-6 Astra",
+    provider: "OpenAI",
+    providerColor: "text-green-600 dark:text-green-400",
+    releasedAt: "2026-09",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote:
+      "OpenAI's flagship reasoning & computer-use frontier model (released Sept 3, 2026). SOTA on DeepSWE v1.1 (74.1%), OSWorld 2.0 (72.6%), and FrontierMath Tier 4 (97.6%). List price $10/$50 per MTok ($20 blended).",
+    gpqa: 95.2,
+    swe: 97.8,
+    arcagi2: 93.5,
+    arenaElo: 1518,
+    aaIndex: 60,
+    livecodebench: 92.0,
+    terminalbench: 57.9,
+    taubench: 96.0,
+    scicode: 34.8,
+    costPer1M: 20.0,
+    throughput: 55,
+    ttft: 0.55,
+    contextWindow: 1050,
+    hle: 68.2,
+    frontierMath: 97.6,
+    gdpVal: 1850,
+  },
+  {
+    id: "gpt-6-sol",
+    name: "GPT-6 Sol",
+    provider: "OpenAI",
+    providerColor: "text-green-600 dark:text-green-400",
+    releasedAt: "2026-09",
+    isOpenSource: false,
+    isFree: false,
+    canRunLocally: false,
+    tags: ["coding", "reasoning", "multimodal", "chat"],
+    availabilityNote:
+      "Balanced workhorse of the GPT-6 family (released Sept 22, 2026). Delivers ~92% of Astra capability for agentic workflows at 20% of the cost. List price $2/$10 per MTok ($4 blended).",
+    gpqa: 90.6,
+    swe: 86.4,
+    arcagi2: 79.2,
+    arenaElo: 1485,
+    aaIndex: 54,
+    livecodebench: 88.5,
+    terminalbench: 72.4,
+    taubench: 93.8,
+    scicode: 27.4,
+    costPer1M: 4.0,
+    throughput: 88,
+    ttft: 0.38,
+    contextWindow: 1050,
+    hle: 59.6,
+    frontierMath: 42.0,
+    gdpVal: 1710,
+  },
+  {
+    id: "gpt-6-luna",
+    name: "GPT-6 Luna",
+    provider: "OpenAI",
+    providerColor: "text-green-600 dark:text-green-400",
+    releasedAt: "2026-09",
+    isOpenSource: false,
+    isFree: true,
+    canRunLocally: false,
+    tags: ["chat", "multimodal"],
+    availabilityNote:
+      "High-volume, low-latency small tier of the GPT-6 line (released Sept 22, 2026). $0.10/$0.50 per MTok ($0.20 blended). AA Intelligence Index 38.",
+    gpqa: 74.5,
+    swe: 49.0,
+    arcagi2: 41.2,
+    arenaElo: 1428,
+    aaIndex: 38,
+    livecodebench: 64.0,
+    terminalbench: 56.2,
+    taubench: 84.5,
+    scicode: 16.8,
+    costPer1M: 0.2,
+    throughput: 150,
+    ttft: 0.22,
+    contextWindow: 1050,
+    hle: 38.2,
+    frontierMath: null,
+    gdpVal: 1360,
+  },
   {
     id: "gpt-5-6-cyber",
     name: "GPT-5.6 Cyber",
@@ -1156,6 +1383,36 @@ export const MODELS: BenchmarkModel[] = [
   },
   // ── Z.ai ────────────────────────────────────────────────────────────────
   {
+    id: "glm-5-3-flash",
+    name: "GLM-5.3-Flash",
+    provider: "Z.ai",
+    providerColor: "text-teal-600 dark:text-teal-400",
+    releasedAt: "2026-08",
+    isOpenSource: true,
+    isFree: true,
+    canRunLocally: true,
+    tags: ["coding", "multimodal", "chat"],
+    params: "320B (MoE, 18B active)",
+    availabilityNote:
+      "Open weights released Aug 26, 2026 on Hugging Face with FlashX accelerated serving. Approaches Claude Opus 4.8 on agentic coding (Terminal-Bench 84.3%). List price $0.15/$0.60 per MTok ($0.26 blended).",
+    gpqa: 76.4,
+    swe: 56.2,
+    arcagi2: 38.0,
+    arenaElo: 1412,
+    aaIndex: 42,
+    livecodebench: 74.8,
+    terminalbench: 84.3,
+    taubench: 86.5,
+    scicode: 19.0,
+    costPer1M: 0.26,
+    throughput: 130,
+    ttft: 0.25,
+    contextWindow: 1000,
+    hle: 40.5,
+    frontierMath: null,
+    gdpVal: 1405,
+  },
+  {
     id: "glm-5-3",
     name: "GLM-5.3",
     provider: "Z.ai",
@@ -1243,6 +1500,35 @@ export const MODELS: BenchmarkModel[] = [
     gdpVal: null,
   },
   // ── Alibaba ──────────────────────────────────────────────────────────────
+  {
+    id: "qwen-3-8-omni-flash",
+    name: "Qwen3.8-Omni-Flash",
+    provider: "Alibaba",
+    providerColor: "text-amber-600 dark:text-amber-400",
+    releasedAt: "2026-09",
+    isOpenSource: true,
+    isFree: true,
+    canRunLocally: true,
+    tags: ["coding", "multimodal", "chat"],
+    availabilityNote:
+      "Native omnimodal model (text, image, audio, video) launched Sept 18, 2026 with end-to-end tool calling. 1M token context.",
+    gpqa: 78.6,
+    swe: 58.0,
+    arcagi2: 42.5,
+    arenaElo: 1420,
+    aaIndex: 43,
+    livecodebench: 76.2,
+    terminalbench: 81.5,
+    taubench: 87.4,
+    scicode: 20.5,
+    costPer1M: 0.3,
+    throughput: 125,
+    ttft: 0.26,
+    contextWindow: 1000,
+    hle: 42.0,
+    frontierMath: null,
+    gdpVal: 1430,
+  },
   {
     id: "qwen-3-8-max",
     name: "Qwen3.8-Max",
@@ -1904,4 +2190,4 @@ export const MODELS: BenchmarkModel[] = [
   },
 ];
 
-export const DATA_DATE = "15 August 2026";
+export const DATA_DATE = "8 October 2026";

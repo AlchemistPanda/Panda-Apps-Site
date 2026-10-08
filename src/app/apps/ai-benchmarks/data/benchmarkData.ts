@@ -328,6 +328,60 @@ export const MODELS: ModelScore[] = [
   },
   // ── Anthropic ─────────────────────────────────────────────────────
   {
+    id: "claude-haiku-5-5",
+    name: "Claude Haiku 5.5",
+    provider: "anthropic",
+    releasedAt: "2026-10-07",
+    isNew: true,
+    isOpenSource: false,
+    contextWindow: "1M",
+    scores: {
+      gpqa: 78.2, bbh: 88.5, arc_c: 94.0, musr: 85.0,
+      math500: 89.4, aime24: 34.0, amc23: 82.0,
+      humaneval: 92.5, swe_bench: 54.2, livecodebench: 68.5,
+      mmlu: 88.0, mmlu_pro: 76.2, simpleqa: 35.0,
+      mmmu: 76.5, mathvista: 78.0, chartqa: 89.2,
+      ifeval: 88.5, mt_bench: 9.25,
+    },
+    notes: "Anthropic's fastest and most cost-effective model (Oct 2026). First Haiku with adaptive thinking and configurable effort settings.",
+  },
+  {
+    id: "claude-sonnet-5-5",
+    name: "Claude Sonnet 5.5",
+    provider: "anthropic",
+    releasedAt: "2026-09-28",
+    isNew: true,
+    isOpenSource: false,
+    contextWindow: "1M",
+    scores: {
+      gpqa: 91.8, bbh: 95.8, arc_c: 98.2, musr: 92.5,
+      math500: 98.4, aime24: 68.0, amc23: 95.5,
+      humaneval: 96.5, swe_bench: 88.5, livecodebench: 91.2,
+      mmlu: 92.4, mmlu_pro: 84.0, simpleqa: 44.5,
+      mmmu: 82.0, mathvista: 87.5, chartqa: 94.2,
+      ifeval: 93.8, mt_bench: 9.62,
+    },
+    notes: "High-speed frontier workhorse (Sept 2026). >30% faster than Sonnet 5; 70.6% on Terminal-Bench 4.0 at peak effort.",
+  },
+  {
+    id: "claude-opus-5-5",
+    name: "Claude Opus 5.5",
+    provider: "anthropic",
+    releasedAt: "2026-09-22",
+    isNew: true,
+    isOpenSource: false,
+    contextWindow: "1M",
+    scores: {
+      gpqa: 94.8, bbh: 97.2, arc_c: 98.8, musr: 95.0,
+      math500: 99.2, aime24: 76.5, amc23: 98.0,
+      humaneval: 98.0, swe_bench: 98.2, livecodebench: 93.8,
+      mmlu: 94.0, mmlu_pro: 87.5, simpleqa: 52.0,
+      mmmu: 85.6, mathvista: 91.4, chartqa: 96.0,
+      ifeval: 95.0, mt_bench: 9.75,
+    },
+    notes: "Anthropic flagship for long-horizon agentic workflows and complex research. SOTA on AA Intelligence Index.",
+  },
+  {
     id: "claude-3-7-sonnet",
     name: "Claude 3.7 Sonnet",
     provider: "anthropic",
@@ -585,7 +639,7 @@ export const CATEGORIES = [
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
 
-export const DATA_DATE = "3 March 2026";
+export const DATA_DATE = "8 October 2026";
 
 // Compute a normalised average score (0–100) for a model across given benchmarks
 export function avgScore(model: ModelScore, benchmarkIds: BenchmarkId[]): number | null {

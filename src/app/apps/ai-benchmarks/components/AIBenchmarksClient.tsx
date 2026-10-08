@@ -480,7 +480,7 @@ function ValueVsCostScatter({ models }: { models: BenchmarkModel[] }) {
                 type="number"
                 dataKey="intelligence"
                 name="AA Index"
-                domain={[0, 60]}
+                domain={[0, 65]}
                 tick={{ fontSize: 11, fill: "#9ca3af" }}
                 label={{
                   value: "Intelligence \u2192",
@@ -633,10 +633,10 @@ export default function AIBenchmarksClient({ models }: Props) {
   const [tab, setTab] = useState<TabFilter>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [radarModels, setRadarModels] = useState<string[]>([
-    "claude-opus-4-7",
-    "claude-opus-4-6",
-    "gemini-3-1-pro",
-    "gpt-5-2",
+    "claude-opus-5-5",
+    "claude-sonnet-5-5",
+    "claude-haiku-5-5",
+    "gpt-6-astra",
   ]);
   const [activeTags, setActiveTags] = useState<ModelTag[]>([]);
 
