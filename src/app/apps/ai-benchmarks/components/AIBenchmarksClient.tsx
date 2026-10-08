@@ -80,7 +80,7 @@ type BenchKey = "gpqa" | "swe" | "arcagi2" | "arenaElo" | "aaIndex" | "livecodeb
 type SortKey = "name" | "provider" | BenchKey | "economy";
 type SortDir = "asc" | "desc";
 type TabFilter = "all" | "free" | "opensource" | "local";
-type ViewTab = "charts" | "economy" | "scatter" | "table";
+type ViewTab = "charts" | "radar" | "economy" | "scatter" | "table";
 
 const TAG_CONFIG: { id: ModelTag; label: string; icon: React.ReactNode; color: string }[] = [
   { id: "coding", label: "Coding", icon: <Code2 className="h-3 w-3" />, color: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/40" },
@@ -796,6 +796,56 @@ export default function AIBenchmarksClient({ models }: Props) {
         {/* ══════════════════════════════════════════════════════════════════ */}
         {domain === "llm" && (<>
 
+        {/* ── Latest Releases Spotlight Banner ── */}
+        <div className="rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/5 to-transparent p-4 sm:p-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider bg-violet-500 text-white px-2.5 py-0.5 rounded-full shadow-sm">
+                  <Sparkles className="h-3 w-3" /> Just Added &bull; Oct 2026 Frontier Releases
+                </span>
+                <span className="text-xs text-muted">Anthropic 5.5 Series &bull; OpenAI GPT-6 &bull; Gemini 4</span>
+              </div>
+              <p className="text-xs text-muted max-w-2xl leading-relaxed">
+                Featuring <strong className="text-foreground">Claude Haiku 5.5</strong> (75% lower cost, adaptive thinking, 145 t/s), <strong className="text-foreground">GPT-6 Astra</strong> (97.8% SWE-bench, 95.2% GPQA), plus Sonnet 5.5, Opus 5.5, and Gemini 4 Argon.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  setSearch("Claude Haiku 5.5");
+                  setView("table");
+                  setTab("all");
+                  setActiveTags([]);
+                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/30 hover:bg-orange-500/25 transition-colors flex items-center gap-1 shadow-sm"
+              >
+                ⚡ View Haiku 5.5
+              </button>
+              <button
+                onClick={() => {
+                  setSearch("GPT-6 Astra");
+                  setView("table");
+                  setTab("all");
+                  setActiveTags([]);
+                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-green-500/15 text-green-600 dark:text-green-400 border border-green-500/30 hover:bg-green-500/25 transition-colors flex items-center gap-1 shadow-sm"
+              >
+                🚀 View GPT-6 Astra
+              </button>
+              <button
+                onClick={() => {
+                  setView("radar");
+                  setSearch("");
+                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-500 text-white hover:bg-violet-600 transition-colors flex items-center gap-1 shadow-sm"
+              >
+                <Brain className="h-3.5 w-3.5" /> Compare Radar
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* ── Stats Cards ── */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {[
@@ -933,6 +983,7 @@ export default function AIBenchmarksClient({ models }: Props) {
           {(
             [
               { id: "charts", icon: <BarChart3 className="h-3.5 w-3.5" />, label: "Charts" },
+              { id: "radar", icon: <Brain className="h-3.5 w-3.5" />, label: "Radar" },
               { id: "economy", icon: <Zap className="h-3.5 w-3.5" />, label: "Economy" },
               { id: "scatter", icon: <TrendingUp className="h-3.5 w-3.5" />, label: "Scatter" },
               { id: "table", icon: <LayoutList className="h-3.5 w-3.5" />, label: "Table" },
@@ -979,6 +1030,60 @@ export default function AIBenchmarksClient({ models }: Props) {
             {/* Scatter plot snippet */}
             <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-6">
               <EloVsIndexScatter models={filtered} />
+            </div>
+          </div>
+        )}
+
+        {/* ════════════════ RADAR VIEW ════════════════ */}
+        {view === "radar" && (
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-border/40 bg-card/30 p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 className="text-lg font-bold">Frontier Model Comparison Radar</h3>
+                  <p className="text-xs text-muted">
+                    Multi-dimensional normalized comparison across GPQA, SWE-bench, ARC-AGI 2, Arena ELO, AA Index, LiveCode, Terminal, &tau;-Bench, and SciCode.
+                  </p>
+                </div>
+                {/* Model toggle pills */}
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "claude-haiku-5-5",
+                    "gpt-6-astra",
+                    "claude-sonnet-5-5",
+                    "claude-opus-5-5",
+                    "gemini-4-argon",
+                    "gpt-6-sol",
+                  ].map(id => {
+                    const m = MODELS.find(mod => mod.id === id);
+                    if (!m) return null;
+                    const active = radarModels.includes(id);
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => {
+                          setRadarModels(prev =>
+                            active
+                              ? prev.length > 1
+                                ? prev.filter(x => x !== id)
+                                : prev
+                              : [...prev, id]
+                          );
+                        }}
+                        className={`text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all ${
+                          active
+                            ? "bg-violet-500 text-white border-violet-500 shadow-sm"
+                            : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                        }`}
+                      >
+                        {active ? "✓ " : "+ "}
+                        {m.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <RadarCompareChart selectedIds={radarModels} models={MODELS} />
             </div>
           </div>
         )}
