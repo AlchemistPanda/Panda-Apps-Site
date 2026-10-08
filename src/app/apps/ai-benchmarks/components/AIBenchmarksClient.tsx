@@ -77,7 +77,7 @@ type BenchKey = "gpqa" | "swe" | "arcagi2" | "arenaElo" | "aaIndex" | "livecodeb
   | "hle"
   | "frontierMath"
   | "gdpVal";
-type SortKey = "name" | "provider" | BenchKey | "economy";
+type SortKey = "name" | "provider" | "releasedAt" | BenchKey | "economy";
 type SortDir = "asc" | "desc";
 type TabFilter = "all" | "free" | "opensource" | "local";
 type ViewTab = "charts" | "radar" | "economy" | "scatter" | "table";
@@ -639,6 +639,7 @@ export default function AIBenchmarksClient({ models }: Props) {
     "gpt-6-astra",
   ]);
   const [activeTags, setActiveTags] = useState<ModelTag[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<string>("all");
 
   /* ── tag toggle ── */
   function toggleTag(tag: ModelTag) {
@@ -662,11 +663,14 @@ export default function AIBenchmarksClient({ models }: Props) {
     if (tab === "free") rows = rows.filter(m => m.isFree);
     if (tab === "opensource") rows = rows.filter(m => m.isOpenSource);
     if (tab === "local") rows = rows.filter(m => m.canRunLocally);
+    if (selectedProvider !== "all") {
+      rows = rows.filter(m => m.provider.toLowerCase() === selectedProvider.toLowerCase());
+    }
     if (activeTags.length > 0) rows = rows.filter(m => activeTags.every(t => m.tags.includes(t)));
     const q = search.trim().toLowerCase();
     if (q) rows = rows.filter(m => m.name.toLowerCase().includes(q) || m.provider.toLowerCase().includes(q));
     return rows;
-  }, [MODELS, tab, search, activeTags]);
+  }, [MODELS, tab, search, activeTags, selectedProvider]);
 
   const sorted = useMemo(
     () =>
@@ -674,13 +678,13 @@ export default function AIBenchmarksClient({ models }: Props) {
         const av =
           sortKey === "economy"
             ? economyScore(a)
-            : sortKey === "name" || sortKey === "provider"
+            : sortKey === "name" || sortKey === "provider" || sortKey === "releasedAt"
               ? a[sortKey]
               : a[sortKey as BenchKey];
         const bv =
           sortKey === "economy"
             ? economyScore(b)
-            : sortKey === "name" || sortKey === "provider"
+            : sortKey === "name" || sortKey === "provider" || sortKey === "releasedAt"
               ? b[sortKey]
               : b[sortKey as BenchKey];
         if (av === null && bv === null) return 0;
@@ -815,6 +819,7 @@ export default function AIBenchmarksClient({ models }: Props) {
                 onClick={() => {
                   setSearch("Claude Haiku 5.5");
                   setView("table");
+                  setSelectedProvider("all");
                   setTab("all");
                   setActiveTags([]);
                 }}
@@ -824,8 +829,21 @@ export default function AIBenchmarksClient({ models }: Props) {
               </button>
               <button
                 onClick={() => {
+                  setSelectedProvider("anthropic");
+                  setSearch("");
+                  setView("table");
+                  setTab("all");
+                  setActiveTags([]);
+                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition-colors flex items-center gap-1"
+              >
+                🟠 All Anthropic (14)
+              </button>
+              <button
+                onClick={() => {
                   setSearch("GPT-6 Astra");
                   setView("table");
+                  setSelectedProvider("all");
                   setTab("all");
                   setActiveTags([]);
                 }}
@@ -933,6 +951,32 @@ export default function AIBenchmarksClient({ models }: Props) {
                 className="w-full rounded-xl border border-border/40 bg-card/50 pl-9 pr-3 py-2 text-sm placeholder:text-muted focus:border-violet-500/60 focus:outline-none transition-colors"
               />
             </div>
+          </div>
+
+          {/* Provider filter pills */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs text-muted shrink-0">Provider:</span>
+            {["All", "Anthropic", "OpenAI", "Google", "DeepSeek", "xAI", "Alibaba", "Meta"].map(prov => {
+              const active = selectedProvider.toLowerCase() === prov.toLowerCase();
+              return (
+                <button
+                  key={prov}
+                  onClick={() => setSelectedProvider(active && prov !== "All" ? "all" : prov.toLowerCase())}
+                  className={`px-2.5 py-0.5 text-xs font-medium rounded-full border transition-all ${
+                    active
+                      ? "bg-violet-500 text-white border-violet-500 shadow-sm"
+                      : "border-border/40 text-muted hover:text-foreground hover:border-border"
+                  }`}
+                >
+                  {prov}
+                  <span className={`text-[10px] ml-1 tabular-nums ${active ? "opacity-90" : "opacity-60"}`}>
+                    {prov === "All"
+                      ? MODELS.length
+                      : MODELS.filter(m => m.provider.toLowerCase() === prov.toLowerCase()).length}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Category tag filters */}
@@ -1211,6 +1255,14 @@ export default function AIBenchmarksClient({ models }: Props) {
                           Model <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
                         </span>
                       </th>
+                      <th
+                        onClick={() => handleSort("releasedAt")}
+                        className="px-3 py-3 text-left text-xs font-semibold text-muted cursor-pointer select-none hover:text-foreground transition-colors whitespace-nowrap"
+                      >
+                        <span className="flex items-center gap-1">
+                          Released <SortIcon col="releasedAt" sortKey={sortKey} sortDir={sortDir} />
+                        </span>
+                      </th>
                       {BENCHMARK_COLS.map(col => (
                         <th
                           key={col.key}
@@ -1237,7 +1289,7 @@ export default function AIBenchmarksClient({ models }: Props) {
                     {sorted.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={BENCHMARK_COLS.length + 2}
+                          colSpan={BENCHMARK_COLS.length + 3}
                           className="px-3 py-12 text-center text-muted text-sm"
                         >
                           No models match your filters
@@ -1279,6 +1331,9 @@ export default function AIBenchmarksClient({ models }: Props) {
                                   ) : null;
                                 })}
                               </div>
+                            </td>
+                            <td className="px-3 py-2.5 text-xs text-muted font-mono whitespace-nowrap">
+                              {m.releasedAt}
                             </td>
                             {BENCHMARK_COLS.map(col => {
                               const v = m[col.key as BenchKey];
@@ -1333,7 +1388,7 @@ export default function AIBenchmarksClient({ models }: Props) {
                                   key={`${m.id}-exp`}
                                   className="bg-violet-500/5 border-b border-violet-500/20"
                                 >
-                                  <td colSpan={BENCHMARK_COLS.length + 2} className="px-5 py-4">
+                                  <td colSpan={BENCHMARK_COLS.length + 3} className="px-5 py-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
                                       {BENCHMARK_COLS.map(col => {
                                         const v = m[col.key as BenchKey];
